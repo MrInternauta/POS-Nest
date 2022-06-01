@@ -12,12 +12,14 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ProductsService } from 'src/services/products.service';
 @Controller('products')
 export class ProductsController {
+  constructor(private productsService: ProductsService) {}
   @Get()
   @HttpCode(HttpStatus.OK)
   getProducts() {
-    return { products: [] };
+    return { products: this.productsService.findAll() };
   }
 
   //First router with static path
@@ -29,8 +31,17 @@ export class ProductsController {
 
   //Params
   @Get(':productId')
-  getProduct(@Param('productId') productId: string) {
-    return { message: `Product: ${productId}` };
+  @HttpCode(HttpStatus.OK)
+  getProduct(@Res() res: Response, @Param('productId') productId: number) {
+    const product = this.productsService.findOne(productId);
+    if (!product) {
+      return res
+        .status(HttpStatus.NOT_FOUND)
+        .json({ message: `Product with id ${productId} doesn't exists` });
+    }
+    return res.json({
+      product,
+    });
   }
 
   @Get('products2/:productId')
