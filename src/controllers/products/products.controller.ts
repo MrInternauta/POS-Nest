@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Post,
@@ -13,10 +14,17 @@ import {
 import { Response } from 'express';
 @Controller('products')
 export class ProductsController {
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  getProducts() {
+    return { products: [] };
+  }
+
   //First router with static path
   @Get('filter')
-  getProductFilter() {
-    return { message: `Soy filtro` };
+  @HttpCode(HttpStatus.OK)
+  getProductFilter(@Res() res: Response) {
+    return res.json({ message: `Soy filtro` });
   }
 
   //Params

@@ -1,22 +1,26 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from '../app.service';
+import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { Response } from 'express';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  constructor() {}
 
   @Get()
-  getHello(): string {
-    return 'Hola mundo!';
+  @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
+  getHello(@Res() res: Response) {
+    return res.json({ message: 'Not found!' });
   }
 
+  @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('new')
-  newEndpoint(): string {
-    return 'Hello world!';
+  newEndpoint(@Res() res: Response) {
+    return res.json({ message: 'new world!' });
   }
 
+  @HttpCode(HttpStatus.ACCEPTED)
   @Get('other')
-  otherEnpoint(): string {
-    return 'Hello other!';
+  otherEnpoint(@Res() res: Response) {
+    return res.json({ message: 'other world!' });
   }
 }
