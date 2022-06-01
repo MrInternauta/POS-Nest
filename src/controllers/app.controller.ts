@@ -9,10 +9,12 @@ export class AppController {
   getHello(): string {
     return 'Hola mundo!';
   }
+
   @Get('new')
   newEndpoint(): string {
     return 'Hello world!';
   }
+
   @Get('other')
   otherEnpoint(): string {
     return 'Hello other!';
