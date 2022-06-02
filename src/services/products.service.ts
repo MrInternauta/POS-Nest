@@ -29,7 +29,7 @@ export class ProductsService {
   }
 
   public findOne(idProduct: number) {
-    return this.products.find((product: Product) => product.id == idProduct);
+    return this.products.find((product: Product) => product.id === idProduct);
   }
   public create(payload: any) {
     const product: Product = {
@@ -38,18 +38,21 @@ export class ProductsService {
     };
     this.products.push(product);
     this.counterId++;
+    return product;
   }
 
   public update(id: number, payload: any) {
-    let productFound = this.products.find((product) => product.id === id);
-    if (productFound) {
-      productFound = {
-        id: id,
-        ...payload,
-      };
-      return true;
-    }
-    return false;
+    const products = this.products.map((product) =>
+      product.id === id
+        ? {
+            id,
+            ...product,
+            ...payload,
+          }
+        : product,
+    );
+    this.products = products;
+    return this.findOne(id);
   }
 
   public delete(id: number) {
