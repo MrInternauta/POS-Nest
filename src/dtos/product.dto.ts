@@ -8,7 +8,7 @@ import {
 import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateProductDto {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: `The name field can't be empty` })
   @IsString()
   readonly name: string;
   @IsNotEmpty()
