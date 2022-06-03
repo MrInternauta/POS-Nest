@@ -4,28 +4,119 @@ import { Product } from 'src/entities/product.entity';
 @Injectable()
 export class ProductsService {
   private counterId = 1;
-  private products: Product[] = [];
-  constructor() {
-    this.products.push({
+  private products: Product[] = [
+    {
       id: 1,
       name: 'Product1',
       description: 'Description 1',
       price: 12,
       stock: 1,
       image: '',
-    });
-
-    this.products.push({
+    },
+    {
       id: 2,
       name: 'Product2',
       description: 'Description 2',
       price: 22,
       stock: 1,
       image: '',
-    });
+    },
+    {
+      id: 3,
+      name: 'Product1',
+      description: 'Description 1',
+      price: 12,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 4,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 5,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 6,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 7,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 8,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 9,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 10,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 11,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 12,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+    {
+      id: 13,
+      name: 'Product2',
+      description: 'Description 2',
+      price: 22,
+      stock: 1,
+      image: '',
+    },
+  ];
+  constructor() {
+    console.log('Start service');
   }
-  public findAll() {
-    return this.products;
+  public findAll(page: number, limit: number) {
+    const end = page * limit;
+    const start = end - limit;
+    return this.products.slice(start, end);
   }
 
   public findOne(idProduct: number) {
@@ -42,17 +133,23 @@ export class ProductsService {
   }
 
   public update(id: number, payload: any) {
-    const products = this.products.map((product) =>
-      product.id === id
-        ? {
-            id,
-            ...product,
-            ...payload,
-          }
-        : product,
+    let product = this.findOne(id);
+    if (!product) {
+      return false;
+    }
+
+    product = {
+      id,
+      ...product,
+      ...payload,
+    };
+
+    const products = this.products.map((productItem) =>
+      productItem.id === id ? product : productItem,
     );
+
     this.products = products;
-    return this.findOne(id);
+    return product;
   }
 
   public delete(id: number) {

@@ -17,21 +17,16 @@ import { ProductsService } from 'src/services/products.service';
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
+
+  //Getting obj query Params: @Query() params: any and params.limit
   @Get()
   @HttpCode(HttpStatus.OK)
-  getProducts(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return { products: this.productsService.findAll() };
-  }
-
-  @Get('products3')
-  getproducts2(
+  getProducts(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
-    @Query('offset') offset = 10,
+    // @Query('offset') offset = 10,
   ) {
-    return {
-      message: `Page: ${page} and  limit: ${limit} and offset: ${offset}`,
-    };
+    return { products: this.productsService.findAll(page, limit) };
   }
 
   //First router with static path
@@ -41,7 +36,7 @@ export class ProductsController {
     return res.json({ message: `Soy filtro` });
   }
 
-  //Params
+  //Getting obj params: Can use  Param() params: any and params.productId
   @Get(':productId')
   @HttpCode(HttpStatus.OK)
   getProduct(
@@ -59,24 +54,13 @@ export class ProductsController {
     });
   }
 
-  //Getting obj params
-  // @Get('products2/:productId')
-  // getProduct2(@Param() params: any) {
-  //   return { message: `Producto: ${params.productId}` };
-  // }
-
-  //Getting obj query Params
-  // @Get()
-  // getproductsWithAnyParams(@Query() params: any) {
-  //   return { message: `Page: ${params.page} and  limit: ${params.limit}` };
-  // }
-
   @Post()
-  create(@Res() res: Response, @Body() product: any) {
-    return res.status(HttpStatus.OK).json({
+  @HttpCode(HttpStatus.OK)
+  create(@Body() product: any) {
+    return {
       message: 'Product created',
       product: this.productsService.create(product),
-    });
+    };
   }
 
   @Put(':productId')
@@ -94,12 +78,11 @@ export class ProductsController {
     } else {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: `Can't update the product: ${productId}`,
-        product: wasUpdated,
       });
     }
   }
 
-  // Los controladores tienen un fallo, sucede que el tipado funciona para la programación, pero al transpilarse sigue siendo JavaScript, por lo que los parámetros id siguen siendo strings y al operar con find en el array no retorna el objeto porque compara number === string, podemos evitar esto con los pipes de nestjs y la implementación quedaría así
+  //Use ParseIntPipe to parse the param to int (in the traspilation to JS)
   @Delete(':productId')
   delete(
     @Res() res: Response,
