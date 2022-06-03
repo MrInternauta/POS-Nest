@@ -10,9 +10,9 @@ import {
   Put,
   Query,
   Res,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ParseIntPipe } from 'src/common/parse-int.pipe';
 import { ProductsService } from 'src/services/products.service';
 @Controller('products')
 export class ProductsController {
