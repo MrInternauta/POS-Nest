@@ -14,6 +14,7 @@ import {
 import { Response } from 'express';
 import { ParseIntPipe } from 'src/common/parse-int.pipe';
 import { ProductsService } from 'src/services/products.service';
+import { CreateProductDto, UpdateProductDto } from 'src/dtos/product.dto';
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
@@ -50,7 +51,7 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  create(@Body() product: any) {
+  create(@Body() product: CreateProductDto) {
     return {
       message: 'Product created',
       product: this.productsService.create(product),
@@ -61,7 +62,7 @@ export class ProductsController {
   update(
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
-    @Body() product: any,
+    @Body() product: UpdateProductDto,
   ) {
     const wasUpdated = this.productsService.update(productId, product);
     if (wasUpdated) {
