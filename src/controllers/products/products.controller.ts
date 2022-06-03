@@ -43,14 +43,8 @@ export class ProductsController {
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
   ) {
-    const product = this.productsService.findOne(productId);
-    if (!product) {
-      return res
-        .status(HttpStatus.NOT_FOUND)
-        .json({ message: `Product with id ${productId} doesn't exists` });
-    }
     return res.json({
-      product,
+      product: this.productsService.findOne(productId),
     });
   }
 
