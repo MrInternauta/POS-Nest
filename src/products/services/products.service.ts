@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { IService } from 'src/common/interfaces/service.interface';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -6,7 +7,7 @@ import {
 import { Product } from '../entities/product.entity';
 
 @Injectable()
-export class ProductsService {
+export class ProductsService implements IService {
   private counterId = 1;
   private products: Product[] = [
     {
@@ -115,7 +116,8 @@ export class ProductsService {
     },
   ];
   constructor() {
-    console.log('Start service');
+    this.counterId = this.products.length;
+    console.log('Start products');
   }
   public findAll(page: number, limit: number) {
     const end = page * limit;
