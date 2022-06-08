@@ -13,8 +13,11 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ParseIntPipe } from 'src/common/parse-int.pipe';
-import { ProductsService } from 'src/services/products.service';
-import { CreateProductDto, UpdateProductDto } from 'src/dtos/product.dto';
+import { ProductsService } from 'src/products/services/products.service';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+} from 'src/products/dtos/product.dto';
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
