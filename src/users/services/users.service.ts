@@ -4,11 +4,11 @@ import { User } from '../entities/user.entity';
 
 @Injectable()
 export class UsersService implements IService {
-  users: User[];
+  users: User[] = [];
   counterId: number;
 
   constructor() {
-    this.counterId = this.users.length;
+    this.counterId = this.users.length || 0;
     console.log('Start users');
   }
 
