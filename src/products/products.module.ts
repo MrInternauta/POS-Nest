@@ -10,6 +10,7 @@ import { OrdersController } from './controllers/orders/orders.controller';
 @Module({
   providers: [ProductsService],
   imports: [ProductsService],
+  exports: [ProductsService],
   controllers: [
     ProductsController,
     CategoriesController,

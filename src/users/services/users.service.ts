@@ -61,4 +61,13 @@ export class UsersService implements IService {
     }
     return false;
   }
+
+  getOrderByUserId(id: number) {
+    const user = this.findOne(id);
+    return {
+      date: new Date(),
+      user,
+      products: this.findAll(1, 10),
+    };
+  }
 }

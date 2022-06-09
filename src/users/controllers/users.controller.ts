@@ -9,6 +9,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { ProductsService } from '../../products/services/products.service';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
@@ -42,5 +43,10 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.delete(+id);
+  }
+
+  @Get(':id/getOrder')
+  getOrder(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.getOrderByUserId(id);
   }
 }
