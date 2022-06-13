@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IService } from 'src/common/interfaces/service.interface';
 import { User } from '../entities/user.entity';
 
@@ -7,7 +7,7 @@ export class UsersService implements IService {
   users: User[] = [];
   counterId: number;
 
-  constructor() {
+  constructor(@Inject('API_KEY') private apiKey: string) {
     this.counterId = this.users.length || 0;
     console.log('Start users');
   }
