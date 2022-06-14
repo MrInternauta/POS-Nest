@@ -18,12 +18,17 @@ import {
   CreateProductDto,
   UpdateProductDto,
 } from 'src/products/dtos/product.dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+@ApiTags('products')
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   //Getting obj query Params: @Query() params: any and params.limit
   @Get()
+  @ApiOperation({
+    summary: 'Products list',
+  })
   @HttpCode(HttpStatus.OK)
   getProducts(
     @Query('page') page = 1,

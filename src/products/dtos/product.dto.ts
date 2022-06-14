@@ -5,11 +5,12 @@ import {
   IsNotEmpty,
   IsPositive,
 } from 'class-validator';
-import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateProductDto {
   @IsNotEmpty({ message: `The name field can't be empty` })
   @IsString()
+  @ApiProperty({ description: 'A simple name for the product' })
   readonly name: string;
   @IsNotEmpty()
   @IsString()
