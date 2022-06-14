@@ -1,7 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
 import { IService } from 'src/common/interfaces/service.interface';
-import { User } from '../entities/user.entity';
+
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
+import { User } from '../entities/user.entity';
+
 @Injectable()
 export class UsersService implements IService {
   users: User[] = [];
