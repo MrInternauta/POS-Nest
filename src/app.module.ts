@@ -6,11 +6,14 @@ import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
+import { enviroments } from './enviroments';
+import config from './config';
 @Module({
   controllers: [AppController],
   imports: [
     ConfigModule.forRoot({
-      envFilePath: '.env',
+      envFilePath: enviroments[process?.env?.NODE_ENV] || '.env',
+      load: [config],
       isGlobal: true,
     }),
     ProductsModule,

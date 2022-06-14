@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IService } from 'src/common/interfaces/service.interface';
 import { User } from '../entities/user.entity';
 import { ConfigService } from '@nestjs/config';
