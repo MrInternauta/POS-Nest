@@ -5,9 +5,19 @@ import { AppService } from './app.service';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
+import { ConfigModule } from '@nestjs/config';
 @Module({
   controllers: [AppController],
-  imports: [ProductsModule, UsersModule, HttpModule, DatabaseModule],
+  imports: [
+    ConfigModule.forRoot({
+      envFilePath: '.env',
+      isGlobal: true,
+    }),
+    ProductsModule,
+    UsersModule,
+    HttpModule,
+    DatabaseModule,
+  ],
   providers: [
     AppService,
     {

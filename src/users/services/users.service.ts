@@ -1,18 +1,21 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IService } from 'src/common/interfaces/service.interface';
 import { User } from '../entities/user.entity';
-
+import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class UsersService implements IService {
   users: User[] = [];
   counterId: number;
 
-  constructor(@Inject('API_KEY') private apiKey: string) {
+  constructor(private configService: ConfigService) {
     this.counterId = this.users.length || 0;
     console.log('Start users');
   }
 
   findAll(page: number, limit: number) {
+    console.log(this.configService.get('API_KEY'));
+    console.log(this.configService.get('DATA_BASE'));
+
     const end = page * limit;
     const start = end - limit;
     return this.users.slice(start, end);
