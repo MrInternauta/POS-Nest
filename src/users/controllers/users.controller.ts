@@ -3,21 +3,29 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
   Put,
   Query,
+  Res,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { ProductsService } from '../../products/services/products.service';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
-
+import { Response } from 'express';
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Get('Hola')
+  @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
+  async getDBHola(@Res() res: Response) {
+    return res.json({ value: await this.usersService.getValue() });
+  }
 
   @Get()
   findAll(@Query('page') page = 1, @Query('limit') limit = 10) {

@@ -18,10 +18,16 @@ import * as Joi from 'joi';
       load: [config],
       isGlobal: true,
       validationSchema: Joi.object({
+        /* A global variable that can be used in any module. */
+        /* A global variable that can be used in any module. */
         API_KEY: Joi.string().required(),
         DATA_BASE: Joi.string().required(),
         DATA_PORT: Joi.number().required(),
-        PORT: Joi.number().required(),
+        POSTGRES_DB: Joi.string().required(),
+        POSTGRES_USER: Joi.string().required(),
+        POSTGRES_PASSWORD: Joi.string().required(),
+        POSTGRES_PORT: Joi.number().required(),
+        POSTGRES_HOST: Joi.string().hostname().required(),
       }),
     }),
     ProductsModule,

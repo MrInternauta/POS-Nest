@@ -1,20 +1,33 @@
 import { IService } from 'src/common/interfaces/service.interface';
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { User } from '../entities/user.entity';
-
+import { Client } from 'pg';
 @Injectable()
 export class UsersService implements IService {
   users: User[] = [];
   counterId: number;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @Inject('DB_CONNECTION') private dbClient: Client,
+  ) {
     this.counterId = this.users.length || 0;
-    console.log('Start users');
+    //console.log('Start users');
   }
-
+  getValue() {
+    return new Promise((resolve, reject) => {
+      this.dbClient.query('SELECT * FROM hola', function (error, res) {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(res.rows);
+      });
+    });
+  }
   findAll(page: number, limit: number) {
     console.log(this.configService.get('API_KEY'));
     console.log(this.configService.get('DATA_BASE'));

@@ -12,6 +12,11 @@ export class AppController {
   getHello(@Res() res: Response) {
     return res.json({ message: 'Not found!' });
   }
+  @Get('Hola')
+  @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
+  async getDBHola(@Res() res: Response) {
+    return res.json({ value: await this.appService.getValue() });
+  }
 
   @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('new')
