@@ -1,13 +1,13 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
 import config from './config';
-import { Client } from 'pg';
+// import { Client } from 'pg';
 
 @Injectable()
 export class AppService {
   constructor(
     private configSer: ConfigService,
-    @Inject('DB_CONNECTION') private dbClient: Client,
+    // @Inject('DB_CONNECTION') private dbClient: Client,
     @Inject('API_KEY') private apiKey: string,
     @Inject('MyAsync') private tasks: any[],
     @Inject(config.KEY) private configService: ConfigType<typeof config>,
@@ -18,13 +18,13 @@ export class AppService {
   }
   getValue() {
     return new Promise((resolve, reject) => {
-      this.dbClient.query('SELECT * FROM hola', function (error, res) {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(res.rows);
-      });
+      // this.dbClient.query('SELECT * FROM hola', function (error, res) {
+      //   if (error) {
+      //     reject(error);
+      //     return;
+      //   }
+      //   resolve(res.rows);
+      // });
     });
   }
   getHello(): string {

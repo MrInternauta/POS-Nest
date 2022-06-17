@@ -7,9 +7,16 @@ export default registerAs('config', () => ({
   },
   postgres: {
     database: process.env.POSTGRES_DB,
-    database_user: process.env.POSTGRES_USER,
-    database_password: process.env.POSTGRES_PASSWORD,
-    database_port: parseInt(process.env.POSTGRES_PORT, 10),
-    database_host: process.env.POSTGRES_HOST,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD,
+    port: parseInt(process.env.POSTGRES_PORT, 10),
+    host: process.env.POSTGRES_HOST,
+  },
+  mysql: {
+    database: process.env.MYSQL_DATABASE,
+    user: process.env.MYSQL_USER,
+    password: process.env.MYSQL_ROOT_PASSWORD,
+    port: parseInt(process.env.MYSQL_PORT, 10),
+    host: process.env.MYSQL_HOST,
   },
 }));

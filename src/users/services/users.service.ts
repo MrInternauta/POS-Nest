@@ -4,28 +4,27 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { User } from '../entities/user.entity';
-import { Client } from 'pg';
+// import { Client } from 'pg';
 @Injectable()
 export class UsersService implements IService {
   users: User[] = [];
   counterId: number;
 
   constructor(
-    private configService: ConfigService,
-    @Inject('DB_CONNECTION') private dbClient: Client,
+    private configService: ConfigService, // @Inject('DB_CONNECTION') private dbClient: Client,
   ) {
     this.counterId = this.users.length || 0;
     //console.log('Start users');
   }
   getValue() {
     return new Promise((resolve, reject) => {
-      this.dbClient.query('SELECT * FROM hola', function (error, res) {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(res.rows);
-      });
+      // this.dbClient.query('SELECT * FROM hola', function (error, res) {
+      //   if (error) {
+      //     reject(error);
+      //     return;
+      //   }
+      //   resolve(res.rows);
+      // });
     });
   }
   findAll(page: number, limit: number) {
