@@ -17,6 +17,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           host: configService.postgres.database_host,
           database: configService.postgres.database,
           port: configService.postgres.database_port,
+          synchronize: true,
+          autoLoadEntities: true,
         };
       },
       inject: [config.KEY],

@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { IService } from 'src/common/interfaces/service.interface';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -7,169 +9,49 @@ import {
 import { Product } from '../entities/product.entity';
 
 @Injectable()
-export class ProductsService implements IService {
-  private counterId = 1;
-  private products: Product[] = [
-    {
-      id: 1,
-      name: 'Product1',
-      description: 'Description 1',
-      price: 12,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 2,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 3,
-      name: 'Product1',
-      description: 'Description 1',
-      price: 12,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 4,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 5,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 6,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 7,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 8,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 9,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 10,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 11,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 12,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-    {
-      id: 13,
-      name: 'Product2',
-      description: 'Description 2',
-      price: 22,
-      stock: 1,
-      image: '',
-    },
-  ];
-  constructor() {
-    this.counterId = this.products.length;
-    console.log('Start products');
-  }
+export class ProductsService {
+  constructor(
+    @InjectRepository(Product) private productRepo: Repository<Product>,
+  ) {}
+
   public findAll(page: number, limit: number) {
-    const end = page * limit;
-    const start = end - limit;
-    return this.products.slice(start, end);
+    return this.productRepo.find();
+    // const end = page * limit;
+    // const start = end - limit;
+    // return this.products.slice(start, end);
   }
 
-  public findOne(idProduct: number) {
-    const product = this.products.find(
-      (product: Product) => product.id === idProduct,
-    );
+  public async findOne(idProduct: number) {
+    const product = await this.productRepo.findOneBy({
+      id: idProduct,
+    });
     if (!product) {
       throw new NotFoundException('Not found product');
     }
     return product;
   }
-  public create(payload: CreateProductDto) {
-    const product: Product = {
-      id: this.counterId,
-      ...payload,
-    };
-    this.products.push(product);
-    this.counterId++;
-    return product;
+
+  public async create(payload: CreateProductDto) {
+    // const product = new Product();
+    // product.name = payload.name;
+    // product.description = payload.description;
+    // product.price = payload.price;
+    // product.stock = product.stock;
+    // product.image = product.image;
+    const product = this.productRepo.create(payload);
+    return this.productRepo.save(product);
   }
 
-  public update(id: number, payload: UpdateProductDto) {
-    let product = this.findOne(id);
+  public async update(id: number, payload: UpdateProductDto) {
+    const product = await this.productRepo.findOneBy({ id });
     if (!product) {
       return false;
     }
-
-    product = {
-      id,
-      ...product,
-      ...payload,
-    };
-
-    const products = this.products.map((productItem) =>
-      productItem.id === id ? product : productItem,
-    );
-
-    this.products = products;
-    return product;
+    this.productRepo.merge(product, payload);
+    return await this.productRepo.save(product);
   }
 
-  public delete(id: number) {
-    const productsFound = this.products.filter((product) => product.id !== id);
-    if (productsFound.length != this.products.length) {
-      this.products = productsFound;
-      return true;
-    }
-    return false;
+  public async delete(id: number) {
+    return !!(await this.productRepo.delete({ id }));
   }
 }

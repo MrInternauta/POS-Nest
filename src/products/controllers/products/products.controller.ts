@@ -30,12 +30,12 @@ export class ProductsController {
     summary: 'Products list',
   })
   @HttpCode(HttpStatus.OK)
-  getProducts(
+  async getProducts(
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     // @Query('offset') offset = 10,
   ) {
-    return { products: this.productsService.findAll(page, limit) };
+    return { products: await this.productsService.findAll(page, limit) };
   }
 
   //First router with static path
@@ -48,31 +48,31 @@ export class ProductsController {
   //Getting obj params: Can use  Param() params: any and params.productId
   @Get(':productId')
   @HttpCode(HttpStatus.OK)
-  getProduct(
+  async getProduct(
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
   ) {
     return res.json({
-      product: this.productsService.findOne(productId),
+      product: await this.productsService.findOne(productId),
     });
   }
 
   @Post()
   @HttpCode(HttpStatus.OK)
-  create(@Body() product: CreateProductDto) {
+  async create(@Body() product: CreateProductDto) {
     return {
       message: 'Product created',
-      product: this.productsService.create(product),
+      product: await this.productsService.create(product),
     };
   }
 
   @Put(':productId')
-  update(
+  async update(
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
     @Body() product: UpdateProductDto,
   ) {
-    const wasUpdated = this.productsService.update(productId, product);
+    const wasUpdated = await this.productsService.update(productId, product);
     if (wasUpdated) {
       return res.status(HttpStatus.OK).json({
         message: `Product updated: ${productId}`,

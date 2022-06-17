@@ -12,7 +12,7 @@ import { ProductsService } from './services/products.service';
 import { Product } from './entities/product.entity';
 @Module({
   providers: [ProductsService],
-  imports: [ProductsService, TypeOrmModule.forFeature([Product])],
+  imports: [TypeOrmModule.forFeature([Product])],
   exports: [ProductsService],
   controllers: [
     ProductsController,

@@ -12,19 +12,24 @@ export class CreateProductDto {
   @IsString()
   @ApiProperty({ description: 'A simple name for the product' })
   readonly name: string;
+
   @IsNotEmpty()
   @IsString()
+  @ApiProperty()
   readonly description: string;
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
+  @ApiProperty()
   readonly price: number;
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
+  @ApiProperty()
   readonly stock: number;
   @IsNotEmpty()
   @IsUrl()
+  @ApiProperty()
   readonly image: string;
 }
 
