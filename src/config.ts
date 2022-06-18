@@ -19,4 +19,11 @@ export default registerAs('config', () => ({
     port: parseInt(process.env.MYSQL_PORT, 10),
     host: process.env.MYSQL_HOST,
   },
+  mssql: {
+    database: process.env.SQLSERVER_DATABASE,
+    user: process.env.SQLSERVER_USER,
+    password: process.env.SA_PASSWORD,
+    port: parseInt(process.env.SQLSERVER_PORT, 10),
+    host: process.env.SQLSERVER_HOST,
+  },
 }));

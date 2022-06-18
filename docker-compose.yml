@@ -16,7 +16,6 @@ services:
       - '5050:80'
     depends_on:
       - postgres
-
   mysql:
     image: mysql:5.7
     env_file:
@@ -35,6 +34,14 @@ services:
     depends_on:
       - mysql
 
+  sql-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    env_file:
+      - .env
+    ports:
+      - '1433:1433'
+    volumes:
+      - ./sqlserver_data:/var/opt/mssql
 volumes:
   mysql_data: {}
 

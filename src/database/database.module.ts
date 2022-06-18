@@ -11,14 +11,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigType<typeof config>) => {
         return {
-          type: 'mysql',
-          username: configService.mysql.user,
-          password: configService.mysql.password,
-          host: configService.mysql.host,
-          database: configService.mysql.database,
-          port: configService.mysql.port,
+          type: 'mssql',
+          username: configService.mssql.user,
+          password: configService.mssql.password,
+          host: configService.mssql.host,
+          database: configService.mssql.database,
+          port: configService.mssql.port,
           synchronize: true,
           autoLoadEntities: true,
+          options: {
+            encrypt: false,
+          },
         };
       },
       inject: [config.KEY],
