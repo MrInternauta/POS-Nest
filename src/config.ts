@@ -22,7 +22,7 @@ export default registerAs('config', () => ({
   mssql: {
     database: process.env.SQLSERVER_DATABASE,
     user: process.env.SQLSERVER_USER,
-    password: process.env.SA_PASSWORD,
+    password: process.env.SQLSERVER_SA_PASSWORD,
     port: parseInt(process.env.SQLSERVER_PORT, 10),
     host: process.env.SQLSERVER_HOST,
   },

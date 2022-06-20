@@ -36,8 +36,10 @@ services:
 
   sql-server:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    env_file:
-      - .env
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=1SuperPassword1
+      - MSSQL_PID=Express
     ports:
       - '1433:1433'
     volumes:
