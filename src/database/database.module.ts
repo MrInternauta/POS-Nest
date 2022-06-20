@@ -5,26 +5,28 @@ const API_KEY_PROD = 'PROD1212121SA';
 // import { Client } from 'pg';
 import { ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 @Global()
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigType<typeof config>) => {
         return {
-          type: 'mssql',
-          username: configService.mssql.user,
-          password: configService.mssql.password,
-          host: configService.mssql.host,
-          database: configService.mssql.database,
-          port: configService.mssql.port,
+          type: 'postgres',
+          username: configService.postgres.user,
+          password: configService.postgres.password,
+          host: configService.postgres.host,
+          database: configService.postgres.database,
+          port: configService.postgres.port,
           synchronize: true,
           autoLoadEntities: true,
-          options: {
-            encrypt: false,
-          },
         };
       },
       inject: [config.KEY],
+      dataSourceFactory: async (options) => {
+        const dataSource = await new DataSource(options).initialize();
+        return dataSource;
+      },
     }),
   ],
   providers: [
