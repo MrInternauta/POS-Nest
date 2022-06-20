@@ -38,3 +38,11 @@ lerna-debug.log*
 /postgres_data
 /mysql_data
 /sqlserver_data
+
+
+.idea/
+.vscode/
+node_modules/
+build/
+tmp/
+temp/

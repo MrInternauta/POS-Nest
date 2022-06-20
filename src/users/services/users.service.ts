@@ -1,4 +1,4 @@
-import { IService } from 'src/common/interfaces/service.interface';
+import { IService } from '../../common/interfaces/service.interface';
 
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

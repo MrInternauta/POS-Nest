@@ -1,19 +1,11 @@
 import 'reflect-metadata';
-// import { enviroments } from '../enviroments';
+
 import { DataSource } from 'typeorm';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
-// import dotenv from 'dotenv';
-// import path from 'path';
 
-// const fileEnv = enviroments[process?.env?.NODE_ENV] || '.env';
+console.log('Hola', process.env.POSTGRES_DB);
 
-// const config = dotenv.config({
-//   path: path.resolve('./', fileEnv),
-// });
-// console.log('HOLAA', config);
-
-// console.log(config);
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: 'localhost',
