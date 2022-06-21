@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
 import { migration1655765888400 } from './migrations/1655765888400-migration';
+import { migration1655781254249 } from './migrations/1655781254249-migration';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -15,7 +16,7 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,
   entities: [Product, User],
-  migrations: [migration1655765888400],
+  migrations: [migration1655765888400, migration1655781254249],
   subscribers: [],
 });
 //npm run typeorm -- migration:generate src/database/migrations -d src/database/data-source.ts

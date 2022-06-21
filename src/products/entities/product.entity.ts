@@ -1,4 +1,11 @@
-import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  Entity,
+  CreateDateColumn,
+  UpdateDateColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 /* eslint-disable prettier/prettier */
 @Entity()
 export class Product {
@@ -25,4 +32,22 @@ export class Product {
 
   @Column({ type: 'varchar' })
   image: string;
+
+  @CreateDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
+
+  @DeleteDateColumn({
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  deletedAt: Date;
 }
