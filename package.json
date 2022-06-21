@@ -20,8 +20,14 @@
       "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
       "test:e2e": "jest --config ./test/jest-e2e.json",
       "typeorm": "typeorm-ts-node-commonjs",
-      "typeorm2": "node --require ts-node/register ./node_modules/typeorm/cli.js",
-      "migrations:generate": "npm run typeorm2 -- migration:generate src/database/migrations -d src/database/data-source.ts"
+      "typeorm2": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+      "migrations:generate": "npm run typeorm2 -- migration:generate src/database/migrations/migration -d src/database/data-source.ts",
+      "migrations:show": "npm run typeorm2 -- migration:show -d src/database/data-source.ts",
+      "migrations:run": "npm run typeorm2 -- migration:run -d src/database/data-source.ts",
+      "migrations:drop": "npm run typeorm2 -- migration:drop -d src/database/data-source.ts",
+      "migrations:revert": "npm run typeorm2 -- migration:revert -d src/database/data-source.ts",
+      "migrations:log": "npm run typeorm2 -- migration:log -d src/database/data-source.ts",
+      "migrations:clear": "npm run typeorm2 -- migration:clear -d src/database/data-source.ts"
     },
     "dependencies": {
       "@nestjs/axios": "^0.0.8",
