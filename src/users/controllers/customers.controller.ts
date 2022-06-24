@@ -43,6 +43,6 @@ export class CustomerController {
 
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.customersService.remove(+id);
+    return this.customersService.delete(+id);
   }
 }

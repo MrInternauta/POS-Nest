@@ -1,12 +1,5 @@
 import { BasicEntity } from '../../common/interfaces/basic.entity';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Customer extends BasicEntity {

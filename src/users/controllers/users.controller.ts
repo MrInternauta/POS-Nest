@@ -24,7 +24,7 @@ export class UsersController {
   @Get('Hola')
   @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
   async getDBHola(@Res() res: Response) {
-    return res.json({ value: await this.usersService.getValue() });
+    return res.json({ value: await this.usersService.nativeRequest() });
   }
 
   @Get()

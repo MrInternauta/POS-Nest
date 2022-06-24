@@ -1,14 +1,5 @@
 import { BasicEntity } from '../../common/interfaces/basic.entity';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryColumn,
-  UpdateDateColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Customer } from './customer.entity';
 
 @Entity()
