@@ -1,21 +1,19 @@
 import { IService } from '../../common/interfaces/service.interface';
 
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { User } from '../entities/user.entity';
-// import { Client } from 'pg';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { ProductsService } from '../../products/services/products.service';
 @Injectable()
-export class UsersService implements IService {
-  users: User[] = [];
-  counterId: number;
-
+export class UsersService {
   constructor(
     private configService: ConfigService, // @Inject('DB_CONNECTION') private dbClient: Client,
-  ) {
-    this.counterId = this.users.length || 0;
-    //console.log('Start users');
-  }
+    private productsService: ProductsService,
+    @InjectRepository(User) private userRepo: Repository<User>,
+  ) {}
   getValue() {
     return new Promise((resolve, reject) => {
       // this.dbClient.query('SELECT * FROM hola', function (error, res) {
@@ -33,11 +31,13 @@ export class UsersService implements IService {
 
     const end = page * limit;
     const start = end - limit;
-    return this.users.slice(start, end);
+    return this.userRepo.find();
   }
 
   findOne(id: number) {
-    const user = this.users.find((user: User) => user.id === id);
+    const user = this.userRepo.findOneBy({
+      id,
+    });
     if (!user) {
       throw new NotFoundException('User Not found');
     }
@@ -45,39 +45,22 @@ export class UsersService implements IService {
   }
 
   create(entity: any) {
-    const user: any = {
-      id: this.counterId,
-      ...entity,
-    };
-    this.users.push(user);
-    this.counterId++;
+    const user = this.userRepo.create(entity);
+    this.userRepo.save(user);
     return user;
   }
 
-  update(id: number, payload: any) {
-    let user = this.findOne(id);
+  async update(id: number, payload: any) {
+    const user = await this.findOne(id);
     if (!user) {
       return false;
     }
-    user = {
-      id,
-      ...user,
-      ...payload,
-    };
-    const users = this.users.map((userItem) =>
-      userItem.id === id ? user : userItem,
-    );
-
-    this.users = users;
+    this.userRepo.merge(user, payload);
+    this.userRepo.save(user);
   }
 
-  delete(id: number): boolean {
-    const usersFound = this.users.filter((user) => user.id !== id);
-    if (usersFound.length != this.users.length) {
-      this.users = usersFound;
-      return true;
-    }
-    return false;
+  async delete(id: number) {
+    return await this.userRepo.softDelete({ id });
   }
 
   getOrderByUserId(id: number) {
@@ -85,7 +68,7 @@ export class UsersService implements IService {
     return {
       date: new Date(),
       user,
-      products: this.findAll(1, 10),
+      products: this.productsService.findAll(1, 10),
     };
   }
 }
