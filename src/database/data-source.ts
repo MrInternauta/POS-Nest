@@ -12,5 +12,4 @@ export const AppDataSource = new DataSource({
   logging: true,
   entities: ['src/*/entities/*.entity.ts'],
   migrations: ['src/database/migrations/*-migration.ts'],
-  logger: 'advanced-console',
 });
