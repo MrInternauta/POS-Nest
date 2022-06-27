@@ -18,7 +18,7 @@ import { Client } from 'pg';
           host: configService.postgres.host,
           database: configService.postgres.database,
           port: configService.postgres.port,
-          synchronize: true,
+          synchronize: false,
           autoLoadEntities: true,
         };
       },
