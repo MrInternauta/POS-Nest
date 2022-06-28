@@ -1,8 +1,10 @@
-import gulp from 'gulp';
-import { enviroments } from './src/enviroments';
-import dotenv from 'dotenv';
+/* eslint-disable @typescript-eslint/no-var-requires */
 
-gulp.task('setDevEnv', function (callback) {
+const gulp = require('gulp');
+const dotenv = require('dotenv');
+const enviroments = require('./src/enviroments');
+
+gulp.task('setEnv', function (callback) {
   dotenv.config({
     path: enviroments[process?.env?.NODE_ENV] || '.env',
   });
@@ -10,4 +12,4 @@ gulp.task('setDevEnv', function (callback) {
   callback();
 });
 
-gulp.task('default', gulp.series('setDevEnv'));
+gulp.task('default', gulp.series('setEnv'));
