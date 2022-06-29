@@ -1,15 +1,18 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import { configObj } from 'src/config';
 
+const type = 'postgres';
 export const AppDataSource = new DataSource({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5435,
-  username: 'root',
-  password: '123456',
-  database: 'my_db',
+  type: type,
+  host: configObj[type].host,
+  port: configObj[type].port,
+  username: configObj[type].user,
+  password: configObj[type].password,
+  database: configObj[type].database,
   synchronize: false,
   logging: true,
   entities: ['src/*/entities/*.entity.ts'],
   migrations: ['src/database/migrations/*-migration.ts'],
 });
+//npx gulp --command "migrations:show"

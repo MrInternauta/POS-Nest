@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common';
-import config from '../config';
+import { config } from '../config';
 const API_KEY = '12345634';
 const API_KEY_PROD = 'PROD1212121SA';
 import { ConfigType } from '@nestjs/config';
@@ -14,7 +14,7 @@ import { Client } from 'pg';
         return {
           type: 'postgres',
           username: configService.postgres.user,
-          password: configService.postgres.password,
+          password: '123456',
           host: configService.postgres.host,
           database: configService.postgres.database,
           port: configService.postgres.port,

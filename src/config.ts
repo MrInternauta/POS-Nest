@@ -1,5 +1,6 @@
 import { registerAs } from '@nestjs/config';
-export default registerAs('config', () => ({
+
+export const configObj = {
   api_key: process.env.API_KEY,
   database: {
     name: process.env.DATA_BASE,
@@ -26,4 +27,6 @@ export default registerAs('config', () => ({
     port: parseInt(process.env.SQLSERVER_PORT, 10),
     host: process.env.SQLSERVER_HOST,
   },
-}));
+};
+
+export const config = registerAs('config', () => configObj);

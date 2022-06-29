@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ConfigService, ConfigType } from '@nestjs/config';
-import config from './config';
+import { config } from './config';
 // import { Client } from 'pg';
 
 @Injectable()
