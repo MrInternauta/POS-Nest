@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 const dotenv = require('dotenv');
-const enviroments = require('./src/enviroments').default;
+const enviroments = require('./src/enviroments');
 const { spawn } = require('node:child_process');
 const argv = require('yargs').argv;
 const os = require('os');
@@ -35,7 +35,7 @@ gulp.task('setEnv', function (callback) {
 
 function setEnv() {
   dotenv.config({
-    path: enviroments[process?.env?.NODE_ENV] || '.env',
+    path: enviroments ? enviroments[process?.env?.NODE_ENV] : '.env',
   });
   console.log(`Enviroment ${process?.env?.NODE_ENV || 'dev'} selected`);
 }
