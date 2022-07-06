@@ -27,7 +27,7 @@
     "migrations:generate": "npm run typeorm2 -- migration:generate src/database/migrations/migration -d src/database/data-source.ts",
     "migrations:show": "npm run typeorm2 -- migration:show -d src/database/data-source.ts",
     "migrations:run": "npm run typeorm2 -- migration:run -d src/database/data-source.ts",
-    "migrations:drop": "npm run typeorm2 -- migration:drop -d src/database/data-source.ts",
+    "migrations:drop": "npm run typeorm2 -- schema:drop -d src/database/data-source.ts",
     "migrations:revert": "npm run typeorm2 -- migration:revert -d src/database/data-source.ts",
     "migrations:log": "npm run typeorm2 -- migration:log -d src/database/data-source.ts",
     "migrations:clear": "npm run typeorm2 -- migration:clear -d src/database/data-source.ts"

@@ -35,11 +35,13 @@ export class Product extends BasicEntity {
   @Column({ type: 'varchar' })
   image: string;
 
-  @ManyToOne(() => Brand, (brand) => brand.products)
+  @ManyToOne(() => Brand, (brand) => brand.products, { nullable: true })
   @JoinColumn()
   brand: Brand;
 
-  @ManyToOne(() => Category, (category) => category.products)
+  @ManyToOne(() => Category, (category) => category.products, {
+    nullable: true,
+  })
   @JoinColumn()
   category: Category;
 }

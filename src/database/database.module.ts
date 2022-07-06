@@ -14,7 +14,7 @@ import { Client } from 'pg';
         return {
           type: 'postgres',
           username: configService.postgres.user,
-          password: '123456',
+          password: configService.postgres.password,
           host: configService.postgres.host,
           database: configService.postgres.database,
           port: configService.postgres.port,
@@ -23,9 +23,9 @@ import { Client } from 'pg';
         };
       },
       inject: [config.KEY],
-      // dataSourceFactory: (options) => {
-      //   return new DataSource(options).initialize();
-      // },
+      dataSourceFactory: (options) => {
+        return new DataSource(options).initialize();
+      },
     }),
   ],
   providers: [
