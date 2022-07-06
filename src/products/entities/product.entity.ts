@@ -1,14 +1,9 @@
-import {
-  PrimaryGeneratedColumn,
-  Column,
-  Entity,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-} from 'typeorm';
+import { BasicEntity } from 'src/common/interfaces/basic.entity';
+import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
+import { Brand } from './brand.entity';
 /* eslint-disable prettier/prettier */
 @Entity()
-export class Product {
+export class Product extends BasicEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -33,21 +28,6 @@ export class Product {
   @Column({ type: 'varchar' })
   image: string;
 
-  @CreateDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
-
-  @DeleteDateColumn({
-    type: 'timestamptz',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  deletedAt: Date;
+  @ManyToOne(() => Brand, (brand) => brand.products)
+  brand: Brand;
 }
