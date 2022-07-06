@@ -1,6 +1,13 @@
 import { BasicEntity } from 'src/common/interfaces/basic.entity';
-import { PrimaryGeneratedColumn, Column, Entity, ManyToOne } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  Entity,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Brand } from './brand.entity';
+import { Category } from './category.entity';
 /* eslint-disable prettier/prettier */
 @Entity()
 export class Product extends BasicEntity {
@@ -29,5 +36,10 @@ export class Product extends BasicEntity {
   image: string;
 
   @ManyToOne(() => Brand, (brand) => brand.products)
+  @JoinColumn()
   brand: Brand;
+
+  @ManyToOne(() => Category, (category) => category.products)
+  @JoinColumn()
+  category: Category;
 }
