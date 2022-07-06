@@ -11,7 +11,9 @@ export class CustomersService {
   ) {}
 
   findAll() {
-    return this.customerRepo.find();
+    return this.customerRepo.find({
+      relations: ['orders'],
+    });
   }
 
   async findOne(id: number) {
@@ -29,6 +31,9 @@ export class CustomersService {
 
   async update(id: number, changes: UpdateCustomerDto) {
     const customer = await this.findOne(id);
+    if (!customer) {
+      throw new NotFoundException(`Customer #${id} not found`);
+    }
     this.customerRepo.merge(customer, changes);
     return this.customerRepo.save(customer);
   }

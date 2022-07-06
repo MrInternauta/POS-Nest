@@ -6,12 +6,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductsService } from '../../products/services/products.service';
 import { Client } from 'pg';
+import { CreateUserDto } from '../dtos/user.dto';
+import { CustomersService } from './customers.service';
 @Injectable()
 export class UsersService {
   constructor(
     private configService: ConfigService,
     @Inject('DB_CONNECTION') private dbClient: Client,
     private productsService: ProductsService,
+
+    private customerService: CustomersService,
     @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
@@ -34,7 +38,16 @@ export class UsersService {
   findAll(page: number, limit: number) {
     const end = page * limit;
     const start = end - limit;
-    return this.userRepo.find();
+    return this.userRepo.find({
+      relations: ['customer'],
+    });
+  }
+
+  findbyCustomerId(id: number) {
+    return this.userRepo.find({
+      where: { customer: { id } },
+      relations: ['customer'],
+    });
   }
 
   findOne(id: number) {
@@ -47,8 +60,12 @@ export class UsersService {
     return user;
   }
 
-  create(entity: any) {
+  async create(entity: CreateUserDto) {
     const user = this.userRepo.create(entity);
+    if (entity.customerId) {
+      const customer = await this.customerService.findOne(entity.customerId);
+      user.customer = customer;
+    }
     this.userRepo.save(user);
     return user;
   }
@@ -56,7 +73,7 @@ export class UsersService {
   async update(id: number, payload: any) {
     const user = await this.findOne(id);
     if (!user) {
-      return false;
+      throw new NotFoundException(`User #${id} not found`);
     }
     this.userRepo.merge(user, payload);
     this.userRepo.save(user);

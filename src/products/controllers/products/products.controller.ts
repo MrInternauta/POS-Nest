@@ -88,7 +88,7 @@ export class ProductsController {
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
   ) {
-    const wasDeleted = this.productsService.delete(productId);
+    const wasDeleted = this.productsService.remove(productId);
     if (wasDeleted) {
       res.status(HttpStatus.OK).json({
         message: `Product deleted: ${productId}`,

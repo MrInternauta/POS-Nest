@@ -23,9 +23,9 @@ import { Client } from 'pg';
         };
       },
       inject: [config.KEY],
-      dataSourceFactory: (options) => {
-        return new DataSource(options).initialize();
-      },
+      // dataSourceFactory: (options) => {
+      //   return new DataSource(options).initialize();
+      // },
     }),
   ],
   providers: [
