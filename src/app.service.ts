@@ -1,17 +1,12 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { ConfigService, ConfigType } from '@nestjs/config';
-import { config } from './config';
+import { Injectable } from '@nestjs/common';
+// import { ConfigService, ConfigType } from '@nestjs/config';
+// import { config } from './config';
 // import { Client } from 'pg';
 
 @Injectable()
 export class AppService {
-  constructor(
-    private configSer: ConfigService,
-    // @Inject('DB_CONNECTION') private dbClient: Client,
-    @Inject('API_KEY') private apiKey: string,
-    @Inject('MyAsync') private tasks: any[],
-    @Inject(config.KEY) private configService: ConfigType<typeof config>,
-  ) {
+  constructor() {
+    // @Inject(config.KEY) private configService: ConfigType<typeof config>, // @Inject('MyAsync') private tasks: any[], // @Inject('API_KEY') private apiKey: string, // // @Inject('DB_CONNECTION') private dbClient: Client, // private configSer: ConfigService,
     // console.log(this.configSer.get<string>('API_KEY'));
     // console.log(this.configSer.get<string>('DATA_BASE'));
     // console.log('Config: ', this.configService.api_key);
@@ -28,10 +23,10 @@ export class AppService {
     });
   }
   getHello(): string {
-    return `Hello World! ${this.apiKey}`;
+    return `Hello World! ${'API_KEY'}`;
   }
 
   getTasks(): any {
-    return this.tasks;
+    return [];
   }
 }

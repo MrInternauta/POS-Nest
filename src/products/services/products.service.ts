@@ -7,8 +7,6 @@ import {
   UpdateProductDto,
 } from '../../products/dtos/product.dto';
 import { Product } from '../entities/product.entity';
-import { Category } from '../entities/category.entity';
-import { Brand } from '../entities/brand.entity';
 import { BrandsService } from './brands.service';
 import { CategoriesService } from './categories.service';
 

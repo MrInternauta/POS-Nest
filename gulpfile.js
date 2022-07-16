@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 const dotenv = require('dotenv');
-const enviroments = require('./src/enviroments');
+const enviroments = require('./src/config/enviroments_gulp');
 const { spawn } = require('node:child_process');
 const argv = require('yargs').argv;
 const os = require('os');

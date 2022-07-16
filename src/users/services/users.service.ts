@@ -1,18 +1,18 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, NotFoundException } from '@nestjs/common';
+// import { ConfigService } from '@nestjs/config';
 
 import { User } from '../entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductsService } from '../../products/services/products.service';
-import { Client } from 'pg';
+// import { Client } from 'pg';
 import { CreateUserDto } from '../dtos/user.dto';
 import { CustomersService } from './customers.service';
 @Injectable()
 export class UsersService {
   constructor(
-    private configService: ConfigService,
-    @Inject('DB_CONNECTION') private dbClient: Client,
+    // private configService: ConfigService,
+    // @Inject('DB_CONNECTION') private dbClient: Client,
     private productsService: ProductsService,
 
     private customerService: CustomersService,
@@ -21,18 +21,21 @@ export class UsersService {
 
   nativeRequest() {
     return new Promise((resolve, reject) => {
-      this.dbClient.query('SELECT * FROM hola', function (error, res) {
-        if (error) {
-          reject(error);
-          return;
-        }
-        resolve(res.rows);
-      });
+      // this.dbClient.query('SELECT * FROM hola', function (error, res) {
+      //   if (error) {
+      //     reject(error);
+      //     return;
+      //   }
+      //   resolve(res.rows);
+      // });
     });
   }
+
   getConfigEnviroments() {
-    console.log(this.configService.get('API_KEY'));
-    console.log(this.configService.get('DATA_BASE'));
+    console.log('OK');
+
+    // console.log(this.configService.get('API_KEY'));
+    // console.log(this.configService.get('DATA_BASE'));
   }
 
   findAll(page: number, limit: number) {

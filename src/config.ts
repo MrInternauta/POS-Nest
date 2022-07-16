@@ -28,5 +28,4 @@ export const configObj = {
     host: process.env.SQLSERVER_HOST,
   },
 };
-
 export const config = registerAs('config', () => configObj);

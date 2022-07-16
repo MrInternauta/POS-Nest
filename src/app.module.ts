@@ -6,7 +6,7 @@ import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
-import enviroments from './enviroments.js';
+import enviroments from './config/enviroments';
 import { config } from './config';
 import * as Joi from 'joi';
 
@@ -20,11 +20,6 @@ import * as Joi from 'joi';
       load: [config],
       isGlobal: true,
       validationSchema: Joi.object({
-        /* A global variable that can be used in any module. */
-        /* A global variable that can be used in any module. */
-        API_KEY: Joi.string().required(),
-        DATA_BASE: Joi.string().required(),
-        DATA_PORT: Joi.number().required(),
         POSTGRES_DB: Joi.string().required(),
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
@@ -32,25 +27,25 @@ import * as Joi from 'joi';
         POSTGRES_HOST: Joi.string().hostname().required(),
       }),
     }),
+    DatabaseModule,
     ProductsModule,
     UsersModule,
     HttpModule,
-    DatabaseModule,
   ],
   providers: [
     AppService,
-    {
-      //npm i --save @nestjs/axios
-      provide: 'MyAsync',
-      useFactory: async function (http: HttpService) {
-        const myTask = await http
-          .get('https://jsonplaceholder.typicode.com/todos')
-          .toPromise();
+    // {
+    //   //npm i --save @nestjs/axios
+    //   provide: 'MyAsync',
+    //   useFactory: async function (http: HttpService) {
+    //     const myTask = await http
+    //       .get('https://jsonplaceholder.typicode.com/todos')
+    //       .toPromise();
 
-        return myTask.data;
-      },
-      inject: [HttpService], //INJECT DEPENDENCY TO THE PROVIDER
-    },
+    //     return myTask.data;
+    //   },
+    //   inject: [HttpService], //INJECT DEPENDENCY TO THE PROVIDER
+    // },
   ],
 })
 export class AppModule {}
