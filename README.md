@@ -92,3 +92,13 @@ User to Customer
 - En la relación oneToOne solo una entidad puede tener el decorador @JoinColumn.
 - En el caso particular de esta relación también puede ser opcional
 - TypeORM permite tener una relacion bidireccional en las relaciones 1 a 1 sin necesidad de hacer queryes extras.
+# RUN THE PROJECT
+## Build the image
+```bash
+docker build -t mrinternauta/neststore_test:001 .
+```
+
+## Run container with .env
+```bash
+docker run -p 3000:3000 --env-file=.env mrinternauta/neststore_test:001
+```
