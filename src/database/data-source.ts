@@ -5,8 +5,8 @@ import { configObj } from 'src/config';
 const type = 'postgres';
 export const AppDataSource = new DataSource({
   type: type,
-  host: configObj[type].host,
-  port: configObj[type].port,
+  host: configObj[type].host_ext,
+  port: configObj[type].port_ext,
   username: configObj[type].user,
   password: configObj[type].password,
   database: configObj[type].database,

@@ -14,8 +14,8 @@ import { CategoriesService } from './categories.service';
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
-    private categoryRepo: CategoriesService,
-    private brandRepo: BrandsService,
+    private categoryService: CategoriesService,
+    private brandService: BrandsService,
   ) {}
 
   public findAll(page: number, limit: number) {
@@ -49,11 +49,11 @@ export class ProductsService {
   public async create(payload: CreateProductDto) {
     const product = this.productRepo.create(payload);
     if (payload.brandId) {
-      const brand = await this.brandRepo.findOne(payload.brandId);
+      const brand = await this.brandService.findOne(payload.brandId);
       product.brand = brand;
     }
     if (payload.categtoryId) {
-      const category = await this.categoryRepo.findOne(payload.categtoryId);
+      const category = await this.categoryService.findOne(payload.categtoryId);
       product.category = category;
     }
     return this.productRepo.save(product);

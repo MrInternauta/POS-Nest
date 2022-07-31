@@ -12,6 +12,8 @@ export const configObj = {
     password: process.env.POSTGRES_PASSWORD,
     port: parseInt(process.env.POSTGRES_PORT, 10),
     host: process.env.POSTGRES_HOST,
+    port_ext: parseInt(process.env.POSTGRES_PORT_EXTERNAL, 10),
+    host_ext: process.env.POSTGRES_HOST_EXTERNAL,
   },
   mysql: {
     database: process.env.MYSQL_DATABASE,

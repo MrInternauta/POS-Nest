@@ -10,8 +10,6 @@ services:
       - /usr/src/postgres_data
       - /usr/src/mysql_data
       - /usr/src/sqlserver_data
-    ports:
-      - 3000-3003:3000
   postgres_service:
     image: postgres:14
     volumes:

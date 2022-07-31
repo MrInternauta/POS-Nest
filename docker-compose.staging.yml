@@ -4,45 +4,47 @@ services:
   app:
     env_file:
       - .env
-    container_name: node_app_dev
-    command: npm run start:dev
+    container_name: node_app_stag
+    command: npm run start:prod
     networks:   # Use a custom network
-      - devred
+      - stagred
+    ports:
+      - 3000:3000
   postgres_service:
-    container_name: postgres_dev
+    container_name: postgres_stag
     env_file:
       - .env
     networks:   # Use a custom network
-      - devred
+      - stagred
     ports:
       - '5420:5432'
   pg_admin:
-    container_name: pg_admin_dev
+    container_name: pg_admin_stag
     env_file:
       - .env
     ports:
       - '5050:80'
     networks:   # Use a custom network
-      - devred
+      - stagred
   mysql:
-    container_name: mysql_dev
+    container_name: mysql_stag
     image: mysql:5.7
     env_file:
       - .env
     ports:
       - '3306:3306'
     networks:   # Use a custom network
-      - devred
+      - stagred
   phpmyadmin:
-    container_name: phpmyadmin_dev
+    container_name: phpmyadmin_stag
     env_file:
       - .env
     ports:
       - '8080:80'
     networks:   # Use a custom network
-      - devred
+      - stagred
   sql-server:
-    container_name: sql-server_dev
+    container_name: sql-server_stag
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=1SuperPassword1
@@ -50,11 +52,11 @@ services:
     ports:
       - '1433:1433'
     networks:   # Use a custom network
-      - devred
+      - stagred
 networks:
   # Use a custom network
-  devred:
-    name: 'devred'
+  stagred:
+    name: 'stagred'
     driver: bridge
 
 
