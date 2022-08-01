@@ -13,6 +13,9 @@ export class AppService {
   }
   getValue() {
     return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('Hello world');
+      }, 3000);
       // this.dbClient.query('SELECT * FROM hola', function (error, res) {
       //   if (error) {
       //     reject(error);

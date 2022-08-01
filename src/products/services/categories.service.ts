@@ -37,7 +37,8 @@ export class CategoriesService {
     const category = await this.categoryRepo.findOneBy({ id });
     if (!category) {
       throw new NotFoundException(`Category with id ${id} not found`);
+    } else {
+      return this.categoryRepo.softDelete({ id });
     }
-    return this.categoryRepo.softDelete({ id });
   }
 }

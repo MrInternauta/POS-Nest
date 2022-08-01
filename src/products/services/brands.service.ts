@@ -42,8 +42,9 @@ export class BrandsService {
   async remove(id: number) {
     const brand = await this.brandsRepo.findOneBy({ id });
     if (!brand) {
-      throw new NotFoundException(`Brand ${id} not found`);
+      throw new NotFoundException(`Brand${id} not found`);
+    } else {
+      return this.brandsRepo.softDelete({ id });
     }
-    return this.brandsRepo.softDelete({ id });
   }
 }

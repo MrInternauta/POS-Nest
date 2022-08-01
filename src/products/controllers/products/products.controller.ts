@@ -25,11 +25,26 @@ export class ProductsController {
   @Get()
   @ApiOperation({
     summary: 'Products list',
+    description: 'Get all products',
+    parameters: [
+      {
+        name: 'page',
+        description: 'Page number',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'limit',
+        description: 'Limit of products per page',
+        in: 'query',
+        required: false,
+      },
+    ],
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
+    @Query('page') page,
+    @Query('limit') limit,
     // @Query('offset') offset = 10,
   ) {
     return { products: await this.productsService.findAll(page, limit) };
@@ -37,13 +52,21 @@ export class ProductsController {
 
   //First router with static path
   @Get('filter')
+  @ApiOperation({
+    summary: 'A static path',
+    description:
+      'First router with static path.\nEvite hit with parameter path :productId',
+  })
   @HttpCode(HttpStatus.OK)
   getProductFilter(@Res() res: Response) {
-    return res.json({ message: `Soy filtro` });
+    return res.json({ message: `I'm a filter` });
   }
 
   //Getting obj params: Can use  Param() params: any and params.productId
   @Get(':productId')
+  @ApiOperation({
+    summary: 'Get product by Id',
+  })
   @HttpCode(HttpStatus.OK)
   async getProduct(
     @Res() res: Response,
@@ -56,6 +79,9 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create a product',
+  })
   async create(@Body() product: CreateProductDto) {
     return {
       message: 'Product created',
@@ -64,6 +90,10 @@ export class ProductsController {
   }
 
   @Put(':productId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Update a product',
+  })
   async update(
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
@@ -77,25 +107,29 @@ export class ProductsController {
       });
     } else {
       return res.status(HttpStatus.BAD_REQUEST).json({
-        message: `Can't update the product: ${productId}`,
+        message: `Product ${productId} not updated`,
       });
     }
   }
 
   //Use ParseIntPipe to parse the param to int (in the traspilation to JS)
   @Delete(':productId')
-  delete(
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Delete a product',
+  })
+  async delete(
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
   ) {
-    const wasDeleted = this.productsService.remove(productId);
-    if (wasDeleted) {
+    try {
+      await this.productsService.remove(productId);
       res.status(HttpStatus.OK).json({
-        message: `Product deleted: ${productId}`,
+        message: `Product ${productId} deleted`,
       });
-    } else {
+    } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
-        message: `Can't delete the product: ${productId}`,
+        message: `Product: ${productId} not deleted`,
       });
     }
   }

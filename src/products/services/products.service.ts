@@ -18,7 +18,7 @@ export class ProductsService {
     private brandService: BrandsService,
   ) {}
 
-  public findAll(page: number, limit: number) {
+  public findAll(page = 1, limit = 10) {
     return this.productRepo.find({ relations: ['category', 'brand'] });
   }
 
@@ -72,7 +72,8 @@ export class ProductsService {
     const product = this.productRepo.findOneBy({ id });
     if (!product) {
       throw new NotFoundException('Not found product');
+    } else {
+      return this.productRepo.softDelete({ id });
     }
-    return this.productRepo.softDelete({ id });
   }
 }
