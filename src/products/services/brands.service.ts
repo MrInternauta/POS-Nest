@@ -39,7 +39,11 @@ export class BrandsService {
     return this.brandsRepo.save(brand);
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    const brand = await this.brandsRepo.findOneBy({ id });
+    if (!brand) {
+      throw new NotFoundException(`Brand ${id} not found`);
+    }
     return this.brandsRepo.softDelete({ id });
   }
 }
