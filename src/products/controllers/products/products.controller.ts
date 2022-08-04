@@ -128,8 +128,10 @@ export class ProductsController {
         message: `Product ${productId} deleted`,
       });
     } catch (error) {
+      console.log(error);
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: `Product: ${productId} not deleted`,
+        error,
       });
     }
   }

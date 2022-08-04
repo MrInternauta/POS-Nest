@@ -105,4 +105,4 @@ docker run -p 3000:3000 --env-file=.env mrinternauta/neststore_test:001
 
 NOTE: Run migrations before run project
 
-npx gulp --command="migrations:show"
+gulp --command="migrations:show"

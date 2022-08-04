@@ -42,8 +42,9 @@ export class ProductsService {
     });
     if (!product) {
       throw new NotFoundException('Not found product');
+    } else {
+      return product;
     }
-    return product;
   }
 
   public async create(payload: CreateProductDto) {
@@ -55,21 +56,23 @@ export class ProductsService {
     if (payload.categtoryId) {
       const category = await this.categoryService.findOne(payload.categtoryId);
       product.category = category;
+    } else {
+      return this.productRepo.save(product);
     }
-    return this.productRepo.save(product);
   }
 
   public async update(id: number, payload: UpdateProductDto) {
     const product = await this.productRepo.findOneBy({ id });
     if (!product) {
       throw new NotFoundException('Not found product');
+    } else {
+      this.productRepo.merge(product, payload);
+      return this.productRepo.save(product);
     }
-    this.productRepo.merge(product, payload);
-    return this.productRepo.save(product);
   }
 
-  public remove(id: number) {
-    const product = this.productRepo.findOneBy({ id });
+  public async remove(id: number) {
+    const product = await this.productRepo.findOneBy({ id });
     if (!product) {
       throw new NotFoundException('Not found product');
     } else {

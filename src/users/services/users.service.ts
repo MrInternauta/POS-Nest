@@ -8,6 +8,7 @@ import { ProductsService } from '../../products/services/products.service';
 // import { Client } from 'pg';
 import { CreateUserDto } from '../dtos/user.dto';
 import { CustomersService } from './customers.service';
+import e from 'express';
 @Injectable()
 export class UsersService {
   constructor(
@@ -21,6 +22,9 @@ export class UsersService {
 
   nativeRequest() {
     return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({ message: 'Hello World' });
+      }, 1000);
       // this.dbClient.query('SELECT * FROM hola', function (error, res) {
       //   if (error) {
       //     reject(error);
@@ -53,14 +57,15 @@ export class UsersService {
     });
   }
 
-  findOne(id: number) {
-    const user = this.userRepo.findOneBy({
+  async findOne(id: number) {
+    const user = await this.userRepo.findOneBy({
       id,
     });
     if (!user) {
       throw new NotFoundException('User Not found');
+    } else {
+      return user;
     }
-    return user;
   }
 
   async create(entity: CreateUserDto) {
@@ -77,18 +82,19 @@ export class UsersService {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
+    } else {
+      this.userRepo.merge(user, payload);
+      return this.userRepo.save(user);
     }
-    this.userRepo.merge(user, payload);
-    this.userRepo.save(user);
   }
 
   async delete(id: number) {
     const user = await this.userRepo.findOneBy({ id });
-
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
+    } else {
+      return this.userRepo.softDelete({ id });
     }
-    return this.userRepo.softDelete({ id });
   }
 
   async getOrderByUserId(id: number) {
