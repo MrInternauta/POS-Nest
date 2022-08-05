@@ -33,12 +33,12 @@ export class CreateProductDto {
   @ApiProperty()
   readonly image: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsPositive()
   @ApiProperty()
   readonly categtoryId: number;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsPositive()
   @ApiProperty()
   readonly brandId: number;

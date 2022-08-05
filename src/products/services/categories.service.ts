@@ -10,13 +10,15 @@ export class CategoriesService {
     @InjectRepository(Category) private categoryRepo: Repository<Category>,
   ) {}
   findAll() {
-    return this.categoryRepo.find({
-      relations: ['products'],
-    });
+    return this.categoryRepo.find();
   }
 
-  findOne(id: number) {
-    return this.categoryRepo.findOneBy({ id });
+  async findOne(id: number) {
+    const category = await this.categoryRepo.findOneBy({ id });
+    if (!category) {
+      throw new NotFoundException(`Category #${id} not found`);
+    }
+    return category;
   }
 
   create(category: CreateCategoryDto) {
@@ -25,7 +27,7 @@ export class CategoriesService {
   }
 
   async update(id: number, changes: UpdateCategoryDto) {
-    const category = await this.categoryRepo.findOneBy({ id });
+    const category = await this.findOne(id);
     if (!category) {
       throw new NotFoundException(`Category #${id} not found`);
     }
@@ -34,7 +36,7 @@ export class CategoriesService {
   }
 
   async remove(id: number) {
-    const category = await this.categoryRepo.findOneBy({ id });
+    const category = await this.findOne(id);
     if (!category) {
       throw new NotFoundException(`Category with id ${id} not found`);
     } else {

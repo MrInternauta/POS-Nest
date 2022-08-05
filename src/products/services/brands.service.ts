@@ -15,8 +15,8 @@ export class BrandsService {
     });
   }
 
-  findOne(id: number) {
-    const product = this.brandsRepo.findOneBy({
+  async findOne(id: number) {
+    const product = await this.brandsRepo.findOneBy({
       id,
     });
     if (!product) {
@@ -25,7 +25,7 @@ export class BrandsService {
     return product;
   }
 
-  create(data: CreateBrandDto) {
+  async create(data: CreateBrandDto) {
     const newBrand = this.brandsRepo.create(data);
     return this.brandsRepo.save(newBrand);
   }

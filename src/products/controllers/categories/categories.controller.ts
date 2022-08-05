@@ -43,7 +43,7 @@ export class CategoriesController {
   //Getting obj params: Can use  Param() params: any and params.productId
   @Get(':categoryId')
   @ApiOperation({
-    summary: 'Get product by Id',
+    summary: 'Get category by Id',
   })
   @HttpCode(HttpStatus.OK)
   async getCategory(

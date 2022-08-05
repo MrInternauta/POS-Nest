@@ -36,12 +36,12 @@ export class Product extends BasicEntity {
   image: string;
 
   @ManyToOne(() => Brand, (brand) => brand.products, { nullable: true })
-  @JoinColumn()
+  // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
   brand: Brand;
 
   @ManyToOne(() => Category, (category) => category.products, {
     nullable: true,
   })
-  @JoinColumn()
+  // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
   category: Category;
 }

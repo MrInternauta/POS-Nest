@@ -65,10 +65,17 @@ export class ProductsService {
     const product = await this.productRepo.findOneBy({ id });
     if (!product) {
       throw new NotFoundException('Not found product');
-    } else {
-      this.productRepo.merge(product, payload);
-      return this.productRepo.save(product);
     }
+    if (payload.brandId) {
+      const brand = await this.brandService.findOne(payload.brandId);
+      product.brand = brand;
+    }
+    if (payload.categtoryId) {
+      const category = await this.categoryService.findOne(payload.categtoryId);
+      product.category = category;
+    }
+    this.productRepo.merge(product, payload);
+    return this.productRepo.save(product);
   }
 
   public async remove(id: number) {
