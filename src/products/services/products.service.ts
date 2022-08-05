@@ -78,9 +78,8 @@ export class ProductsService {
     if (payload.categtoryId) {
       const category = await this.categoryService.findOne(payload.categtoryId);
       product.category = category;
-    } else {
-      return this.productRepo.save(product);
     }
+    return this.productRepo.save(product);
   }
 
   public async update(id: number, payload: UpdateProductDto) {
