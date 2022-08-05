@@ -23,7 +23,7 @@ export class ProductsService {
   ) {}
 
   public findAll(page = 1, limit = 10) {
-    return this.productRepo.find({ relations: ['category', 'brand'] });
+    return this.productRepo.find();
   }
 
   findByCategory(idCategory: number) {
@@ -41,8 +41,9 @@ export class ProductsService {
   }
 
   public async findOne(idProduct: number) {
-    const product = await this.productRepo.findOneBy({
-      id: idProduct,
+    const product = await this.productRepo.findOne({
+      relations: ['category', 'brand'],
+      where: { id: idProduct },
     });
     if (!product) {
       throw new NotFoundException(`Product ${idProduct} not found`);
