@@ -111,6 +111,26 @@ export class ProductsController {
       });
     }
   }
+  @Put(':idProduct/restore')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'restore an product',
+  })
+  async restore(
+    @Res() res: Response,
+    @Param('idProduct', ParseIntPipe) idProduct: number,
+  ) {
+    const wasUpdated = await this.productsService.restore(idProduct);
+    if (wasUpdated?.affected > 0) {
+      return res
+        .status(HttpStatus.OK)
+        .json({ message: 'Product restored', product: wasUpdated });
+    } else {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: `Product ${idProduct} not restored` });
+    }
+  }
 
   //Use ParseIntPipe to parse the param to int (in the traspilation to JS)
   @Delete(':productId')
@@ -122,17 +142,9 @@ export class ProductsController {
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
   ) {
-    try {
-      await this.productsService.remove(productId);
-      res.status(HttpStatus.OK).json({
-        message: `Product ${productId} deleted`,
-      });
-    } catch (error) {
-      console.log(error);
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        message: `Product: ${productId} not deleted`,
-        error,
-      });
-    }
+    await this.productsService.remove(productId);
+    res.status(HttpStatus.OK).json({
+      message: `Product ${productId} deleted`,
+    });
   }
 }

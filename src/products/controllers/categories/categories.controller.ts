@@ -69,7 +69,9 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Get products by catregoryId',
   })
-  getProductsByCategoryId(@Param('categoryId') categoryId: number) {
+  getProductsByCategoryId(
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
     return this.productsServices.findByCategory(categoryId);
   }
 
@@ -98,21 +100,39 @@ export class CategoriesController {
     }
   }
 
+  @Put(':idCategory/restore')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'restore a category',
+  })
+  async restore(
+    @Res() res: Response,
+    @Param('idCategory', ParseIntPipe) idCategory: number,
+  ) {
+    const wasUpdated = await this.categoriesServices.restore(idCategory);
+    if (wasUpdated?.affected > 0) {
+      return res
+        .status(HttpStatus.OK)
+        .json({ message: 'Category restored', category: wasUpdated });
+    } else {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: `Category ${idCategory} not restored` });
+    }
+  }
+
   @Delete(':idCategory')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete a category',
   })
-  async delete(@Res() res: Response, @Param('idCategory') idCategory: number) {
-    const wasDeleted = await this.categoriesServices.remove(idCategory);
-    if (wasDeleted) {
-      return res
-        .status(HttpStatus.OK)
-        .json({ message: `Category ${idCategory} deleted` });
-    } else {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        message: `Category ${idCategory} not deleted`,
-      });
-    }
+  async delete(
+    @Res() res: Response,
+    @Param('idCategory', ParseIntPipe) idCategory: number,
+  ) {
+    await this.categoriesServices.remove(idCategory);
+    return res
+      .status(HttpStatus.OK)
+      .json({ message: `Category ${idCategory} deleted` });
   }
 }

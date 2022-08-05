@@ -18,7 +18,7 @@ import { CreateBrandDto, UpdateBrandDto } from '../../dtos/brand.dto';
 import { ProductsService } from '../../services/products.service';
 import { BrandsService } from '../../services/brands.service';
 
-@Controller('Brands')
+@Controller('brands')
 @ApiTags('Brands')
 export class BrandsController {
   constructor(
@@ -36,6 +36,7 @@ export class BrandsController {
       brands: await this.brandService.findAll(),
     });
   }
+
   @Get(':brandId')
   @ApiOperation({
     summary: 'Get product by Id',
@@ -43,7 +44,7 @@ export class BrandsController {
   @HttpCode(HttpStatus.OK)
   async getbrand(
     @Res() res: Response,
-    @Param('BrandId', ParseIntPipe) brandId: number,
+    @Param('brandId', ParseIntPipe) brandId: number,
   ) {
     return res.json({
       brand: await this.brandService.findOne(brandId),
@@ -64,7 +65,8 @@ export class BrandsController {
   @ApiOperation({
     summary: 'Get products by brandId',
   })
-  getProductsBybrandId(@Param('BrandId') brandId: number) {
+  async getProductsBybrandId(@Param('brandId', ParseIntPipe) brandId: number) {
+    await this.brandService.findOne(brandId);
     return this.productsServices.findByBrand(brandId);
   }
 
@@ -90,21 +92,39 @@ export class BrandsController {
     }
   }
 
+  @Put(':idBrand/restore')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'restore a brand',
+  })
+  async restore(
+    @Res() res: Response,
+    @Param('idBrand', ParseIntPipe) idBrand: number,
+  ) {
+    const wasUpdated = await this.brandService.restore(idBrand);
+    if (wasUpdated?.affected > 0) {
+      return res
+        .status(HttpStatus.OK)
+        .json({ message: 'Brand restored', product: wasUpdated });
+    } else {
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .json({ message: `Brand ${idBrand} not restored` });
+    }
+  }
+
   @Delete(':idBrand')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete a brand',
   })
-  async delete(@Res() res: Response, @Param('idBrand') idBrand: number) {
-    const wasDeleted = await this.brandService.remove(idBrand);
-    if (wasDeleted) {
-      return res
-        .status(HttpStatus.OK)
-        .json({ message: `Brand ${idBrand} deleted` });
-    } else {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        message: `Brand ${idBrand} not deleted`,
-      });
-    }
+  async delete(
+    @Res() res: Response,
+    @Param('idBrand', ParseIntPipe) idBrand: number,
+  ) {
+    await this.brandService.remove(idBrand);
+    return res.status(HttpStatus.BAD_REQUEST).json({
+      message: `Brand ${idBrand} deleted`,
+    });
   }
 }

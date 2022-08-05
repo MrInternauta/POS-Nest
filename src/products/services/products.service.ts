@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -41,13 +45,31 @@ export class ProductsService {
       id: idProduct,
     });
     if (!product) {
-      throw new NotFoundException('Not found product');
+      throw new NotFoundException(`Product ${idProduct} not found`);
     } else {
       return product;
     }
   }
 
+  findOnebyName(name: string) {
+    return this.productRepo.find({
+      where: { name },
+      take: 1,
+      withDeleted: true,
+    });
+  }
+
+  async validateUniqueName(name: string) {
+    const items = await this.findOnebyName(name);
+    if (items && items.length > 0) {
+      throw new BadRequestException(
+        `Product with name '${name}' already exists`,
+      );
+    }
+  }
+
   public async create(payload: CreateProductDto) {
+    await this.validateUniqueName(payload.name);
     const product = this.productRepo.create(payload);
     if (payload.brandId) {
       const brand = await this.brandService.findOne(payload.brandId);
@@ -62,9 +84,10 @@ export class ProductsService {
   }
 
   public async update(id: number, payload: UpdateProductDto) {
+    await this.validateUniqueName(payload.name);
     const product = await this.productRepo.findOneBy({ id });
     if (!product) {
-      throw new NotFoundException('Not found product');
+      throw new NotFoundException(`Product ${id} not found`);
     }
     if (payload.brandId) {
       const brand = await this.brandService.findOne(payload.brandId);
@@ -79,11 +102,11 @@ export class ProductsService {
   }
 
   public async remove(id: number) {
-    const product = await this.productRepo.findOneBy({ id });
-    if (!product) {
-      throw new NotFoundException('Not found product');
-    } else {
-      return this.productRepo.softDelete({ id });
-    }
+    await this.findOne(id);
+    return this.productRepo.softDelete({ id });
+  }
+
+  public async restore(id: number) {
+    return this.productRepo.restore({ id });
   }
 }
