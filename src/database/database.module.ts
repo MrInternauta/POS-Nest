@@ -19,7 +19,7 @@ import { DataSource } from 'typeorm';
           username: configService.postgres.user,
           password: configService.postgres.password,
           database: configService.postgres.database,
-          synchronize: false,
+          synchronize: true,
           autoLoadEntities: true,
         };
       },
