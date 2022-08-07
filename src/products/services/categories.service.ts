@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
 import { Category } from '../entities/category.entity';
 
@@ -27,6 +27,10 @@ export class CategoriesService {
       throw new NotFoundException(`Category ${id} not found`);
     }
     return category;
+  }
+
+  findByIds(categoryIds: number[]) {
+    return this.categoryRepo.findBy({ id: In(categoryIds) });
   }
 
   findOnebyName(name: string) {
@@ -55,9 +59,6 @@ export class CategoriesService {
   async update(id: number, changes: UpdateCategoryDto) {
     await this.validateUniqueName(changes.name);
     const category = await this.findOne(id);
-    if (!category) {
-      throw new NotFoundException(`Category ${id} not found`);
-    }
     this.categoryRepo.merge(category, changes);
     return this.categoryRepo.save(category);
   }

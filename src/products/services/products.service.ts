@@ -23,26 +23,18 @@ export class ProductsService {
   ) {}
 
   public findAll(page = 1, limit = 10) {
-    return this.productRepo.find();
-  }
-
-  findByCategory(idCategory: number) {
     return this.productRepo.find({
-      where: { category: { id: idCategory } },
-      relations: ['category', 'brand'],
+      loadRelationIds: { relations: ['categories', 'brand'] },
     });
   }
 
   findByBrand(idBrand: number) {
-    return this.productRepo.find({
-      where: { brand: { id: idBrand } },
-      relations: ['category', 'brand'],
-    });
+    return this.brandService.findOne(idBrand);
   }
 
   public async findOne(idProduct: number) {
     const product = await this.productRepo.findOne({
-      relations: ['category', 'brand'],
+      relations: ['categories', 'brand'],
       where: { id: idProduct },
     });
     if (!product) {
@@ -73,29 +65,30 @@ export class ProductsService {
     await this.validateUniqueName(payload.name);
     const product = this.productRepo.create(payload);
     if (payload.brandId) {
-      const brand = await this.brandService.findOne(payload.brandId);
+      const brand = await this.brandService.findOne(payload.brandId, false);
       product.brand = brand;
     }
-    if (payload.categtoryId) {
-      const category = await this.categoryService.findOne(payload.categtoryId);
-      product.category = category;
+    if (payload.categtoryIds) {
+      const categories = await this.categoryService.findByIds(
+        payload.categtoryIds,
+      );
+      product.categories = categories;
     }
     return this.productRepo.save(product);
   }
 
   public async update(id: number, payload: UpdateProductDto) {
     await this.validateUniqueName(payload.name);
-    const product = await this.productRepo.findOneBy({ id });
-    if (!product) {
-      throw new NotFoundException(`Product ${id} not found`);
-    }
+    const product = await this.findOne(id);
     if (payload.brandId) {
-      const brand = await this.brandService.findOne(payload.brandId);
+      const brand = await this.brandService.findOne(payload.brandId, false);
       product.brand = brand;
     }
-    if (payload.categtoryId) {
-      const category = await this.categoryService.findOne(payload.categtoryId);
-      product.category = category;
+    if (payload.categtoryIds) {
+      const categories = await this.categoryService.findByIds(
+        payload.categtoryIds,
+      );
+      product.categories = categories;
     }
     this.productRepo.merge(product, payload);
     return this.productRepo.save(product);

@@ -64,17 +64,6 @@ export class CategoriesController {
     };
   }
 
-  @Get(':categoryId/products')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Get products by catregoryId',
-  })
-  getProductsByCategoryId(
-    @Param('categoryId', ParseIntPipe) categoryId: number,
-  ) {
-    return this.productsServices.findByCategory(categoryId);
-  }
-
   @Put(':idCategory')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
