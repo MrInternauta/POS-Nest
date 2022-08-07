@@ -4,7 +4,7 @@ import {
   Column,
   Entity,
   ManyToOne,
-  JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
@@ -39,9 +39,9 @@ export class Product extends BasicEntity {
   // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
   brand: Brand;
 
-  @ManyToOne(() => Category, (category) => category.products, {
-    nullable: true,
+  @ManyToMany(() => Category, (category) => category.products, {
+    nullable: false,
   })
   // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
-  category: Category;
+  categories: Category[];
 }
