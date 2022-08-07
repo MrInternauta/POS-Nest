@@ -88,6 +88,25 @@ export class ProductsController {
       product: await this.productsService.create(product),
     };
   }
+  @Put(':productId/category/:categoryId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Delete a category from product',
+  })
+  async addCategory(
+    @Res() res: Response,
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
+    const product = await this.productsService.addCategory(
+      productId,
+      categoryId,
+    );
+    res.status(HttpStatus.OK).json({
+      message: `Category ${categoryId} Added`,
+      product,
+    });
+  }
 
   @Put(':productId')
   @HttpCode(HttpStatus.OK)
@@ -130,6 +149,25 @@ export class ProductsController {
         .status(HttpStatus.BAD_REQUEST)
         .json({ message: `Product ${idProduct} not restored` });
     }
+  }
+  @Delete(':productId/category/:categoryId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Delete a category from product',
+  })
+  async deleteCategory(
+    @Res() res: Response,
+    @Param('productId', ParseIntPipe) productId: number,
+    @Param('categoryId', ParseIntPipe) categoryId: number,
+  ) {
+    const product = await this.productsService.removeCategory(
+      productId,
+      categoryId,
+    );
+    res.status(HttpStatus.OK).json({
+      message: `Category ${categoryId} deleted`,
+      product,
+    });
   }
 
   //Use ParseIntPipe to parse the param to int (in the traspilation to JS)

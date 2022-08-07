@@ -18,9 +18,9 @@ export class CategoriesService {
     return this.categoryRepo.find();
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, withProducts = true) {
     const category = await this.categoryRepo.findOne({
-      relations: ['products'],
+      relations: withProducts ? ['products'] : [],
       where: { id },
     });
     if (!category) {

@@ -68,9 +68,9 @@ export class ProductsService {
       const brand = await this.brandService.findOne(payload.brandId, false);
       product.brand = brand;
     }
-    if (payload.categtoryIds) {
+    if (payload.categoryIds) {
       const categories = await this.categoryService.findByIds(
-        payload.categtoryIds,
+        payload.categoryIds,
       );
       product.categories = categories;
     }
@@ -84,13 +84,28 @@ export class ProductsService {
       const brand = await this.brandService.findOne(payload.brandId, false);
       product.brand = brand;
     }
-    if (payload.categtoryIds) {
+    if (payload.categoryIds) {
       const categories = await this.categoryService.findByIds(
-        payload.categtoryIds,
+        payload.categoryIds,
       );
       product.categories = categories;
     }
     this.productRepo.merge(product, payload);
+    return this.productRepo.save(product);
+  }
+
+  async removeCategory(productId, categoryId) {
+    const product = await this.findOne(productId);
+    product.categories = product.categories.filter(
+      (category) => category.id !== categoryId,
+    );
+    return this.productRepo.save(product);
+  }
+
+  async addCategory(productId, categoryId) {
+    const product = await this.findOne(productId);
+    const category = await this.categoryService.findOne(categoryId, false);
+    product.categories.push(category);
     return this.productRepo.save(product);
   }
 

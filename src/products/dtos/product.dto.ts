@@ -36,7 +36,7 @@ export class CreateProductDto {
   @IsNotEmpty()
   @IsArray()
   @ApiProperty()
-  readonly categtoryIds: number[];
+  readonly categoryIds: number[];
 
   @IsNotEmpty()
   @IsPositive()
