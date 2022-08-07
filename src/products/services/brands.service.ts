@@ -17,10 +17,10 @@ export class BrandsService {
     return this.brandsRepo.find();
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, withProducts = true) {
     const product = await this.brandsRepo.findOne({
       where: { id },
-      relations: ['products'],
+      relations: withProducts ? ['products'] : [],
     });
     if (!product) {
       throw new NotFoundException(`Brand ${id} not found`);
@@ -52,9 +52,6 @@ export class BrandsService {
   async update(id: number, changes: UpdateBrandDto) {
     await this.validateUniqueName(changes.name);
     const brand = await this.findOne(id);
-    if (!brand) {
-      throw new NotFoundException(`Brand ${id} not found`);
-    }
     this.brandsRepo.merge(brand, changes);
     return this.brandsRepo.save(brand);
   }
