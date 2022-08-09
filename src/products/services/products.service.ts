@@ -32,9 +32,9 @@ export class ProductsService {
     return this.brandService.findOne(idBrand);
   }
 
-  public async findOne(idProduct: number) {
+  public async findOne(idProduct: number, whithRelations = true) {
     const product = await this.productRepo.findOne({
-      relations: ['categories', 'brand'],
+      relations: whithRelations ? ['categories', 'brand'] : [],
       where: { id: idProduct },
     });
     if (!product) {
@@ -91,6 +91,24 @@ export class ProductsService {
       product.categories = categories;
     }
     this.productRepo.merge(product, payload);
+    return this.productRepo.save(product);
+  }
+
+  async withStock(productId: number, quantity: number) {
+    const product = await this.findOne(productId);
+    if (product.stock < quantity)
+      throw new BadRequestException(`Product ${product.name} without stock`);
+    return product;
+  }
+
+  async quitStock(productId: number, quantity: number) {
+    const product = await this.findOne(productId);
+    product.stock = product.stock - quantity;
+    return this.productRepo.save(product);
+  }
+  async addStock(productId: number, quantity: number) {
+    const product = await this.findOne(productId);
+    product.stock = product.stock + quantity;
     return this.productRepo.save(product);
   }
 
