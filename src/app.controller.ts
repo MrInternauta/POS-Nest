@@ -1,8 +1,10 @@
 import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AppService } from './app.service';
 
 @Controller()
+@ApiTags('app')
 export class AppController {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   constructor(private appService: AppService) {}
