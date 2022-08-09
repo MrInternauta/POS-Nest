@@ -37,8 +37,10 @@ export class OrderItemService {
       createOrderItem.productId,
       createOrderItem.quantity,
     );
+    //quit categories/brand
 
     const order = await this.orderService.findOne(orderId, false);
+    //Quit customer
 
     const newOrderItem = this.orderItemRepo.create({
       product,

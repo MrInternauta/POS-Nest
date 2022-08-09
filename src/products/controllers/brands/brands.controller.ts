@@ -56,7 +56,7 @@ export class BrandsController {
   async create(@Body() brand: CreateBrandDto) {
     return {
       message: 'Brand created',
-      product: await this.brandService.create(brand),
+      brand: await this.brandService.create(brand),
     };
   }
 

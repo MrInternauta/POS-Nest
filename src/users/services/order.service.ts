@@ -27,14 +27,14 @@ export class OrderService {
 
   findAll(page = 1, limit = 10) {
     return this.orderRepo.find({
-      loadRelationIds: { relations: ['orderItem'] },
+      loadRelationIds: { relations: ['items'] },
       relations: ['customer'],
     });
   }
 
   async findOne(orderId: number, withRelations = true) {
     const order = await this.orderRepo.findOne({
-      relations: withRelations ? ['orderItem'] : [],
+      relations: withRelations ? ['items'] : [],
       where: { id: orderId },
     });
     if (!order) {
