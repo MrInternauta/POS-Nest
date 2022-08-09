@@ -43,8 +43,8 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query('page') page,
-    @Query('limit') limit,
+    @Query('page', ParseIntPipe) page: number,
+    @Query('limit', ParseIntPipe) limit: number,
     // @Query('offset') offset = 10,
   ) {
     return { products: await this.productsService.findAll(page, limit) };
