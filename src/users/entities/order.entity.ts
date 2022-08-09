@@ -1,12 +1,5 @@
 import { BasicEntity } from '../../common/interfaces/basic.entity';
-import {
-  Entity,
-  ManyToMany,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Product } from './../../products/entities/product.entity';
+import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Customer } from './customer.entity';
 import { OrderItem } from './order-item.entity';
 

@@ -8,6 +8,9 @@ import { User } from './entities/user.entity';
 import { Customer } from './entities/customer.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Order } from './entities/order.entity';
+import { OrderService } from './services/order.service';
+import { OrdersController } from './controllers/orders.controller';
+import { OrderItemService } from './services/order-item.service';
 
 @Module({
   imports: [
@@ -17,11 +20,13 @@ import { Order } from './entities/order.entity';
   providers: [
     UsersService,
     CustomersService,
+    OrderService,
+    OrderItemService,
     // {
     // 	provide: ProducsService, // Nombre con el que haremos referencia a ella
     // 	useClass: ProducsService // Nombre de la clase que se usara
     // }
   ], // Aqui por ejemplo],
-  controllers: [UsersController],
+  controllers: [UsersController, OrdersController],
 })
 export class UsersModule {}
