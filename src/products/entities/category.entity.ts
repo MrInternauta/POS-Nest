@@ -5,6 +5,7 @@ import {
   ManyToMany,
   PrimaryGeneratedColumn,
   JoinTable,
+  Index,
 } from 'typeorm';
 import { Product } from './product.entity';
 
@@ -13,6 +14,7 @@ export class Category extends BasicEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({ type: 'varchar', length: 255, unique: true })
   name: string;
 

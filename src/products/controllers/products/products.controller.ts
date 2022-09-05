@@ -13,13 +13,10 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ParseIntPipe } from '../../../common/parse-int.pipe';
-import {
-  CreateProductDto,
-  UpdateProductDto,
-  FilterProductsDto,
-} from '../../dtos/product.dto';
+import { CreateProductDto, UpdateProductDto } from '../../dtos/product.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../../services/products.service';
+import { FilterDto } from '../../../common/interfaces/filter.dto';
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
@@ -47,7 +44,7 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query() params: FilterProductsDto,
+    @Query() params: FilterDto,
     // @Query('offset') offset = 10,
   ) {
     return { products: await this.productsService.findAll(params) };
