@@ -1,8 +1,18 @@
-import { Product } from './../../products/entities/product.entity';
-import { User } from './user.entity';
+import { BasicEntity } from '../../common/interfaces/basic.entity';
+import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Customer } from './customer.entity';
+import { OrderItem } from './order-item.entity';
 
-export class Order {
-  date: Date;
-  user: User;
-  products: Product[];
+@Entity()
+export class Order extends BasicEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => Customer, (customer) => customer.orders)
+  // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
+  customer: Customer;
+
+  //Si es necesaria la relacion bi direccional
+  @OneToMany(() => OrderItem, (item) => item.order)
+  items: OrderItem[];
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
@@ -17,9 +21,12 @@ export class CustomersService {
   }
 
   async findOne(id: number) {
+    if (!id) {
+      throw new BadRequestException(`Customer ${id} not found`);
+    }
     const customer = await this.customerRepo.findOneBy({ id });
     if (!customer) {
-      throw new NotFoundException(`Customer #${id} not found`);
+      throw new NotFoundException(`Customer ${id} not found`);
     }
     return customer;
   }
@@ -32,7 +39,7 @@ export class CustomersService {
   async update(id: number, changes: UpdateCustomerDto) {
     const customer = await this.findOne(id);
     if (!customer) {
-      throw new NotFoundException(`Customer #${id} not found`);
+      throw new NotFoundException(`Customer ${id} not found`);
     }
     this.customerRepo.merge(customer, changes);
     return this.customerRepo.save(customer);
@@ -42,7 +49,7 @@ export class CustomersService {
     const customer = await this.customerRepo.findOneBy({ id });
 
     if (!customer) {
-      throw new NotFoundException(`Customer #${id} not found`);
+      throw new NotFoundException(`Customer ${id} not found`);
     }
     return this.customerRepo.softDelete({ id });
   }
