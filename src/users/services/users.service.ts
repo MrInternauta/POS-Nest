@@ -102,7 +102,7 @@ export class UsersService {
     return {
       date: new Date(),
       user,
-      products: await this.productsService.findAll(1, 10),
+      products: await this.productsService.findAll(),
     };
   }
 }

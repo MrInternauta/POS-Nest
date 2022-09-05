@@ -13,7 +13,11 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ParseIntPipe } from '../../../common/parse-int.pipe';
-import { CreateProductDto, UpdateProductDto } from '../../dtos/product.dto';
+import {
+  CreateProductDto,
+  UpdateProductDto,
+  FilterProductsDto,
+} from '../../dtos/product.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../../services/products.service';
 @ApiTags('products')
@@ -43,11 +47,10 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query('page') page,
-    @Query('limit') limit,
+    @Query() params: FilterProductsDto,
     // @Query('offset') offset = 10,
   ) {
-    return { products: await this.productsService.findAll(page, limit) };
+    return { products: await this.productsService.findAll(params) };
   }
 
   //First router with static path

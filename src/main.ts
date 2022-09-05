@@ -9,6 +9,9 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true, //Remove not declared fields
       forbidNonWhitelisted: true, //Send a error with not declared fields
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   ); //Activate pipe validator
 
