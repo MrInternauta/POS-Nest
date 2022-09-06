@@ -19,6 +19,14 @@ export class Category extends BasicEntity {
   name: string;
 
   @ManyToMany(() => Product, (product) => product.categories)
-  @JoinTable() //Este decorador solo debe ir en un lado de la migración
+  @JoinTable({
+    name: 'products_categories',
+    joinColumn: {
+      name: 'category_id',
+    },
+    inverseJoinColumn: {
+      name: 'product_id',
+    }, //naming relation n to n
+  }) //Este decorador solo debe ir en un lado de la migración
   products: Product[];
 }

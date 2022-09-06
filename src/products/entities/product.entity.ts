@@ -6,11 +6,14 @@ import {
   ManyToOne,
   ManyToMany,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 /* eslint-disable prettier/prettier */
-@Entity()
+@Entity({
+  name: 'products',
+}) //naming table
 @Index(['price', 'stock'])
 export class Product extends BasicEntity {
   @PrimaryGeneratedColumn()
@@ -40,6 +43,9 @@ export class Product extends BasicEntity {
 
   @ManyToOne(() => Brand, (brand) => brand.products, { nullable: true })
   // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
+  @JoinColumn({
+    name: 'brand_id',
+  }) //naming  n to 1
   brand: Brand;
 
   @ManyToMany(() => Category, (category) => category.products, {
