@@ -2,6 +2,7 @@ import { BasicEntity } from '../../common/interfaces/basic.entity';
 import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Customer } from './customer.entity';
 import { OrderItem } from './order-item.entity';
+import { Expose } from 'class-transformer';
 
 @Entity()
 export class Order extends BasicEntity {
@@ -15,4 +16,31 @@ export class Order extends BasicEntity {
   //Si es necesaria la relacion bi direccional
   @OneToMany(() => OrderItem, (item) => item.order)
   items: OrderItem[];
+
+  @Expose()
+  get products() {
+    if (this.items) {
+      return this.items
+        .filter((item) => !!item)
+        .map((item) => ({
+          ...item.product,
+          itemId: item.id,
+          quantity: item.quantity,
+        }));
+    }
+    return [];
+  }
+
+  @Expose()
+  get total() {
+    if (this.items) {
+      return this.items
+        .filter((item) => !!item)
+        .reduce((total, item) => {
+          const totalItem = item.product.price * item.quantity;
+          return total + totalItem;
+        }, 0);
+    }
+    return 0;
+  }
 }

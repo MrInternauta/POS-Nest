@@ -4,8 +4,10 @@ import {
   DeleteDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 export class BasicEntity {
+  @Exclude()
   @CreateDateColumn({
     type: 'timestamptz',
     name: 'created_at',
@@ -13,6 +15,7 @@ export class BasicEntity {
   })
   createAt: Date;
 
+  @Exclude()
   @UpdateDateColumn({
     type: 'timestamptz',
     name: 'updated_at',
@@ -21,6 +24,7 @@ export class BasicEntity {
   @Column({ nullable: true })
   updateAt: Date;
 
+  @Exclude()
   @DeleteDateColumn()
   deletedAt?: Date;
 }
