@@ -13,7 +13,7 @@ import {
 import { Product } from '../entities/product.entity';
 import { BrandsService } from './brands.service';
 import { CategoriesService } from './categories.service';
-import { FilterDto } from '../../common/interfaces/filter.dto';
+import { ProductsFilterDto } from '../dtos/productFilter.dto';
 
 @Injectable()
 export class ProductsService {
@@ -23,7 +23,7 @@ export class ProductsService {
     private brandService: BrandsService,
   ) {}
 
-  public findAll(params?: FilterDto) {
+  public findAll(params?: ProductsFilterDto) {
     if (!params)
       return this.productRepo.find({
         loadRelationIds: { relations: ['categories', 'brand'] },

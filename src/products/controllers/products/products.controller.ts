@@ -16,7 +16,7 @@ import { ParseIntPipe } from '../../../common/parse-int.pipe';
 import { CreateProductDto, UpdateProductDto } from '../../dtos/product.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from '../../services/products.service';
-import { FilterDto } from '../../../common/interfaces/filter.dto';
+import { ProductsFilterDto } from '../../dtos/productFilter.dto';
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
@@ -44,7 +44,7 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query() params: FilterDto,
+    @Query() params: ProductsFilterDto,
     // @Query('offset') offset = 10,
   ) {
     return { products: await this.productsService.findAll(params) };
