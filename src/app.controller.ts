@@ -3,14 +3,15 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Res,
+  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Response } from 'express';
 import { AppService } from './app.service';
 import { ApiKeyGuard } from './auth/guards/api-key.guard';
+import { Is_Public } from './auth/guards/decorators/public.decorator';
 
+@UseGuards(ApiKeyGuard)
 @Controller()
 @ApiTags('app')
 export class AppController {
@@ -18,14 +19,14 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Get()
-  @UseGuards(ApiKeyGuard)
+  @Is_Public() //@SetMetadata('isPublic', true)
   @HttpCode(HttpStatus.NOT_FOUND)
   getHello() {
     //Don't use @Res() res: Response with Guard
     return { message: 'Not found!' };
   }
   @Get('Hola')
-  @UseGuards(ApiKeyGuard)
+  @Is_Public() //@SetMetadata('isPublic', true)
   @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
   async getDBHola() {
     return { value: await this.appService.getValue() };
@@ -33,7 +34,6 @@ export class AppController {
 
   @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('new')
-  @UseGuards(ApiKeyGuard)
   newEndpoint() {
     return { message: 'new world!' };
   }
