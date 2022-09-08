@@ -1,7 +1,15 @@
-import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { AppService } from './app.service';
+import { ApiKeyGuard } from './auth/guards/api-key.guard';
 
 @Controller()
 @ApiTags('app')
@@ -10,37 +18,41 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Get()
-  @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
-  getHello(@Res() res: Response) {
-    return res.json({ message: 'Not found!' });
+  @UseGuards(ApiKeyGuard)
+  @HttpCode(HttpStatus.NOT_FOUND)
+  getHello() {
+    //Don't use @Res() res: Response with Guard
+    return { message: 'Not found!' };
   }
   @Get('Hola')
+  @UseGuards(ApiKeyGuard)
   @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
-  async getDBHola(@Res() res: Response) {
-    return res.json({ value: await this.appService.getValue() });
+  async getDBHola() {
+    return { value: await this.appService.getValue() };
   }
 
   @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('new')
-  newEndpoint(@Res() res: Response) {
-    return res.json({ message: 'new world!' });
+  @UseGuards(ApiKeyGuard)
+  newEndpoint() {
+    return { message: 'new world!' };
   }
 
   @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('api_key')
-  apiKey(@Res() res: Response) {
-    return res.json({ api_key: this.appService.getHello() });
+  apiKey() {
+    return { api_key: this.appService.getHello() };
   }
 
   @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('tasks')
-  async tasks(@Res() res: Response) {
-    return res.json({ tasks: await this.appService.getTasks() });
+  async tasks() {
+    return { tasks: await this.appService.getTasks() };
   }
 
   @HttpCode(HttpStatus.ACCEPTED)
   @Get('other')
-  otherEnpoint(@Res() res: Response) {
-    return res.json({ message: 'other world!' });
+  otherEnpoint() {
+    return { message: 'other world!' };
   }
 }

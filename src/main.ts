@@ -14,7 +14,9 @@ async function bootstrap() {
       },
     }),
   ); //Activate pipe validator
+
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
   const config = new DocumentBuilder()
     .setTitle('My example')
     .setDescription('The store API description')
