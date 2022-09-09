@@ -25,10 +25,11 @@ export class ApiKeyGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
-    const request = context.switchToHttp().getRequest<Request>();
-    const authHeader = request.header('auth') || '';
 
-    if (authHeader !== this.configService.api_key) {
+    if (
+      context.switchToHttp().getRequest<Request>().header('auth') ||
+      '' !== this.configService.api_key
+    ) {
       throw new UnauthorizedException('User Unathorized');
     }
     return true;

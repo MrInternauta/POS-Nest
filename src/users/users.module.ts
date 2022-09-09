@@ -18,6 +18,7 @@ import { CustomerController } from './controllers/customers.controller';
     ProductsModule,
     TypeOrmModule.forFeature([User, Customer, Order, OrderItem]),
   ],
+  exports: [UsersService],
   providers: [
     UsersService,
     CustomersService,

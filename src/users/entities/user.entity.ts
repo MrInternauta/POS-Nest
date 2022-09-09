@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Customer } from './customer.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User extends BasicEntity {
@@ -17,6 +18,7 @@ export class User extends BasicEntity {
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
+  @Exclude()
   password: string; //encripted
 
   @Column({ type: 'varchar', length: 100 })

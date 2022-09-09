@@ -8,7 +8,7 @@ import { ProductsService } from '../../products/services/products.service';
 // import { Client } from 'pg';
 import { CreateUserDto } from '../dtos/user.dto';
 import { CustomersService } from './customers.service';
-import e from 'express';
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UsersService {
   constructor(
@@ -68,8 +68,22 @@ export class UsersService {
     }
   }
 
+  async findByEmail(email: string) {
+    const user = await this.userRepo.findOneBy({
+      email,
+    });
+    if (!user) {
+      throw new NotFoundException('User Not found');
+    } else {
+      return user;
+    }
+  }
+
   async create(entity: CreateUserDto) {
     const user = this.userRepo.create(entity);
+    const HASHED_PASS = await bcrypt.hash(user.password, 10);
+    user.password = HASHED_PASS;
+
     if (entity.customerId) {
       const customer = await this.customerService.findOne(entity.customerId);
       user.customer = customer;
