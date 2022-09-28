@@ -1,0 +1,30 @@
+{
+  "importSorter.sortConfiguration.customOrderingRules.rules": [
+    {
+      "type": "importMember",
+      "regex": "^$",
+      "orderLevel": 10,
+      "disableSort": true
+    },
+    {
+      "regex": "^@angular",
+      "orderLevel": 20
+    },
+    {
+      "regex": "^(\\.|@advanced-front)",
+      "orderLevel": 50
+    },
+    {
+      "regex": "^.",
+      "orderLevel": 30
+    }
+  ],
+  "editor.formatOnSave": true,
+  "importSorter.sortConfiguration.removeUnusedImports": true,
+  "importSorter.generalConfiguration.sortOnBeforeSave": true,
+  "importSorter.importStringConfiguration.tabSize": 2,
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 120,
+  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.type": "newLineEachExpressionAfterCountLimitExceptIfOnlyOne",
+  "importSorter.importStringConfiguration.quoteMark": "single",
+  "importStringConfiguration.trailingComma": "multiLine"
+}

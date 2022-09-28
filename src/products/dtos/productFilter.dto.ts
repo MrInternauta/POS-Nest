@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsPositive, ValidateIf } from 'class-validator';
+
 import { FilterDto } from '../../common/interfaces/filter.dto';
 
 export class ProductsFilterDto extends FilterDto {

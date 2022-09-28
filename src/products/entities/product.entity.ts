@@ -1,15 +1,9 @@
 import { BasicEntity } from 'src/common/interfaces/basic.entity';
-import {
-  PrimaryGeneratedColumn,
-  Column,
-  Entity,
-  ManyToOne,
-  ManyToMany,
-  Index,
-  JoinColumn,
-} from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
+
 /* eslint-disable prettier/prettier */
 @Entity({
   name: 'products',

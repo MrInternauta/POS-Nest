@@ -1,8 +1,9 @@
-import { BasicEntity } from '../../common/interfaces/basic.entity';
+import { Expose } from 'class-transformer';
 import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
+import { BasicEntity } from '../../common/interfaces/basic.entity';
 import { Customer } from './customer.entity';
 import { OrderItem } from './order-item.entity';
-import { Expose } from 'class-transformer';
 
 @Entity()
 export class Order extends BasicEntity {

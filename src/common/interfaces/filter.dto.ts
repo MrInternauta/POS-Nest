@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsPositive, Min, ValidateIf } from 'class-validator';
+import { IsOptional, IsPositive, Min } from 'class-validator';
 
 export class FilterDto {
   @IsOptional()

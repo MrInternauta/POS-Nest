@@ -1,17 +1,18 @@
 import { Module } from '@nestjs/common';
-import { UsersService } from './services/users.service';
-import { UsersController } from './controllers/users.controller';
-import { CustomersService } from './services/customers.service';
-import { ProductsModule } from '../products/products.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+
+import { ProductsModule } from '../products/products.module';
+import { CustomerController } from './controllers/customers.controller';
+import { OrdersController } from './controllers/orders.controller';
+import { UsersController } from './controllers/users.controller';
 import { Customer } from './entities/customer.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Order } from './entities/order.entity';
-import { OrderService } from './services/order.service';
-import { OrdersController } from './controllers/orders.controller';
+import { User } from './entities/user.entity';
+import { CustomersService } from './services/customers.service';
 import { OrderItemService } from './services/order-item.service';
-import { CustomerController } from './controllers/customers.controller';
+import { OrderService } from './services/order.service';
+import { UsersService } from './services/users.service';
 
 @Module({
   imports: [

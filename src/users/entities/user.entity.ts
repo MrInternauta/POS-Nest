@@ -1,13 +1,8 @@
-import { BasicEntity } from '../../common/interfaces/basic.entity';
-import {
-  Column,
-  Entity,
-  PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
-import { Customer } from './customer.entity';
 import { Exclude } from 'class-transformer';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+
+import { BasicEntity } from '../../common/interfaces/basic.entity';
+import { Customer } from './customer.entity';
 
 @Entity()
 export class User extends BasicEntity {

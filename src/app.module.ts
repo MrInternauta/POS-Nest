@@ -1,14 +1,15 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import * as Joi from 'joi';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { config } from './config';
+import enviroments from './config/enviroments';
+import { DatabaseModule } from './database/database.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
-import { DatabaseModule } from './database/database.module';
-import { ConfigModule } from '@nestjs/config';
-import enviroments from './config/enviroments';
-import { config } from './config';
-import * as Joi from 'joi';
 
 @Module({
   controllers: [AppController],

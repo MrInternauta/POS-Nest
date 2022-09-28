@@ -1,5 +1,5 @@
-import { IsString, IsNotEmpty, IsPhoneNumber } from 'class-validator';
-import { PartialType, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { IsNotEmpty, IsPhoneNumber, IsString } from 'class-validator';
 
 export class CreateCustomerDto {
   @IsString()

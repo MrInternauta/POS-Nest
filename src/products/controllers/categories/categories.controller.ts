@@ -1,22 +1,10 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ParseIntPipe } from '../../../common/parse-int.pipe';
-import { CategoriesService } from '../../services/categories.service';
 import { CreateCategoryDto, UpdateCategoryDto } from '../../dtos/category.dto';
+import { CategoriesService } from '../../services/categories.service';
 import { ProductsService } from '../../services/products.service';
 
 @Controller('categories')

@@ -1,10 +1,11 @@
-import { Module, Global } from '@nestjs/common';
-import { config } from '../config';
+import { Global, Module } from '@nestjs/common';
 // const API_KEY = '12345634';
 // const API_KEY_PROD = 'PROD1212121SA';
 import { ConfigType } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+
+import { config } from '../config';
+
 // import { Client } from 'pg';
 @Global()
 @Module({

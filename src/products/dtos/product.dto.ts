@@ -1,14 +1,5 @@
-import {
-  IsString,
-  IsNumber,
-  IsUrl,
-  IsNotEmpty,
-  IsPositive,
-  IsArray,
-  IsOptional,
-  Min,
-} from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl } from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty({ message: `The name field can't be empty` })

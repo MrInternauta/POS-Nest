@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { BasicEntity } from '../../common/interfaces/basic.entity';
-import { Order } from './order.entity';
 import { Product } from '../../products/entities/product.entity';
+import { Order } from './order.entity';
 
 @Entity()
 export class OrderItem extends BasicEntity {

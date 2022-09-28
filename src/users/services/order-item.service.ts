@@ -1,14 +1,10 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OrderItem } from '../entities/order-item.entity';
 import { Repository } from 'typeorm';
-import { CreateOrderItemDto, UpdateOrderItemDto } from '../dtos/order-item.dto';
+
 import { ProductsService } from '../../products/services/products.service';
+import { CreateOrderItemDto, UpdateOrderItemDto } from '../dtos/order-item.dto';
+import { OrderItem } from '../entities/order-item.entity';
 import { OrderService } from './order.service';
 
 @Injectable()

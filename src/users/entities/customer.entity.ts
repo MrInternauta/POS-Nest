@@ -1,13 +1,8 @@
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+
 import { BasicEntity } from '../../common/interfaces/basic.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { User } from './user.entity';
 import { Order } from './order.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Customer extends BasicEntity {

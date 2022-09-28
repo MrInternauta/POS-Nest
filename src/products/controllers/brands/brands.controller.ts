@@ -14,9 +14,10 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+
 import { CreateBrandDto, UpdateBrandDto } from '../../dtos/brand.dto';
-import { ProductsService } from '../../services/products.service';
 import { BrandsService } from '../../services/brands.service';
+import { ProductsService } from '../../services/products.service';
 
 @Controller('brands')
 @ApiTags('Brands')

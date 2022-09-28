@@ -1,12 +1,6 @@
-import {
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  SetMetadata,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, SetMetadata, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+
 import { AppService } from './app.service';
 import { ApiKeyGuard } from './auth/guards/api-key.guard';
 import { Is_Public } from './auth/guards/decorators/public.decorator';

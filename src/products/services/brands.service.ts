@@ -1,12 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateBrandDto, UpdateBrandDto } from '../dtos/brand.dto';
 
+import { CreateBrandDto, UpdateBrandDto } from '../dtos/brand.dto';
 import { Brand } from '../entities/brand.entity';
 
 @Injectable()
