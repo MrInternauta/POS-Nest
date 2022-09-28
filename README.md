@@ -106,3 +106,8 @@ docker run -p 3000:3000 --env-file=.env mrinternauta/neststore_test:001
 NOTE: Run migrations before run project
 
 gulp --command="migrations:show"
+
+docker build -t mrinternauta/node_app:prod  -f dockerfile.prod .
+docker build -t mrinternauta/node_app:dev  -f dockerfile.dev .
+
+docker run -d -p 3000:3000  mrinternauta/node_app:dev  
