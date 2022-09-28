@@ -19,15 +19,15 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Get()
-  @Is_Public() //@SetMetadata('isPublic', true)
-  @HttpCode(HttpStatus.NOT_FOUND)
+  @SetMetadata('isPublic', true)
+  @HttpCode(HttpStatus.OK)
   getHello() {
     //Don't use @Res() res: Response with Guard
     return { message: 'Not found!' };
   }
   @Get('Hola')
   @Is_Public() //@SetMetadata('isPublic', true)
-  @HttpCode(HttpStatus.NOT_FOUND) // 👈 Using decorator
+  @HttpCode(HttpStatus.OK) // 👈 Using decorator
   async getDBHola() {
     return { value: await this.appService.getValue() };
   }
