@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
@@ -18,7 +18,7 @@ export class UsersService {
     private productsService: ProductsService,
 
     private customerService: CustomersService,
-    @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(User) private userRepo: Repository<User>
   ) {}
 
   nativeRequest() {
@@ -69,11 +69,11 @@ export class UsersService {
     }
   }
 
-  async findByEmail(email: string) {
+  async findByEmail(email: string, throwError: boolean = true): Promise<User> | null {
     const user = await this.userRepo.findOneBy({
       email,
     });
-    if (!user) {
+    if (!user && throwError) {
       throw new NotFoundException('User Not found');
     } else {
       return user;
@@ -81,6 +81,9 @@ export class UsersService {
   }
 
   async create(entity: CreateUserDto) {
+    //TODO: Validate unique key
+    if ((await this.findByEmail(entity.email, false)) != null) throw new BadRequestException('Email in use');
+
     const user = this.userRepo.create(entity);
     const HASHED_PASS = await bcrypt.hash(user.password, 10);
     user.password = HASHED_PASS;

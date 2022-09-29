@@ -9,7 +9,7 @@ export class User extends BasicEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 
   @Column({ type: 'varchar', length: 255 })
@@ -20,7 +20,7 @@ export class User extends BasicEntity {
   role: string;
   //optional relation | Bidirectional relation (ref)
   //Join column (only one table, this table contains the foreign key)
-  @OneToOne(() => Customer, (costumer) => costumer.user, { nullable: true })
+  @OneToOne(() => Customer, costumer => costumer.user, { nullable: true })
   @JoinColumn({
     name: 'customer_id',
   }) //naming relation 1 to 1
