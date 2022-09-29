@@ -120,3 +120,4 @@ build/
 mysql_data
 postgres_data
 sqlserver_data
+package-lock.json
