@@ -5,6 +5,7 @@ import * as Joi from 'joi';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { config } from './config';
 import enviroments from './config/enviroments';
 import { DatabaseModule } from './database/database.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     ProductsModule,
     UsersModule,
+    AuthModule,
     HttpModule,
   ],
   providers: [
