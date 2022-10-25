@@ -15,10 +15,14 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
+import { Is_PublicD } from '../../../auth/decorators/public.decorator';
+import { RoleD } from '../../../auth/decorators/roles.decorator';
+import { Role } from '../../../auth/models/roles.model';
 import { CreateBrandDto, UpdateBrandDto } from '../../dtos/brand.dto';
 import { BrandsService } from '../../services/brands.service';
 import { ProductsService } from '../../services/products.service';
 
+@RoleD(Role.ADMIN)
 @Controller('brands')
 @ApiTags('Brands')
 export class BrandsController {
@@ -27,6 +31,7 @@ export class BrandsController {
     private productsServices: ProductsService,
   ) {}
 
+  @Is_PublicD()
   @Get()
   async getBrands(
     @Res() res: Response,
@@ -38,6 +43,7 @@ export class BrandsController {
     });
   }
 
+  @Is_PublicD()
   @Get(':brandId')
   @ApiOperation({
     summary: 'Get product by Id',
@@ -61,6 +67,7 @@ export class BrandsController {
     };
   }
 
+  @Is_PublicD()
   @Get(':brandId/products')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

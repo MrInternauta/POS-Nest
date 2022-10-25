@@ -16,13 +16,18 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
+import { Is_PublicD } from '../../auth/decorators/public.decorator';
+import { RoleD } from '../../auth/decorators/roles.decorator';
+import { Role } from '../../auth/models/roles.model';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
 @Controller('users')
 @ApiTags('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
+
+  @RoleD(Role.ADMIN)
   @ApiOperation({
     summary: 'A static path',
     description:
@@ -34,6 +39,7 @@ export class UsersController {
     return res.json({ value: await this.usersService.nativeRequest() });
   }
 
+  @RoleD(Role.ADMIN)
   @Get()
   @ApiOperation({
     summary: 'User list',
@@ -57,6 +63,7 @@ export class UsersController {
     return { users: await this.usersService.findAll(page, limit) };
   }
 
+  @Is_PublicD()
   @Get(':userId')
   @ApiOperation({
     summary: 'Get user by Id',
@@ -67,6 +74,7 @@ export class UsersController {
     });
   }
 
+  @Is_PublicD()
   @Post()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -81,6 +89,7 @@ export class UsersController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
+  @RoleD(Role.ADMIN, Role.CLIENT)
   @ApiOperation({
     summary: 'Update an user',
   })
@@ -99,6 +108,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete an user',
@@ -111,6 +121,7 @@ export class UsersController {
   }
 
   @Get(':id/getOrder')
+  @RoleD(Role.ADMIN, Role.CLIENT)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Get order',

@@ -29,5 +29,8 @@ export const configObj = {
     port: parseInt(process.env.SQLSERVER_PORT, 10),
     host: process.env.SQLSERVER_HOST,
   },
+  jwt_secret: process.env.JWT_SECRET,
+  jwt_expires_in: process.env.JWT_EXPIRES_IN,
+
 };
 export const config = registerAs('config', () => configObj);

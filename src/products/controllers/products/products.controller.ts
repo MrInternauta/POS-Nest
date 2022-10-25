@@ -1,12 +1,30 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
+import { RoleD } from 'src/auth/decorators/roles.decorator';
 
+import { Is_PublicD } from '../../../auth/decorators/public.decorator';
+import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { Role } from '../../../auth/models/roles.model';
 import { ParseIntPipe } from '../../../common/parse-int.pipe';
 import { CreateProductDto, UpdateProductDto } from '../../dtos/product.dto';
 import { ProductsFilterDto } from '../../dtos/productFilter.dto';
 import { ProductsService } from '../../services/products.service';
 
+@UseGuards(JwtAuthGuard)
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {
@@ -14,6 +32,7 @@ export class ProductsController {
 
   //Getting obj query Params: @Query() params: any and params.limit
   @Get()
+  @Is_PublicD()
   @ApiOperation({
     summary: 'Products list',
     description: 'Get all products',
@@ -42,6 +61,7 @@ export class ProductsController {
 
   //First router with static path
   @Get('filter')
+  @Is_PublicD()
   @ApiOperation({
     summary: 'A static path',
     description:
@@ -54,6 +74,7 @@ export class ProductsController {
 
   //Getting obj params: Can use  Param() params: any and params.productId
   @Get(':productId')
+  @Is_PublicD()
   @ApiOperation({
     summary: 'Get product by Id',
   })
@@ -69,6 +90,8 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
+
+  @RoleD(Role.ADMIN)
   @ApiOperation({
     summary: 'Create a product',
   })
@@ -78,6 +101,8 @@ export class ProductsController {
       product: await this.productsService.create(product),
     };
   }
+
+  @RoleD(Role.ADMIN)
   @Put(':productId/category/:categoryId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -98,6 +123,7 @@ export class ProductsController {
     });
   }
 
+  @RoleD(Role.ADMIN)
   @Put(':productId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -120,6 +146,8 @@ export class ProductsController {
       });
     }
   }
+
+  @RoleD(Role.ADMIN)
   @Put(':idProduct/restore')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -140,6 +168,8 @@ export class ProductsController {
         .json({ message: `Product ${idProduct} not restored` });
     }
   }
+
+  @RoleD(Role.ADMIN)
   @Delete(':productId/category/:categoryId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -162,6 +192,7 @@ export class ProductsController {
 
   //Use ParseIntPipe to parse the param to int (in the traspilation to JS)
   @Delete(':productId')
+  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete a product',

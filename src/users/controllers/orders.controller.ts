@@ -13,10 +13,13 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { RoleD } from '../../auth/decorators/roles.decorator';
+import { Role } from '../../auth/models/roles.model';
 import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderService } from '../services/order.service';
 
+@RoleD(Role.ADMIN, Role.CLIENT)
 @Controller('orders')
 @ApiTags('orders')
 export class OrdersController {

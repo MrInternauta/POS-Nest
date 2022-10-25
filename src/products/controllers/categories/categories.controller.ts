@@ -2,6 +2,9 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
+import { Is_PublicD } from '../../../auth/decorators/public.decorator';
+import { RoleD } from '../../../auth/decorators/roles.decorator';
+import { Role } from '../../../auth/models/roles.model';
 import { ParseIntPipe } from '../../../common/parse-int.pipe';
 import { CreateCategoryDto, UpdateCategoryDto } from '../../dtos/category.dto';
 import { CategoriesService } from '../../services/categories.service';
@@ -15,6 +18,7 @@ export class CategoriesController {
     private productsServices: ProductsService,
   ) {}
 
+  @Is_PublicD()
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -29,6 +33,7 @@ export class CategoriesController {
   }
 
   //Getting obj params: Can use  Param() params: any and params.productId
+  @Is_PublicD()
   @Get(':categoryId')
   @ApiOperation({
     summary: 'Get category by Id',
@@ -44,6 +49,7 @@ export class CategoriesController {
   }
 
   @Post()
+  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   async create(@Body() category: CreateCategoryDto) {
     return {
@@ -53,6 +59,7 @@ export class CategoriesController {
   }
 
   @Put(':idCategory')
+  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Update a category',
@@ -77,6 +84,7 @@ export class CategoriesController {
     }
   }
 
+  @RoleD(Role.ADMIN)
   @Put(':idCategory/restore')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -98,6 +106,7 @@ export class CategoriesController {
     }
   }
 
+  @RoleD(Role.ADMIN)
   @Delete(':idCategory')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

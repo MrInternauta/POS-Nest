@@ -2,8 +2,8 @@ import { Controller, Get, HttpCode, HttpStatus, SetMetadata, UseGuards } from '@
 import { ApiTags } from '@nestjs/swagger';
 
 import { AppService } from './app.service';
+import { Is_PublicD } from './auth/decorators/public.decorator';
 import { ApiKeyGuard } from './auth/guards/api-key.guard';
-import { Is_Public } from './auth/guards/decorators/public.decorator';
 
 @UseGuards(ApiKeyGuard)
 @Controller()
@@ -20,7 +20,7 @@ export class AppController {
     return { message: 'Not found!' };
   }
   @Get('Hola')
-  @Is_Public() //@SetMetadata('isPublic', true)
+  @Is_PublicD() //@SetMetadata('isPublic', true)
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
   async getDBHola() {
     return { value: await this.appService.getValue() };
