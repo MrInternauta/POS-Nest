@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import { Role } from '../../auth/models/roles.model';
 import { BasicEntity } from '../../common/interfaces/basic.entity';
 import { Customer } from './customer.entity';
 
@@ -16,7 +17,7 @@ export class User extends BasicEntity {
   @Exclude()
   password: string; //encripted
 
-  @Column({ type: 'varchar', length: 100, default: 'CLIENT' })
+  @Column({ type: 'varchar', length: 100, default: Role.CLIENT })
   role: string;
   //optional relation | Bidirectional relation (ref)
   //Join column (only one table, this table contains the foreign key)

@@ -5,12 +5,14 @@ import { Repository } from 'typeorm';
 import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { Order } from '../entities/order.entity';
+import { User } from '../entities/user.entity';
 import { CustomersService } from './customers.service';
 import { OrderItemService } from './order-item.service';
 
 @Injectable()
 export class OrderService {
   constructor(
+    @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
 
     //Evite cicular dependency
@@ -21,12 +23,23 @@ export class OrderService {
     private orderItemService: OrderItemService,
   ) {}
 
-  findAll(page = 1, limit = 10) {
+  findAll(page = 1, limit = 10, customerId?: number) {
     return this.orderRepo.find({
       loadRelationIds: { relations: ['items'] },
       relations: ['customer'],
+      where: customerId ? {
+        customer: {
+          id: customerId,
+          }
+      } : {}
     });
   }
+
+  async ordersByUserId(userId: number, page = 1, limit = 10) {
+    const customerId = (await this.userRepo.findOne({where: {id: userId}, relations: ["customer"]})).customer.id;
+    return this.findAll(page, limit, customerId);
+  }
+
 
   async findOne(orderId: number, withRelations = true) {
     const order = await this.orderRepo.findOne({

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
-import { ProductsService } from '../../products/services/products.service';
 // import { Client } from 'pg';
 import { CreateUserDto } from '../dtos/user.dto';
 // import { ConfigService } from '@nestjs/config';
@@ -15,7 +14,6 @@ export class UsersService {
   constructor(
     // private configService: ConfigService,
     // @Inject('DB_CONNECTION') private dbClient: Client,
-    private productsService: ProductsService,
 
     private customerService: CustomersService,
     @InjectRepository(User) private userRepo: Repository<User>
@@ -115,12 +113,4 @@ export class UsersService {
     }
   }
 
-  async getOrderByUserId(id: number) {
-    const user = await this.findOne(id);
-    return {
-      date: new Date(),
-      user,
-      products: await this.productsService.findAll(),
-    };
-  }
 }

@@ -13,6 +13,7 @@ import { CustomersService } from './services/customers.service';
 import { OrderItemService } from './services/order-item.service';
 import { OrderService } from './services/order.service';
 import { UsersService } from './services/users.service';
+import { ProfileController } from './controllers/profile.controller';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { UsersService } from './services/users.service';
     // 	useClass: ProducsService // Nombre de la clase que se usara
     // }
   ], // Aqui por ejemplo],
-  controllers: [UsersController, OrdersController, CustomerController],
+  controllers: [UsersController, OrdersController, CustomerController, ProfileController],
 })
 export class UsersModule {}
