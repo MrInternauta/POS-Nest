@@ -19,7 +19,7 @@ import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderService } from '../services/order.service';
 
-@RoleD(Role.ADMIN, Role.CLIENT)
+@RoleD(Role.ADMIN, Role.CUSTOMER)
 @Controller('orders')
 @ApiTags('orders')
 export class OrdersController {

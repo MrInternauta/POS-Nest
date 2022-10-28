@@ -1,11 +1,12 @@
-import { Controller, Get, HttpCode, HttpStatus, SetMetadata, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, SetMetadata } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { AppService } from './app.service';
 import { Is_PublicD } from './auth/decorators/public.decorator';
-import { ApiKeyGuard } from './auth/guards/api-key.guard';
+import { RoleD } from './auth/decorators/roles.decorator';
+import { Role } from './auth/models/roles.model';
 
-@UseGuards(ApiKeyGuard)
+@RoleD(Role.ADMIN, Role.CUSTOMER)
 @Controller()
 @ApiTags('app')
 export class AppController {

@@ -14,7 +14,7 @@ export class ProfileController {
 
   constructor(private orderService: OrderService) {}
 
-  @RoleD(Role.CLIENT)
+  @RoleD(Role.CUSTOMER)
   @Get('my-orders')
   getOrders(@Req() req: Request) {
     const user = req.user as PayloadToken;

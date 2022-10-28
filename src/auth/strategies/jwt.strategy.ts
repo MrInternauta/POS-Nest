@@ -17,7 +17,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, JWT_STRATEGY) {
       ignoreExpiration: false,
       secretOrKey: configService.jwt_secret
     });
-
   }
 
   async validate(paylod: PayloadToken) {

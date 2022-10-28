@@ -89,7 +89,7 @@ export class UsersController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @RoleD(Role.ADMIN, Role.CLIENT)
+  @RoleD(Role.ADMIN, Role.CUSTOMER)
   @ApiOperation({
     summary: 'Update an user',
   })
@@ -117,18 +117,6 @@ export class UsersController {
     await this.usersService.delete(+id);
     return {
       message: `User ${id} deleted`,
-    };
-  }
-
-  @Get(':id/getOrder')
-  @RoleD(Role.ADMIN, Role.CLIENT)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Get order',
-  })
-  async getOrder(@Param('id', ParseIntPipe) id: number) {
-    return {
-      order: await this.usersService.getOrderByUserId(id),
     };
   }
 }

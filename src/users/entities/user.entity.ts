@@ -17,7 +17,7 @@ export class User extends BasicEntity {
   @Exclude()
   password: string; //encripted
 
-  @Column({ type: 'varchar', length: 100, default: Role.CLIENT })
+  @Column({ type: 'varchar', length: 100, default: Role.CUSTOMER })
   role: string;
   //optional relation | Bidirectional relation (ref)
   //Join column (only one table, this table contains the foreign key)
