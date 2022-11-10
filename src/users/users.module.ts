@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsModule } from '../products/products.module';
 import { CustomerController } from './controllers/customers.controller';
 import { OrdersController } from './controllers/orders.controller';
+import { ProfileController } from './controllers/profile.controller';
 import { UsersController } from './controllers/users.controller';
 import { Customer } from './entities/customer.entity';
 import { OrderItem } from './entities/order-item.entity';
@@ -13,7 +14,6 @@ import { CustomersService } from './services/customers.service';
 import { OrderItemService } from './services/order-item.service';
 import { OrderService } from './services/order.service';
 import { UsersService } from './services/users.service';
-import { ProfileController } from './controllers/profile.controller';
 
 @Module({
   imports: [

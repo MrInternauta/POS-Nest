@@ -1,13 +1,17 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Is_PublicD } from '../../auth/decorators/public.decorator';
 import { RoleD } from '../../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Role } from '../../auth/models/roles.model';
 import { CreateCustomerDto, UpdateCustomerDto } from '../dtos/customer.dto';
 import { CustomersService } from '../services/customers.service';
 
 @Controller('customers')
 @ApiTags('customers')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomerController {
   constructor(private customersService: CustomersService) { }
 
@@ -23,7 +27,7 @@ export class CustomerController {
     return this.customersService.findOne(id);
   }
 
-  @RoleD(Role.ADMIN, Role.CUSTOMER)
+  @Is_PublicD() //@SetMetadata('isPublic', true)
   @Post()
   create(@Body() payload: CreateCustomerDto) {
     return this.customersService.create(payload);

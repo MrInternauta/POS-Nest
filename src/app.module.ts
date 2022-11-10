@@ -15,6 +15,7 @@ import { UsersModule } from './users/users.module';
 @Module({
   controllers: [AppController],
   imports: [
+    AuthModule,
     ConfigModule.forRoot({
       envFilePath: process?.env?.NODE_ENV
         ? enviroments[process?.env?.NODE_ENV]
@@ -36,7 +37,6 @@ import { UsersModule } from './users/users.module';
     DatabaseModule,
     ProductsModule,
     UsersModule,
-    AuthModule,
     HttpModule,
   ],
   providers: [

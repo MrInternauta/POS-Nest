@@ -23,6 +23,10 @@ export class AuthService {
     return user;
   }
 
+  validateToken(token: string) {
+    return this.jwtService.verify(token);
+  }
+
   generateToken(user: User) {
     const payload: PayloadToken = { role: user.role, sub: user.id }
     return {

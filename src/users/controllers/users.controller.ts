@@ -12,26 +12,29 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { Is_PublicD } from '../../auth/decorators/public.decorator';
 import { RoleD } from '../../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Role } from '../../auth/models/roles.model';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
 @Controller('users')
 @ApiTags('users')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   @RoleD(Role.ADMIN)
   @ApiOperation({
     summary: 'A static path',
-    description:
-      'First router with static path.\nEvite hit with parameter path :id',
+    description: 'First router with static path.\nEvite hit with parameter path :id',
   })
   @Get('Hola')
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
@@ -93,10 +96,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Update an user',
   })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateUserDto,
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() payload: UpdateUserDto) {
     const wasUpdated = await this.usersService.update(id, payload);
     if (!wasUpdated) {
       throw new BadRequestException('User not updated');

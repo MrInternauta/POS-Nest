@@ -18,13 +18,14 @@ import { RoleD } from 'src/auth/decorators/roles.decorator';
 
 import { Is_PublicD } from '../../../auth/decorators/public.decorator';
 import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/guards/roles.guard';
 import { Role } from '../../../auth/models/roles.model';
 import { ParseIntPipe } from '../../../common/parse-int.pipe';
 import { CreateProductDto, UpdateProductDto } from '../../dtos/product.dto';
 import { ProductsFilterDto } from '../../dtos/productFilter.dto';
 import { ProductsService } from '../../services/products.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('products')
 @Controller('products')
 export class ProductsController {

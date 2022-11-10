@@ -10,15 +10,19 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleD } from '../../auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Role } from '../../auth/models/roles.model';
 import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderService } from '../services/order.service';
 
+@UseGuards(JwtAuthGuard, RolesGuard)
 @RoleD(Role.ADMIN, Role.CUSTOMER)
 @Controller('orders')
 @ApiTags('orders')

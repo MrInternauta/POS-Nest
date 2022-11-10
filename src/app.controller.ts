@@ -1,12 +1,15 @@
-import { Controller, Get, HttpCode, HttpStatus, SetMetadata } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, SetMetadata, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { AppService } from './app.service';
 import { Is_PublicD } from './auth/decorators/public.decorator';
 import { RoleD } from './auth/decorators/roles.decorator';
+import { ApiKeyGuard } from './auth/guards/api-key.guard';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 import { Role } from './auth/models/roles.model';
 
-@RoleD(Role.ADMIN, Role.CUSTOMER)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller()
 @ApiTags('app')
 export class AppController {
@@ -39,12 +42,14 @@ export class AppController {
     return { api_key: this.appService.getHello() };
   }
 
+  @UseGuards(ApiKeyGuard)
   @HttpCode(HttpStatus.ACCEPTED) // 👈 Using decorator
   @Get('tasks')
   async tasks() {
     return { tasks: await this.appService.getTasks() };
   }
 
+  @RoleD(Role.ADMIN, Role.CUSTOMER)
   @HttpCode(HttpStatus.ACCEPTED)
   @Get('other')
   otherEnpoint() {

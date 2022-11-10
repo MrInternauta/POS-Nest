@@ -15,6 +15,8 @@ export class RolesGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const roles_allowed: Role[] = this.reflectorService.get<Role[]>(ROLES_KEY, context.getHandler());
+    console.log('roles_allowed', roles_allowed);
+
     //Allow because doesnt have a role config
     if (!roles_allowed) {
       return true;
