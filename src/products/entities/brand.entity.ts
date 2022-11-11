@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { BasicEntity } from '../../common/interfaces/basic.entity';
+import { BasicEntity } from '../../core/interfaces/basic.entity';
 import { Product } from './product.entity';
 
 @Entity()

@@ -15,15 +15,15 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
-import { Is_PublicD } from '../../../auth/decorators/public.decorator';
-import { RoleD } from '../../../auth/decorators/roles.decorator';
-import { JwtAuthGuard } from '../../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../../auth/guards/roles.guard';
-import { Role } from '../../../auth/models/roles.model';
-import { ParseIntPipe } from '../../../common/parse-int.pipe';
-import { CreateCategoryDto, UpdateCategoryDto } from '../../dtos/category.dto';
-import { CategoriesService } from '../../services/categories.service';
-import { ProductsService } from '../../services/products.service';
+import { Is_PublicD } from '../../core/auth/decorators/public.decorator';
+import { RoleD } from '../../core/auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../core/auth/guards/roles.guard';
+import { Role } from '../../core/auth/models/roles.model';
+import { ParseIntPipe } from '../../core/pipes/parse-int.pipe';
+import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
+import { CategoriesService } from '../services/categories.service';
+import { ProductsService } from '../services/products.service';
 
 @Controller('categories')
 @UseGuards(JwtAuthGuard, RolesGuard)

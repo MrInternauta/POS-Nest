@@ -3,12 +3,12 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
 import { config } from './config';
-import enviroments from './config/enviroments';
-import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './core/auth/auth.module';
+import enviroments from './core/config/enviroments';
+import { DatabaseModule } from './core/database/database.module';
+import { AppController } from './home/app.controller';
+import { AppService } from './home/app.service';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 

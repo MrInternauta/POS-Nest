@@ -11,7 +11,7 @@
       "orderLevel": 20
     },
     {
-      "regex": "^(\\.|@advanced-front)",
+      "regex": "^(\\.|@nestore)",
       "orderLevel": 50
     },
     {

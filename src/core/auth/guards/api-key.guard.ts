@@ -1,12 +1,12 @@
 import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
-import { ForbiddenException } from '@nestjs/common/exceptions';
+import { UnauthorizedException } from '@nestjs/common/exceptions';
 import { ConfigType } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 
-import { IS_PUBLIC_KEY } from '../../common/constants/constants';
-import { config } from '../../config';
+import { config } from '../../../config';
+import { IS_PUBLIC_KEY } from '../../../core/constants/constants';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
@@ -18,7 +18,7 @@ export class ApiKeyGuard implements CanActivate {
     }
 
     if (context.switchToHttp().getRequest<Request>().header('auth') || '' !== this.configService.api_key) {
-      throw new ForbiddenException('User Unathorized');
+      throw new UnauthorizedException('User Without a API KEY');
     }
     return true;
   }

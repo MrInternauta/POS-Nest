@@ -4,7 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../../users/entities/user.entity';
 import { LOCAL_STRATEGY } from '../constants/auth';
 import { AuthService } from '../services/auth.service';
 

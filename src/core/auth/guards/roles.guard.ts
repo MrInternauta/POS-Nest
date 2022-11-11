@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
 
-import { ROLES_KEY } from '../../common/constants/constants';
+import { ROLES_KEY } from '../../../core/constants/constants';
 import { Role } from '../models/roles.model';
 import { PayloadToken } from '../models/token.model';
 

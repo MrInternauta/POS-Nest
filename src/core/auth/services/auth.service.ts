@@ -3,8 +3,8 @@ import { ForbiddenException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { User } from '../../users/entities/user.entity';
-import { UsersService } from '../../users/services/users.service';
+import { User } from '../../../users/entities/user.entity';
+import { UsersService } from '../../../users/services/users.service';
 import { PayloadToken } from '../models/token.model';
 
 @Injectable()

@@ -1,3 +1,3 @@
 export * from './constants';
 export * from './interfaces';
-export * from './parse-int.pipe';
+export * from './pipes/parse-int.pipe';

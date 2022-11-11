@@ -1,11 +1,11 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 
-import { RoleD } from '../../auth/decorators/roles.decorator';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { Role } from '../../auth/models/roles.model';
-import { PayloadToken } from '../../auth/models/token.model';
+import { RoleD } from '../../core/auth/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../core/auth/guards/roles.guard';
+import { Role } from '../../core/auth/models/roles.model';
+import { PayloadToken } from '../../core/auth/models/token.model';
 import { OrderService } from '../services/order.service';
 
 @Controller('profile')

@@ -1,8 +1,8 @@
 import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-import { Role } from '../../auth/models/roles.model';
-import { BasicEntity } from '../../common/interfaces/basic.entity';
+import { Role } from '../../core/auth/models/roles.model';
+import { BasicEntity } from '../../core/interfaces/basic.entity';
 import { Customer } from './customer.entity';
 
 @Entity()

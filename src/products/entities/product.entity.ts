@@ -1,6 +1,6 @@
-import { BasicEntity } from 'src/common/interfaces/basic.entity';
 import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+import { BasicEntity } from '../../core/interfaces/basic.entity';
 import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 
