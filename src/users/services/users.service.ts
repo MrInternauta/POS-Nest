@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
+import { Role } from '../../core/auth/models/roles.model';
+import { CreateCustomerDto } from '../dtos/customer.dto';
 // import { Client } from 'pg';
 import { CreateUserDto } from '../dtos/user.dto';
 // import { ConfigService } from '@nestjs/config';
@@ -82,7 +84,7 @@ export class UsersService {
     //TODO: Validate unique key
     if ((await this.findByEmail(entity.email, false)) != null) throw new BadRequestException('Email in use');
 
-    const user = this.userRepo.create(entity);
+    const user = this.userRepo.create({ ...entity, role: Role.ADMIN });
     const HASHED_PASS = await bcrypt.hash(user.password, 10);
     user.password = HASHED_PASS;
 
@@ -93,6 +95,31 @@ export class UsersService {
     this.userRepo.save(user);
     return user;
   }
+
+  async createClient(entity: CreateUserDto & CreateCustomerDto) {
+    //TODO: Validate unique key
+    if ((await this.findByEmail(entity.email, false)) != null) throw new BadRequestException('Email in use');
+
+    try {
+      let customer: CreateCustomerDto = {
+        name: entity.name,
+        lastName: '',
+        phone: ''
+      }
+      let newCustomer = await this.customerService.create(customer);
+      const user = this.userRepo.create(entity);
+      const HASHED_PASS = await bcrypt.hash(user.password, 10);
+      user.password = HASHED_PASS;
+      if (newCustomer) {
+        user.customer = newCustomer;
+      }
+      let newUser = await this.userRepo.save(user);
+      return newUser;
+    } catch (error) {
+      throw new  InternalServerErrorException('')
+    }
+  }
+
 
   async update(id: number, payload: any) {
     const user = await this.findOne(id);

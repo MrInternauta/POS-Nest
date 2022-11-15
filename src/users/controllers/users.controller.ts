@@ -22,6 +22,7 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
+import { CreateCustomerDto } from '../dtos/customer.dto';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
@@ -42,7 +43,7 @@ export class UsersController {
     return res.json({ value: await this.usersService.nativeRequest() });
   }
 
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.ADMIN, Role.CUSTOMER)
   @Get()
   @ApiOperation({
     summary: 'User list',
@@ -77,18 +78,34 @@ export class UsersController {
     });
   }
 
-  @Is_PublicD()
-  @Post()
+  @RoleD(Role.ADMIN)
+  @Post('admin')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Create an user',
+    summary: 'Create just a user',
   })
-  async create(@Body() payload: CreateUserDto) {
+  async createUser(@Body() payload: CreateUserDto) {
     return {
       message: 'User created',
       user: await this.usersService.create(payload),
     };
   }
+
+
+  @Is_PublicD()
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create an client',
+  })
+  async create(@Body() payload: CreateUserDto & CreateCustomerDto) {
+    return {
+      message: 'User created',
+      user: await this.usersService.createClient(payload),
+    };
+  }
+
+
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
