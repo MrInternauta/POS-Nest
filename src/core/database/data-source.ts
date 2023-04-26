@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 
-import { configObj } from 'src/config';
+import { configObj } from '@project/config';
 import { DataSource } from 'typeorm';
 
 const type = 'postgres';

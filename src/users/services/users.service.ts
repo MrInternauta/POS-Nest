@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
@@ -69,7 +70,7 @@ export class UsersService {
     }
   }
 
-  async findByEmail(email: string, throwError: boolean = true): Promise<User> | null {
+  async findByEmail(email: string, throwError = true): Promise<User> | null {
     const user = await this.userRepo.findOneBy({
       email,
     });
@@ -101,25 +102,24 @@ export class UsersService {
     if ((await this.findByEmail(entity.email, false)) != null) throw new BadRequestException('Email in use');
 
     try {
-      let customer: CreateCustomerDto = {
+      const customer: CreateCustomerDto = {
         name: entity.name,
         lastName: '',
-        phone: ''
-      }
-      let newCustomer = await this.customerService.create(customer);
+        phone: '',
+      };
+      const newCustomer = await this.customerService.create(customer);
       const user = this.userRepo.create(entity);
       const HASHED_PASS = await bcrypt.hash(user.password, 10);
       user.password = HASHED_PASS;
       if (newCustomer) {
         user.customer = newCustomer;
       }
-      let newUser = await this.userRepo.save(user);
+      const newUser = await this.userRepo.save(user);
       return newUser;
     } catch (error) {
-      throw new  InternalServerErrorException('')
+      throw new InternalServerErrorException('');
     }
   }
-
 
   async update(id: number, payload: any) {
     const user = await this.findOne(id);
@@ -139,5 +139,4 @@ export class UsersService {
       return this.userRepo.softDelete({ id });
     }
   }
-
 }

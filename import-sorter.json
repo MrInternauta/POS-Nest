@@ -7,7 +7,7 @@
       "disableSort": true
     },
     {
-      "regex": "^@angular",
+      "regex": "^@nestjs",
       "orderLevel": 20
     },
     {

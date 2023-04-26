@@ -31,6 +31,5 @@ export const configObj = {
   },
   jwt_secret: process.env.JWT_SECRET,
   jwt_expires_in: process.env.JWT_EXPIRES_IN,
-
 };
 export const config = registerAs('config', () => configObj);

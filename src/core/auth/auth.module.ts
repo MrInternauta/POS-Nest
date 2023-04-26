@@ -12,16 +12,19 @@ import { LocalStrategy } from './strategies/local.strategy';
 
 @Global()
 @Module({
-  imports: [UsersModule, PassportModule, JwtModule.registerAsync({
-    inject:[config.KEY],
-    useFactory: (configService: ConfigType<typeof config>) =>  ({
+  imports: [
+    UsersModule,
+    PassportModule,
+    JwtModule.registerAsync({
+      inject: [config.KEY],
+      useFactory: (configService: ConfigType<typeof config>) => ({
         secret: configService.jwt_secret,
         signOptions: {
-          expiresIn:  '24h',
-      },
-      })
-
-  })],
+          expiresIn: '24h',
+        },
+      }),
+    }),
+  ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   exports: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],

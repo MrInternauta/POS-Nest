@@ -24,5 +24,28 @@
     "downlevelIteration": true,
     "moduleResolution": "node",
     "importHelpers": true,
+    "paths": {
+      "@project/core": [
+        "src/core"
+      ],
+      "@project/auth": [
+        "src/core/auth"
+      ],
+      "@project/home": [
+        "src/home/*"
+      ],
+      "@project/products": [
+        "src/products/*"
+      ],
+      "@project/users": [
+        "src/users/*"
+      ],
+      "@project/config": [
+        "src/config.ts"
+      ],
+      "@project/*": [
+        "src/app/*"
+      ],
+    },
   }
 }

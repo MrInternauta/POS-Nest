@@ -32,10 +32,7 @@ export class OrdersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Order List' })
-  async findAll(
-    @Query('page', ParseIntPipe) page: number,
-    @Query('limit', ParseIntPipe) limit: number,
-  ) {
+  async findAll(@Query('page', ParseIntPipe) page: number, @Query('limit', ParseIntPipe) limit: number) {
     return { orders: await this.orderService.findAll(page, limit) };
   }
 
@@ -63,10 +60,7 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Update a order',
   })
-  async update(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body() order: UpdateOrderDto,
-  ) {
+  async update(@Param('orderId', ParseIntPipe) orderId: number, @Body() order: UpdateOrderDto) {
     return {
       message: 'Order updated',
       order: await this.orderService.update(orderId, order),
@@ -78,10 +72,7 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Add a item',
   })
-  async addItem(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Body() order: CreateOrderItemDto,
-  ) {
+  async addItem(@Param('orderId', ParseIntPipe) orderId: number, @Body() order: CreateOrderItemDto) {
     return {
       message: 'Item added',
       item: await this.orderService.addItem(orderId, order),
@@ -93,10 +84,7 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Delete item in order',
   })
-  async deleteItem(
-    @Param('orderId', ParseIntPipe) orderId: number,
-    @Param('itemId', ParseIntPipe) itemId: number,
-  ) {
+  async deleteItem(@Param('orderId', ParseIntPipe) orderId: number, @Param('itemId', ParseIntPipe) itemId: number) {
     const order = await this.orderService.removeItem(orderId, itemId);
     return {
       message: 'Item deleted',
@@ -112,10 +100,7 @@ export class OrdersController {
   async delete(@Param('orderId', ParseIntPipe) orderId: number) {
     const result = await this.orderService.remove(orderId);
     return {
-      message:
-        result.affected && result.affected > 0
-          ? 'Order deleted'
-          : 'Order not deleted',
+      message: result.affected && result.affected > 0 ? 'Order deleted' : 'Order not deleted',
       order: result,
     };
   }

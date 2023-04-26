@@ -1,6 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+
 import * as Joi from 'joi';
 
 import { config } from './config';
@@ -9,6 +10,7 @@ import enviroments from './core/config/enviroments';
 import { DatabaseModule } from './core/database/database.module';
 import { AppController } from './home/app.controller';
 import { AppService } from './home/app.service';
+import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 
@@ -17,9 +19,7 @@ import { UsersModule } from './users/users.module';
   imports: [
     AuthModule,
     ConfigModule.forRoot({
-      envFilePath: process?.env?.NODE_ENV
-        ? enviroments[process?.env?.NODE_ENV]
-        : enviroments.dev,
+      envFilePath: process?.env?.NODE_ENV ? enviroments[process?.env?.NODE_ENV] : enviroments.dev,
       load: [config],
       isGlobal: true,
       validationSchema: Joi.object({
@@ -30,14 +30,14 @@ import { UsersModule } from './users/users.module';
         POSTGRES_PORT: Joi.number().required(),
         POSTGRES_HOST: Joi.string().required(), //hostname()
         JWT_SECRET: Joi.string().required(),
-        JWT_EXPIRES_IN: Joi.string().required()
-
+        JWT_EXPIRES_IN: Joi.string().required(),
       }),
     }),
     DatabaseModule,
     ProductsModule,
     UsersModule,
     HttpModule,
+    OrdersModule,
   ],
   providers: [
     AppService,

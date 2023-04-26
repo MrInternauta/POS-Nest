@@ -17,6 +17,6 @@ export class OrderItem extends BasicEntity {
   product: Product;
 
   //Si es necesaria la relacion bi direccional
-  @ManyToOne(() => Order, (order) => order.items)
+  @ManyToOne(() => Order, order => order.items)
   order: Order;
 }

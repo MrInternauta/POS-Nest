@@ -13,7 +13,7 @@ import { CustomersService } from '../services/customers.service';
 @ApiTags('customers')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CustomerController {
-  constructor(private customersService: CustomersService) { }
+  constructor(private customersService: CustomersService) {}
 
   @RoleD(Role.ADMIN)
   @Get()
@@ -35,10 +35,7 @@ export class CustomerController {
 
   @RoleD(Role.ADMIN, Role.CUSTOMER)
   @Put(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateCustomerDto,
-  ) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() payload: UpdateCustomerDto) {
     return this.customersService.update(id, payload);
   }
 

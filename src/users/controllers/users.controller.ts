@@ -15,6 +15,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
 import { Response } from 'express';
 
 import { Is_PublicD } from '../../core/auth/decorators/public.decorator';
@@ -91,7 +92,6 @@ export class UsersController {
     };
   }
 
-
   @Is_PublicD()
   @Post()
   @HttpCode(HttpStatus.OK)
@@ -104,8 +104,6 @@ export class UsersController {
       user: await this.usersService.createClient(payload),
     };
   }
-
-
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)

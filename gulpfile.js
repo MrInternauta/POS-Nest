@@ -2,7 +2,7 @@
 
 const gulp = require('gulp');
 const dotenv = require('dotenv');
-const enviroments = require('./src/config/enviroments_gulp');
+const enviroments = require('./src/core/config/enviroments_gulp');
 const { spawn } = require('node:child_process');
 const argv = require('yargs').argv;
 const os = require('os');
@@ -23,7 +23,7 @@ gulp.task('setEnv', function (callback) {
   proceso.stdout.on('data', function (data) {
     console.log(data.toString());
   });
-  proceso.stderr.on('data', (err) => {
+  proceso.stderr.on('data', err => {
     console.error(err.toString());
     callback(err);
   });

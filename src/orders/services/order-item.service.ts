@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Repository } from 'typeorm';
 
 import { ProductsService } from '../../products/services/products.service';
@@ -13,7 +14,7 @@ export class OrderItemService {
     @InjectRepository(OrderItem) private orderItemRepo: Repository<OrderItem>,
     @Inject(forwardRef(() => OrderService))
     private orderService: OrderService,
-    private productService: ProductsService,
+    private productService: ProductsService
   ) {}
 
   async findOne(orderItemId: number) {
@@ -29,10 +30,7 @@ export class OrderItemService {
   }
 
   async create(orderId: number, createOrderItem: CreateOrderItemDto) {
-    const product = await this.productService.withStock(
-      createOrderItem.productId,
-      createOrderItem.quantity,
-    );
+    const product = await this.productService.withStock(createOrderItem.productId, createOrderItem.quantity);
     //quit categories/brand
 
     const order = await this.orderService.findOne(orderId, false);
@@ -44,10 +42,7 @@ export class OrderItemService {
       order,
     });
 
-    this.productService.quitStock(
-      createOrderItem.productId,
-      createOrderItem.quantity,
-    );
+    this.productService.quitStock(createOrderItem.productId, createOrderItem.quantity);
     return this.orderItemRepo.save(newOrderItem);
   }
 
@@ -56,10 +51,7 @@ export class OrderItemService {
     await this.remove(id);
     this.productService.addStock(orderItem.product.id, orderItem.quantity);
     try {
-      return await this.create(
-        orderItem.order.id,
-        updateOrderItemDto as CreateOrderItemDto,
-      );
+      return await this.create(orderItem.order.id, updateOrderItemDto as CreateOrderItemDto);
     } catch (error) {
       this.orderItemRepo.restore({ id });
       throw error;
