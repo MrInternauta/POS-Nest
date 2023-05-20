@@ -7,4 +7,5 @@ export class CreateOrderDto {
   @ApiProperty({ description: 'customerId' })
   readonly customerId: number;
 }
+
 export class UpdateOrderDto extends PartialType(CreateOrderDto) {}

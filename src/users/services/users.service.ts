@@ -14,35 +14,7 @@ import { CustomersService } from './customers.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    // private configService: ConfigService,
-    // @Inject('DB_CONNECTION') private dbClient: Client,
-
-    private customerService: CustomersService,
-    @InjectRepository(User) private userRepo: Repository<User>
-  ) {}
-
-  nativeRequest() {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve({ message: 'Hello World' });
-      }, 1000);
-      // this.dbClient.query('SELECT * FROM hola', function (error, res) {
-      //   if (error) {
-      //     reject(error);
-      //     return;
-      //   }
-      //   resolve(res.rows);
-      // });
-    });
-  }
-
-  getConfigEnviroments() {
-    console.log('OK');
-
-    // console.log(this.configService.get('API_KEY'));
-    // console.log(this.configService.get('DATA_BASE'));
-  }
+  constructor(private customerService: CustomersService, @InjectRepository(User) private userRepo: Repository<User>) {}
 
   findAll(page: number, limit: number) {
     const end = page * limit;
@@ -60,30 +32,20 @@ export class UsersService {
   }
 
   async findOne(id: number) {
-    const user = await this.userRepo.findOneBy({
+    return this.userRepo.findOneBy({
       id,
     });
-    if (!user) {
-      throw new NotFoundException('User Not found');
-    } else {
-      return user;
-    }
   }
 
-  async findByEmail(email: string, throwError = true): Promise<User> | null {
-    const user = await this.userRepo.findOneBy({
+  async findByEmail(email: string): Promise<User> {
+    return this.userRepo.findOneBy({
       email,
     });
-    if (!user && throwError) {
-      throw new NotFoundException('User Not found');
-    } else {
-      return user;
-    }
   }
 
   async create(entity: CreateUserDto) {
-    //TODO: Validate unique key
-    if ((await this.findByEmail(entity.email, false)) != null) throw new BadRequestException('Email in use');
+    const userFound = await this.findByEmail(entity.email);
+    if (userFound) throw new BadRequestException('Email in use');
 
     const user = this.userRepo.create({ ...entity, role: Role.ADMIN });
     const HASHED_PASS = await bcrypt.hash(user.password, 10);
@@ -98,10 +60,10 @@ export class UsersService {
   }
 
   async createClient(entity: CreateUserDto & CreateCustomerDto) {
-    //TODO: Validate unique key
-    if ((await this.findByEmail(entity.email, false)) != null) throw new BadRequestException('Email in use');
-
     try {
+      const userFound = await this.findByEmail(entity.email);
+      if (userFound) throw new BadRequestException('Email in use');
+
       const customer: CreateCustomerDto = {
         name: entity.name,
         lastName: '',
@@ -124,19 +86,17 @@ export class UsersService {
   async update(id: number, payload: any) {
     const user = await this.findOne(id);
     if (!user) {
-      throw new NotFoundException(`User #${id} not found`);
-    } else {
-      this.userRepo.merge(user, payload);
-      return this.userRepo.save(user);
+      throw new NotFoundException('User Not found');
     }
+    this.userRepo.merge(user, payload);
+    return this.userRepo.save(user);
   }
 
   async delete(id: number) {
-    const user = await this.userRepo.findOneBy({ id });
+    const user = await this.findOne(id);
     if (!user) {
-      throw new NotFoundException(`User #${id} not found`);
-    } else {
-      return this.userRepo.softDelete({ id });
+      throw new NotFoundException('User Not found');
     }
+    return this.userRepo.softDelete({ id });
   }
 }

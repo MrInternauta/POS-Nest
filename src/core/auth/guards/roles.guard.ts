@@ -9,13 +9,9 @@ import { PayloadToken } from '../models/token.model';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflectorService: Reflector) {
-  }
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  constructor(private reflectorService: Reflector) {}
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const roles_allowed: Role[] = this.reflectorService.get<Role[]>(ROLES_KEY, context.getHandler());
-    console.log('roles_allowed', roles_allowed);
 
     //Allow because doesnt have a role config
     if (!roles_allowed) {
@@ -23,7 +19,7 @@ export class RolesGuard implements CanActivate {
     }
     const req: Request = context.switchToHttp().getRequest();
     const user = req.user as PayloadToken;
-    const haveRol = roles_allowed.some((rol) => rol === user.role);
+    const haveRol = roles_allowed.some(rol => rol === user.role);
     if (!haveRol) {
       throw new UnauthorizedException('The role doesnt have permission');
     }

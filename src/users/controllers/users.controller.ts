@@ -27,22 +27,19 @@ import { CreateCustomerDto } from '../dtos/customer.dto';
 import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
+//TODO: Standarize responses
+// export interface GenericResponse<T> {
+//   statusCode: number;
+//   message?: string;
+//   error?: string;
+//   data?: T;
+// }
+
 @Controller('users')
 @ApiTags('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {}
-
-  @RoleD(Role.ADMIN)
-  @ApiOperation({
-    summary: 'A static path',
-    description: 'First router with static path.\nEvite hit with parameter path :id',
-  })
-  @Get('Hola')
-  @HttpCode(HttpStatus.OK) // 👈 Using decorator
-  async getDBHola(@Res() res: Response) {
-    return res.json({ value: await this.usersService.nativeRequest() });
-  }
 
   @RoleD(Role.ADMIN, Role.CUSTOMER)
   @Get()
@@ -99,10 +96,17 @@ export class UsersController {
     summary: 'Create an client',
   })
   async create(@Body() payload: CreateUserDto & CreateCustomerDto) {
-    return {
-      message: 'User created',
-      user: await this.usersService.createClient(payload),
-    };
+    //TODO: Refactor all
+    try {
+      return {
+        message: 'User created',
+        user: await this.usersService.createClient(payload),
+      };
+    } catch (error) {
+      return {
+        message: 'Error creating',
+      };
+    }
   }
 
   @Put(':id')
