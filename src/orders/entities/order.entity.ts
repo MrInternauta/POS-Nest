@@ -2,7 +2,7 @@ import { Expose } from 'class-transformer';
 import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicEntity } from '../../core/interfaces/basic.entity';
-import { Customer } from '../../users/entities/customer.entity';
+import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
 @Entity()
@@ -10,9 +10,9 @@ export class Order extends BasicEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Customer, customer => customer.orders)
+  @ManyToOne(() => User, user => user.orders)
   // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
-  customer: Customer;
+  user: User;
 
   //Si es necesaria la relacion bi direccional
   @OneToMany(() => OrderItem, item => item.order)

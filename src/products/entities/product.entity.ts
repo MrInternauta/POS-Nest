@@ -1,7 +1,6 @@
-import { Column, Entity, Index, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicEntity } from '../../core/interfaces/basic.entity';
-import { Brand } from './brand.entity';
 import { Category } from './category.entity';
 
 /* eslint-disable prettier/prettier */
@@ -25,9 +24,18 @@ export class Product extends BasicEntity {
   })
   description: string;
 
+  @Column({
+    type: 'text',
+  })
+  code: string;
+
   @Column({ type: 'int' })
   //@Index()
   price: number;
+
+  @Column({ type: 'int' })
+  //@Index()
+  price_sell: number;
 
   @Column({ type: 'int' })
   stock: number;
@@ -35,16 +43,9 @@ export class Product extends BasicEntity {
   @Column({ type: 'varchar' })
   image: string;
 
-  @ManyToOne(() => Brand, (brand) => brand.products, { nullable: true })
-  // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
+  @ManyToOne(() => Category, category => category.products, { nullable: true })
   @JoinColumn({
-    name: 'brand_id',
+    name: 'id_category',
   }) //naming  n to 1
-  brand: Brand;
-
-  @ManyToMany(() => Category, (category) => category.products, {
-    nullable: false,
-  })
-  // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
-  categories: Category[];
+  category: Category;
 }

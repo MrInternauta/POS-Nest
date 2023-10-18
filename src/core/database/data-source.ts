@@ -3,11 +3,11 @@ import 'reflect-metadata';
 import { configObj } from '@project/config';
 import { DataSource } from 'typeorm';
 
-const type = 'postgres';
+const type = 'mysql';
 export const AppDataSource = new DataSource({
   type: type,
-  host: configObj[type].host_ext,
-  port: configObj[type].port_ext,
+  host: configObj[type].host,
+  port: configObj[type].port,
   username: configObj[type].user,
   password: configObj[type].password,
   database: configObj[type].database,

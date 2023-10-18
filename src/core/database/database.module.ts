@@ -14,12 +14,12 @@ import { config } from '../../config';
       inject: [config.KEY],
       useFactory: async (configService: ConfigType<typeof config>) => {
         return {
-          type: 'postgres',
-          host: configService.postgres.host,
-          port: configService.postgres.port,
-          username: configService.postgres.user,
-          password: configService.postgres.password,
-          database: configService.postgres.database,
+          type: 'mysql',
+          host: configService.mysql.host,
+          port: configService.mysql.port,
+          username: configService.mysql.user,
+          password: configService.mysql.password,
+          database: configService.mysql.database,
           synchronize: true,
           autoLoadEntities: true,
         };
