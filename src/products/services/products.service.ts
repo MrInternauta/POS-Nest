@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Between, FindOptionsWhere, Repository } from 'typeorm';
 
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
@@ -13,7 +14,7 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
     private categoryService: CategoriesService,
-    private brandService: BrandsService,
+    private brandService: BrandsService
   ) {}
 
   public findAll(params?: ProductsFilterDto) {
@@ -62,9 +63,7 @@ export class ProductsService {
   async validateUniqueName(name: string) {
     const items = await this.findOnebyName(name);
     if (items && items.length > 0) {
-      throw new BadRequestException(
-        `Product with name '${name}' already exists`,
-      );
+      throw new BadRequestException(`Product with name '${name}' already exists`);
     }
   }
 
@@ -76,9 +75,7 @@ export class ProductsService {
       product.brand = brand;
     }
     if (payload.categoryIds) {
-      const categories = await this.categoryService.findByIds(
-        payload.categoryIds,
-      );
+      const categories = await this.categoryService.findByIds(payload.categoryIds);
       product.categories = categories;
     }
     return this.productRepo.save(product);
@@ -92,9 +89,7 @@ export class ProductsService {
       product.brand = brand;
     }
     if (payload.categoryIds) {
-      const categories = await this.categoryService.findByIds(
-        payload.categoryIds,
-      );
+      const categories = await this.categoryService.findByIds(payload.categoryIds);
       product.categories = categories;
     }
     this.productRepo.merge(product, payload);
@@ -103,8 +98,7 @@ export class ProductsService {
 
   async withStock(productId: number, quantity: number) {
     const product = await this.findOne(productId);
-    if (product.stock < quantity)
-      throw new BadRequestException(`Product ${product.name} without stock`);
+    if (product.stock < quantity) throw new BadRequestException(`Product ${product.name} without stock`);
     return product;
   }
 
@@ -121,9 +115,7 @@ export class ProductsService {
 
   async removeCategory(productId, categoryId) {
     const product = await this.findOne(productId);
-    product.categories = product.categories.filter(
-      (category) => category.id !== categoryId,
-    );
+    product.categories = product.categories.filter(category => category.id !== categoryId);
     return this.productRepo.save(product);
   }
 

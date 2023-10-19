@@ -4,34 +4,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
 
-import { Role } from '../../core/auth/models/roles.model';
-import { CreateCustomerDto } from '../dtos/customer.dto';
-// import { Client } from 'pg';
-import { CreateUserDto } from '../dtos/user.dto';
-// import { ConfigService } from '@nestjs/config';
+import { FilterDto } from '../../core/interfaces/filter.dto';
+import { UserDto } from '../dtos/user.dto';
 import { User } from '../entities/user.entity';
-import { CustomersService } from './customers.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private customerService: CustomersService, @InjectRepository(User) private userRepo: Repository<User>) {}
+  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
-  findAll(page: number, limit: number) {
-    const end = page * limit;
-    const start = end - limit;
+  findAll(params: FilterDto) {
+    const { limit, offset } = params;
     return this.userRepo.find({
-      relations: ['customer'],
+      take: limit,
+      skip: offset,
     });
   }
 
-  findbyCustomerId(id: number) {
-    return this.userRepo.find({
-      where: { customer: { id } },
-      relations: ['customer'],
-    });
-  }
-
-  async findOne(id: number) {
+  findOne(id: number) {
     return this.userRepo.findOneBy({
       id,
     });
@@ -43,44 +32,26 @@ export class UsersService {
     });
   }
 
-  async create(entity: CreateUserDto) {
+  async create(entity: UserDto) {
     const userFound = await this.findByEmail(entity.email);
+
     if (userFound) throw new BadRequestException('Email in use');
 
-    const user = this.userRepo.create({ ...entity, role: Role.ADMIN });
-    const HASHED_PASS = await bcrypt.hash(user.password, 10);
-    user.password = HASHED_PASS;
+    const userTemp = {
+      ...entity,
+      role: null,
+    };
 
-    if (entity.customerId) {
-      const customer = await this.customerService.findOne(entity.customerId);
-      user.customer = customer;
+    const user = this.userRepo.create(userTemp);
+
+    if (!user) {
+      throw new InternalServerErrorException('User cannot be crated');
     }
+
+    const HASHED_PASS = await bcrypt.hash(user[0].password, 10);
+    user[0].password = HASHED_PASS;
     this.userRepo.save(user);
     return user;
-  }
-
-  async createClient(entity: CreateUserDto & CreateCustomerDto) {
-    try {
-      const userFound = await this.findByEmail(entity.email);
-      if (userFound) throw new BadRequestException('Email in use');
-
-      const customer: CreateCustomerDto = {
-        name: entity.name,
-        lastName: '',
-        phone: '',
-      };
-      const newCustomer = await this.customerService.create(customer);
-      const user = this.userRepo.create(entity);
-      const HASHED_PASS = await bcrypt.hash(user.password, 10);
-      user.password = HASHED_PASS;
-      if (newCustomer) {
-        user.customer = newCustomer;
-      }
-      const newUser = await this.userRepo.save(user);
-      return newUser;
-    } catch (error) {
-      throw new InternalServerErrorException('');
-    }
   }
 
   async update(id: number, payload: any) {

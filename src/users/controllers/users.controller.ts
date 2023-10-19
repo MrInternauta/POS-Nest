@@ -24,7 +24,7 @@ import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
 import { CreateCustomerDto } from '../dtos/customer.dto';
-import { CreateUserDto, UpdateUserDto } from '../dtos/user.dto';
+import { UpdateUserDto, UserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
 
 //TODO: Standarize responses
@@ -82,7 +82,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Create just a user',
   })
-  async createUser(@Body() payload: CreateUserDto) {
+  async createUser(@Body() payload: UserDto) {
     return {
       message: 'User created',
       user: await this.usersService.create(payload),
@@ -95,7 +95,7 @@ export class UsersController {
   @ApiOperation({
     summary: 'Create an client',
   })
-  async create(@Body() payload: CreateUserDto & CreateCustomerDto) {
+  async create(@Body() payload: UserDto & CreateCustomerDto) {
     //TODO: Refactor all
     try {
       return {

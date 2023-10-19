@@ -1,7 +1,7 @@
 import { Column, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicEntity } from '../../core/interfaces/basic.entity';
-import { User } from './user.entity';
+import { Role } from './role.entity';
 
 @Entity()
 export class Permission extends BasicEntity {
@@ -14,15 +14,15 @@ export class Permission extends BasicEntity {
   @Column({ type: 'varchar', length: 255 })
   description: string;
 
-  @ManyToMany(() => User, user => user.permissions)
+  @ManyToMany(() => Role, role => role.permissions)
   @JoinTable({
-    name: 'user_permission',
+    name: 'permission_role',
     joinColumn: {
       name: 'id_category',
     },
     inverseJoinColumn: {
-      name: 'id_user',
+      name: 'id_role',
     }, //naming relation n to n
   }) //Este decorador solo debe ir en un lado de la migración
-  users: User[];
+  roles: Role[];
 }

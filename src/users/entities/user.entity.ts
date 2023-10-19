@@ -1,9 +1,9 @@
 import { Exclude } from 'class-transformer';
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicEntity } from '../../core/interfaces/basic.entity';
 import { Order } from '../../orders/entities/order.entity';
-import { Permission } from './permission.entity';
+import { Role } from './role.entity';
 
 @Entity()
 export class User extends BasicEntity {
@@ -26,10 +26,11 @@ export class User extends BasicEntity {
   @Exclude()
   password: string;
 
-  @ManyToMany(() => Permission, permission => permission.users, {
-    nullable: false,
+  @ManyToOne(() => Role, role => role.users, { nullable: true })
+  @JoinColumn({
+    name: 'id_role',
   })
-  permissions: Permission[];
+  role: Role;
 
   @OneToMany(() => Order, order => order.user, { nullable: true })
   orders: Order[];
