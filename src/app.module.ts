@@ -39,20 +39,6 @@ import { UsersModule } from './users/users.module';
     HttpModule,
     OrdersModule,
   ],
-  providers: [
-    AppService,
-    // {
-    //   //npm i --save @nestjs/axios
-    //   provide: 'MyAsync',
-    //   useFactory: async function (http: HttpService) {
-    //     const myTask = await http
-    //       .get('https://jsonplaceholder.typicode.com/todos')
-    //       .toPromise();
-
-    //     return myTask.data;
-    //   },
-    //   inject: [HttpService], //INJECT DEPENDENCY TO THE PROVIDER
-    // },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

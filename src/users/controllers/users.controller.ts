@@ -33,7 +33,7 @@ import { UsersService } from '../services/users.service';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @RoleD(Role.ADMIN, Role.CUSTOMER)
+  @RoleD(Role.ADMIN)
   @Get()
   @ApiOperation({
     summary: 'User list',

@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: dockerfile.dev
     depends_on:
-      - postgres_service
+      - mysql
     volumes:
       - .:/usr/src
       - /usr/src/node_modules
