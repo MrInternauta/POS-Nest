@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { PermissionDto, RoleDto } from '../dtos/role.dto';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
@@ -13,6 +14,15 @@ export class RolesService {
     @InjectRepository(Role) private roleRepo: Repository<Role>,
     @InjectRepository(Permission) private permissionRepo: Repository<Permission>
   ) {}
+
+  findAllRoles(params?: FilterDto) {
+    const { limit, offset } = params;
+    return this.roleRepo.find({
+      take: limit,
+      skip: offset,
+      relations: ['permissions'],
+    });
+  }
 
   async create(params: RoleDto) {
     const { name, permissions } = params;

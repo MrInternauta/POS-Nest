@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
 import { Response } from 'express';
 
 import { Is_PublicD } from '../../core/auth/decorators/public.decorator';
@@ -54,7 +55,7 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query() params: ProductsFilterDto,
+    @Query() params: ProductsFilterDto
     // @Query('offset') offset = 10,
   ) {
     return { products: await this.productsService.findAll(params) };
@@ -65,8 +66,7 @@ export class ProductsController {
   @Is_PublicD()
   @ApiOperation({
     summary: 'A static path',
-    description:
-      'First router with static path.\nEvite hit with parameter path :productId',
+    description: 'First router with static path.\nEvite hit with parameter path :productId',
   })
   @HttpCode(HttpStatus.OK)
   getProductFilter(@Res() res: Response) {
@@ -80,10 +80,7 @@ export class ProductsController {
     summary: 'Get product by Id',
   })
   @HttpCode(HttpStatus.OK)
-  async getProduct(
-    @Res() res: Response,
-    @Param('productId', ParseIntPipe) productId: number,
-  ) {
+  async getProduct(@Res() res: Response, @Param('productId', ParseIntPipe) productId: number) {
     return res.json({
       product: await this.productsService.findOne(productId),
     });
@@ -91,7 +88,6 @@ export class ProductsController {
 
   @Post()
   @HttpCode(HttpStatus.OK)
-
   @RoleD(Role.ADMIN)
   @ApiOperation({
     summary: 'Create a product',
@@ -104,27 +100,6 @@ export class ProductsController {
   }
 
   @RoleD(Role.ADMIN)
-  @Put(':productId/category/:categoryId')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Delete a category from product',
-  })
-  async addCategory(
-    @Res() res: Response,
-    @Param('productId', ParseIntPipe) productId: number,
-    @Param('categoryId', ParseIntPipe) categoryId: number,
-  ) {
-    const product = await this.productsService.addCategory(
-      productId,
-      categoryId,
-    );
-    res.status(HttpStatus.OK).json({
-      message: `Category ${categoryId} Added`,
-      product,
-    });
-  }
-
-  @RoleD(Role.ADMIN)
   @Put(':productId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -133,7 +108,7 @@ export class ProductsController {
   async update(
     @Res() res: Response,
     @Param('productId', ParseIntPipe) productId: number,
-    @Body() product: UpdateProductDto,
+    @Body() product: UpdateProductDto
   ) {
     const wasUpdated = await this.productsService.update(productId, product);
     if (wasUpdated) {
@@ -154,41 +129,13 @@ export class ProductsController {
   @ApiOperation({
     summary: 'restore an product',
   })
-  async restore(
-    @Res() res: Response,
-    @Param('idProduct', ParseIntPipe) idProduct: number,
-  ) {
+  async restore(@Res() res: Response, @Param('idProduct', ParseIntPipe) idProduct: number) {
     const wasUpdated = await this.productsService.restore(idProduct);
     if (wasUpdated?.affected > 0) {
-      return res
-        .status(HttpStatus.OK)
-        .json({ message: 'Product restored', product: wasUpdated });
+      return res.status(HttpStatus.OK).json({ message: 'Product restored', product: wasUpdated });
     } else {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ message: `Product ${idProduct} not restored` });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: `Product ${idProduct} not restored` });
     }
-  }
-
-  @RoleD(Role.ADMIN)
-  @Delete(':productId/category/:categoryId')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Delete a category from product',
-  })
-  async deleteCategory(
-    @Res() res: Response,
-    @Param('productId', ParseIntPipe) productId: number,
-    @Param('categoryId', ParseIntPipe) categoryId: number,
-  ) {
-    const product = await this.productsService.removeCategory(
-      productId,
-      categoryId,
-    );
-    res.status(HttpStatus.OK).json({
-      message: `Category ${categoryId} deleted`,
-      product,
-    });
   }
 
   //Use ParseIntPipe to parse the param to int (in the traspilation to JS)
@@ -198,10 +145,7 @@ export class ProductsController {
   @ApiOperation({
     summary: 'Delete a product',
   })
-  async delete(
-    @Res() res: Response,
-    @Param('productId', ParseIntPipe) productId: number,
-  ) {
+  async delete(@Res() res: Response, @Param('productId', ParseIntPipe) productId: number) {
     await this.productsService.remove(productId);
     res.status(HttpStatus.OK).json({
       message: `Product ${productId} deleted`,

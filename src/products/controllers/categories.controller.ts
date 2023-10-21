@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
 import { Response } from 'express';
 
 import { Is_PublicD } from '../../core/auth/decorators/public.decorator';
@@ -20,6 +21,7 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { ParseIntPipe } from '../../core/pipes/parse-int.pipe';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
 import { CategoriesService } from '../services/categories.service';
@@ -29,10 +31,7 @@ import { ProductsService } from '../services/products.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('categories')
 export class CategoriesController {
-  constructor(
-    private categoriesServices: CategoriesService,
-    private productsServices: ProductsService,
-  ) {}
+  constructor(private categoriesServices: CategoriesService, private productsServices: ProductsService) {}
 
   @Is_PublicD()
   @Get()
@@ -40,12 +39,8 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Categories list',
   })
-  async getCategories(
-    @Query('page') page = 1,
-    @Query('limit') limit = 10,
-    // @Query('offset') offset = 10,
-  ) {
-    return { categories: await this.categoriesServices.findAll() };
+  async getCategories(@Query() params: FilterDto) {
+    return { categories: await this.categoriesServices.findAll(params) };
   }
 
   //Getting obj params: Can use  Param() params: any and params.productId
@@ -55,10 +50,7 @@ export class CategoriesController {
     summary: 'Get category by Id',
   })
   @HttpCode(HttpStatus.OK)
-  async getCategory(
-    @Res() res: Response,
-    @Param('categoryId', ParseIntPipe) categoryId: number,
-  ) {
+  async getCategory(@Res() res: Response, @Param('categoryId', ParseIntPipe) categoryId: number) {
     return res.json({
       category: await this.categoriesServices.findOne(categoryId),
     });
@@ -83,20 +75,13 @@ export class CategoriesController {
   async update(
     @Res() res: Response,
     @Param('idCategory', ParseIntPipe) idCategory: number,
-    @Body() category: UpdateCategoryDto,
+    @Body() category: UpdateCategoryDto
   ) {
-    const wasUpdated = await this.categoriesServices.update(
-      idCategory,
-      category,
-    );
+    const wasUpdated = await this.categoriesServices.update(idCategory, category);
     if (wasUpdated) {
-      return res
-        .status(HttpStatus.OK)
-        .json({ message: 'Category updated', category: wasUpdated });
+      return res.status(HttpStatus.OK).json({ message: 'Category updated', category: wasUpdated });
     } else {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ message: `Category ${idCategory} not updated` });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not updated` });
     }
   }
 
@@ -106,19 +91,12 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'restore a category',
   })
-  async restore(
-    @Res() res: Response,
-    @Param('idCategory', ParseIntPipe) idCategory: number,
-  ) {
+  async restore(@Res() res: Response, @Param('idCategory', ParseIntPipe) idCategory: number) {
     const wasUpdated = await this.categoriesServices.restore(idCategory);
     if (wasUpdated?.affected > 0) {
-      return res
-        .status(HttpStatus.OK)
-        .json({ message: 'Category restored', category: wasUpdated });
+      return res.status(HttpStatus.OK).json({ message: 'Category restored', category: wasUpdated });
     } else {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ message: `Category ${idCategory} not restored` });
+      return res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not restored` });
     }
   }
 
@@ -128,13 +106,8 @@ export class CategoriesController {
   @ApiOperation({
     summary: 'Delete a category',
   })
-  async delete(
-    @Res() res: Response,
-    @Param('idCategory', ParseIntPipe) idCategory: number,
-  ) {
+  async delete(@Res() res: Response, @Param('idCategory', ParseIntPipe) idCategory: number) {
     await this.categoriesServices.remove(idCategory);
-    return res
-      .status(HttpStatus.OK)
-      .json({ message: `Category ${idCategory} deleted` });
+    return res.status(HttpStatus.OK).json({ message: `Category ${idCategory} deleted` });
   }
 }

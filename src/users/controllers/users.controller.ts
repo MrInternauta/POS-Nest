@@ -23,17 +23,9 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
-import { CreateCustomerDto } from '../dtos/customer.dto';
-import { UpdateUserDto, UserDto } from '../dtos/user.dto';
+import { FilterDto } from '../../core/interfaces/filter.dto';
+import { UserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
-
-//TODO: Standarize responses
-// export interface GenericResponse<T> {
-//   statusCode: number;
-//   message?: string;
-//   error?: string;
-//   data?: T;
-// }
 
 @Controller('users')
 @ApiTags('users')
@@ -61,8 +53,8 @@ export class UsersController {
       },
     ],
   })
-  async findAll(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return { users: await this.usersService.findAll(page, limit) };
+  async findAll(@Query() params: FilterDto) {
+    return { users: await this.usersService.findAll(params) };
   }
 
   @Is_PublicD()
@@ -76,8 +68,8 @@ export class UsersController {
     });
   }
 
-  @RoleD(Role.ADMIN)
-  @Post('admin')
+  @Is_PublicD()
+  @Post('')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Create just a user',
@@ -89,33 +81,13 @@ export class UsersController {
     };
   }
 
-  @Is_PublicD()
-  @Post()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Create an client',
-  })
-  async create(@Body() payload: UserDto & CreateCustomerDto) {
-    //TODO: Refactor all
-    try {
-      return {
-        message: 'User created',
-        user: await this.usersService.createClient(payload),
-      };
-    } catch (error) {
-      return {
-        message: 'Error creating',
-      };
-    }
-  }
-
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   @RoleD(Role.ADMIN, Role.CUSTOMER)
   @ApiOperation({
     summary: 'Update an user',
   })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() payload: UpdateUserDto) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() payload: UserDto) {
     const wasUpdated = await this.usersService.update(id, payload);
     if (!wasUpdated) {
       throw new BadRequestException('User not updated');

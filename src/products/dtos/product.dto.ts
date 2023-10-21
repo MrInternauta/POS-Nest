@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl } from 'class-validator';
+
+import { IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl } from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty({ message: `The name field can't be empty` })
@@ -11,11 +12,24 @@ export class CreateProductDto {
   @IsString()
   @ApiProperty()
   readonly description: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @ApiProperty()
+  readonly code: string;
+
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
   @ApiProperty()
   readonly price: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  @ApiProperty()
+  readonly priceSell: number;
+
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
@@ -27,14 +41,9 @@ export class CreateProductDto {
   readonly image: string;
 
   @IsNotEmpty()
-  @IsArray()
   @ApiProperty()
-  readonly categoryIds: number[];
-
-  @IsNotEmpty()
-  @IsPositive()
-  @ApiProperty()
-  readonly brandId: number;
+  @IsNumber()
+  readonly categoryId: number;
 }
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {}

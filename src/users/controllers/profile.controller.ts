@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 
 import { Request } from 'express';
 
@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
 import { PayloadToken } from '../../core/auth/models/token.model';
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { OrderService } from '../../orders/services/order.service';
 
 @Controller('profile')
@@ -16,8 +17,8 @@ export class ProfileController {
 
   @RoleD(Role.CUSTOMER)
   @Get('my-orders')
-  getOrders(@Req() req: Request) {
+  getOrders(@Req() req: Request, @Query() params: FilterDto) {
     const user = req.user as PayloadToken;
-    return this.orderService.ordersByUserId(user.sub);
+    return this.orderService.findAll(params, user.sub);
   }
 }

@@ -18,6 +18,7 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderService } from '../services/order.service';
@@ -32,8 +33,8 @@ export class OrdersController {
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Order List' })
-  async findAll(@Query('page', ParseIntPipe) page: number, @Query('limit', ParseIntPipe) limit: number) {
-    return { orders: await this.orderService.findAll(page, limit) };
+  async findAll(@Query() params: FilterDto) {
+    return { orders: await this.orderService.findAll(params) };
   }
 
   @Get(':orderId')

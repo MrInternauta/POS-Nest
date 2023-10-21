@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateOrderItemDto } from '../../orders/dtos/order-item.dto';
 import { Order } from '../../orders/entities/order.entity';
 import { User } from '../../users/entities/user.entity';
-import { CustomersService } from '../../users/services/customers.service';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderItemService } from './order-item.service';
 
@@ -16,31 +16,18 @@ export class OrderService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
 
-    //Evite cicular dependency
-    @Inject(forwardRef(() => CustomersService))
-    private customerService: CustomersService,
-
     @Inject(forwardRef(() => OrderItemService))
     private orderItemService: OrderItemService
   ) {}
 
-  findAll(page = 1, limit = 10, customerId?: number) {
+  findAll(params?: FilterDto, userId?: number) {
+    const { limit, offset } = params;
     return this.orderRepo.find({
+      take: limit,
+      skip: offset,
+      where: { user: { id: userId } },
       loadRelationIds: { relations: ['items'] },
-      relations: ['customer'],
-      where: customerId
-        ? {
-            customer: {
-              id: customerId,
-            },
-          }
-        : {},
     });
-  }
-
-  async ordersByUserId(userId: number, page = 1, limit = 10) {
-    const customerId = (await this.userRepo.findOne({ where: { id: userId }, relations: ['customer'] })).customer.id;
-    return this.findAll(page, limit, customerId);
   }
 
   async findOne(orderId: number, withRelations = true) {
@@ -55,15 +42,15 @@ export class OrderService {
   }
 
   async create(createOrderDto: CreateOrderDto) {
-    const customer = await this.customerService.findOne(createOrderDto.customerId);
-    const newOrder = this.orderRepo.create({ customer });
+    const user = await this.userRepo.findOneBy({ id: createOrderDto.userId });
+    const newOrder = this.orderRepo.create({ user });
     return this.orderRepo.save(newOrder);
   }
 
   async update(orderId: number, updateOrderDto: UpdateOrderDto) {
     const order = await this.findOne(orderId);
-    const customer = await this.customerService.findOne(updateOrderDto.customerId);
-    order.customer = customer;
+    const user = await this.userRepo.findOneBy({ id: updateOrderDto.userId });
+    order.user = user;
     return this.orderRepo.save(order);
   }
 

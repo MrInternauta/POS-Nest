@@ -35,7 +35,7 @@ export class Product extends BasicEntity {
 
   @Column({ type: 'int' })
   //@Index()
-  price_sell: number;
+  priceSell: number;
 
   @Column({ type: 'int' })
   stock: number;

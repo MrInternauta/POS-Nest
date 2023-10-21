@@ -1,18 +1,22 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
 
+import { Repository } from 'typeorm';
+
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
 import { Category } from '../entities/category.entity';
 
 @Injectable()
 export class CategoriesService {
-  constructor(
-    @InjectRepository(Category) private categoryRepo: Repository<Category>,
-  ) {}
+  constructor(@InjectRepository(Category) private categoryRepo: Repository<Category>) {}
 
-  findAll() {
-    return this.categoryRepo.find();
+  findAll(params?: FilterDto) {
+    const { limit, offset } = params;
+    return this.categoryRepo.find({
+      take: limit,
+      skip: offset,
+    });
   }
 
   async findOne(id: number, withProducts = true) {
@@ -26,8 +30,8 @@ export class CategoriesService {
     return category;
   }
 
-  findByIds(categoryIds: number[]) {
-    return this.categoryRepo.findBy({ id: In(categoryIds) });
+  findById(categoryId: number) {
+    return this.categoryRepo.findOneBy({ id: categoryId });
   }
 
   findOnebyName(name: string) {
@@ -41,9 +45,7 @@ export class CategoriesService {
   async validateUniqueName(name: string) {
     const items = await this.findOnebyName(name);
     if (items && items.length > 0) {
-      throw new BadRequestException(
-        `Category with name '${name}' already exists`,
-      );
+      throw new BadRequestException(`Category with name '${name}' already exists`);
     }
   }
 
