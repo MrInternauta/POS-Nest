@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -52,6 +52,22 @@ export class RolesService {
     }
   }
 
+  async update(roleId: number, params: RoleDto) {
+    try {
+      const role = await this.findOne(roleId);
+      if (!role) {
+        throw new NotFoundException('Role Not found');
+      }
+
+      const { name } = params;
+      this.roleRepo.merge(role, { ...role, name });
+      return this.roleRepo.save(role);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Error updating role');
+    }
+  }
+
   validatePermissions(permissions: PermissionDto[]) {
     return new Promise((res, rej) => {
       for (let index = 0; index < permissions.length; index++) {
@@ -96,5 +112,13 @@ export class RolesService {
 
   createPermission(permission: PermissionDto) {
     return this.permissionRepo.create(permission);
+  }
+
+  async delete(id: number) {
+    const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException('User Not found');
+    }
+    return this.permissionRepo.softDelete({ id });
   }
 }

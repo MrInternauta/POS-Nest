@@ -48,8 +48,8 @@ export class UsersService {
       throw new InternalServerErrorException('User cannot be crated');
     }
 
-    const HASHED_PASS = await bcrypt.hash(user[0].password, 10);
-    user[0].password = HASHED_PASS;
+    const HASHED_PASS = await bcrypt.hash(user.password, 10);
+    user.password = HASHED_PASS;
     this.userRepo.save(user);
     return user;
   }
