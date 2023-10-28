@@ -59,8 +59,10 @@ export class RolesService {
         throw new NotFoundException('Role Not found');
       }
 
-      const { name } = params;
-      this.roleRepo.merge(role, { ...role, name });
+      const { name, permissions } = params;
+      await this.validatePermissions(permissions);
+      const newPermission = await this.updatePermissions(permissions);
+      this.roleRepo.merge(role, { ...role, name, permissions: newPermission });
       return this.roleRepo.save(role);
     } catch (error) {
       console.log(error);
@@ -74,24 +76,30 @@ export class RolesService {
         if (!permissions[index].name) {
           rej();
         }
-
-        const permission = this.permissionRepo.findOneBy({ name: permissions[index].name });
-        if (permission) {
-          rej();
-        }
       }
       res(true);
     });
   }
 
   createPermissions(permissions: PermissionDto[]): Promise<Array<Permission>> {
-    return new Promise(res => {
+    return new Promise(async res => {
       const newPermissions: Permission[] = [];
       for (let index = 0; index < permissions.length; index++) {
-        const newPermission = this.createPermission({
+        const newPermission = await this.createPermission({
           name: permissions[index]?.name,
           description: permissions[index]?.description || null,
         });
+        newPermissions.push(newPermission);
+      }
+      res(newPermissions);
+    });
+  }
+
+  updatePermissions(permissions: PermissionDto[]): Promise<Array<Permission>> {
+    return new Promise(async res => {
+      const newPermissions: Permission[] = [];
+      for (let index = 0; index < permissions.length; index++) {
+        const newPermission = await this.updatePermission(permissions[index]);
         newPermissions.push(newPermission);
       }
       res(newPermissions);
@@ -110,15 +118,77 @@ export class RolesService {
     });
   }
 
-  createPermission(permission: PermissionDto) {
+  async createPermission(permission: PermissionDto) {
+    const currentPermission = await this.permissionRepo.findOneBy({ name: permission.name });
+    if (currentPermission) {
+      return currentPermission;
+    }
     return this.permissionRepo.create(permission);
+  }
+
+  async updatePermission(permission: PermissionDto) {
+    const currentPermission = await this.permissionRepo.findOneBy({ id: permission.id });
+    if (!currentPermission) {
+      throw new NotFoundException('Role Not found');
+    }
+    this.permissionRepo.merge(currentPermission, permission);
+    return this.permissionRepo.save(currentPermission);
   }
 
   async delete(id: number) {
     const user = await this.findOne(id);
     if (!user) {
-      throw new NotFoundException('User Not found');
+      throw new NotFoundException('Role Not found');
     }
     return this.permissionRepo.softDelete({ id });
+  }
+
+  defaultValuesRole() {
+    const role_admin: RoleDto = {
+      name: 'ADMIN',
+      permissions: [
+        {
+          name: 'Orders',
+          description: '',
+        },
+        {
+          name: 'Products',
+          description: '',
+        },
+        {
+          name: 'Users',
+          description: '',
+        },
+      ],
+    };
+
+    const role_cashier: RoleDto = {
+      name: 'CASHIER',
+      permissions: [
+        {
+          name: 'Orders',
+          description: '',
+        },
+        {
+          name: 'Products',
+          description: '',
+        },
+      ],
+    };
+
+    const role_client: RoleDto = {
+      name: 'CLIENT',
+      permissions: [
+        {
+          name: 'Orders',
+          description: '',
+        },
+      ],
+    };
+    return {
+      role_admin,
+      role_cashier,
+      role_client,
+    };
   }
 }

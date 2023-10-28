@@ -70,4 +70,40 @@ export class UsersService {
     }
     return this.userRepo.softDelete({ id });
   }
+
+  async defaultValuesUser() {
+    const HASHED_PASS = await bcrypt.hash('1234567890', 10);
+    const admin: UserDto = {
+      name: 'admin',
+      lastName: 'admin',
+      phone: '1234567890',
+      email: 'admin@admin.com',
+      password: HASHED_PASS,
+      role: 1,
+    };
+
+    const cashier: UserDto = {
+      name: 'cashier',
+      lastName: 'cashier',
+      phone: '1234567890',
+      email: 'cashier@cashier.com',
+      password: HASHED_PASS,
+      role: 2,
+    };
+
+    const client: UserDto = {
+      name: 'client',
+      lastName: 'client',
+      phone: '1234567890',
+      email: 'client@client.com',
+      password: HASHED_PASS,
+      role: 3,
+    };
+
+    return {
+      admin,
+      cashier,
+      client,
+    };
+  }
 }

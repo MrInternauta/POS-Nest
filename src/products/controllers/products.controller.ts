@@ -21,6 +21,7 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
+import { FilterDto } from '../../core/interfaces/filter.dto';
 import { ParseIntPipe } from '../../core/pipes/parse-int.pipe';
 import { CreateProductDto, UpdateProductDto } from '../dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
@@ -55,7 +56,7 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProducts(
-    @Query() params: ProductsFilterDto
+    @Query() params: ProductsFilterDto & FilterDto
     // @Query('offset') offset = 10,
   ) {
     return { products: await this.productsService.findAll(params) };

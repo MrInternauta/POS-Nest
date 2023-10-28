@@ -1,4 +1,5 @@
 import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { Request } from 'express';
 
@@ -11,6 +12,7 @@ import { FilterDto } from '../../core/interfaces/filter.dto';
 import { OrderService } from '../../orders/services/order.service';
 
 @Controller('profile')
+@ApiTags('orders')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProfileController {
   constructor(private orderService: OrderService) {}

@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { RoleD } from '../../core/auth/decorators/roles.decorator';
@@ -8,7 +20,7 @@ import { RoleDto } from '../dtos/role.dto';
 import { RolesService } from '../services/roles.service';
 
 @Controller('roles')
-@ApiTags('users')
+@ApiTags('roles')
 export class RolesController {
   constructor(private rolesService: RolesService) {}
 
@@ -46,6 +58,20 @@ export class RolesController {
     return {
       message: 'Role created',
       user: await this.rolesService.create(payload),
+    };
+  }
+
+  @Put(':id')
+  @HttpCode(HttpStatus.OK)
+  @RoleD(Role.ADMIN)
+  @ApiOperation({
+    summary: 'Update an role',
+  })
+  async update(@Param('id', ParseIntPipe) id: number, @Body() payload: RoleDto) {
+    const wasUpdated = await this.rolesService.update(id, payload);
+    return {
+      message: 'ROLE updated',
+      user: wasUpdated,
     };
   }
 

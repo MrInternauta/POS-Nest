@@ -70,4 +70,33 @@ export class CategoriesService {
   async restore(id: number) {
     return this.categoryRepo.restore({ id });
   }
+
+  defaultValue() {
+    return [
+      {
+        name: 'PAN',
+      },
+      {
+        name: 'TORTILLA',
+      },
+      {
+        name: 'COCA-COLA',
+      },
+      {
+        name: 'ABAROTES',
+      },
+      {
+        name: 'MARINELA-BIMBO',
+      },
+      {
+        name: 'DULCES',
+      },
+      {
+        name: 'AGUA',
+      },
+      {
+        name: 'OTROS',
+      },
+    ];
+  }
 }

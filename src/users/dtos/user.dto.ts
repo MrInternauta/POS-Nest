@@ -31,5 +31,5 @@ export class UserDto {
   @IsNotEmpty()
   @ApiProperty()
   @IsOptional()
-  readonly role?: string;
+  readonly role?: number;
 }

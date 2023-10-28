@@ -12,6 +12,6 @@ export class CreateCategoryDto {
   @IsString()
   @IsOptional()
   @ApiProperty({ description: 'A simple image for the category' })
-  readonly image: string;
+  readonly image?: string;
 }
 export class UpdateCategoryDto extends PartialType(CreateCategoryDto) {}
