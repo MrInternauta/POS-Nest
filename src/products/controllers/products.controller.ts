@@ -87,6 +87,18 @@ export class ProductsController {
     });
   }
 
+  @Get(':productCode')
+  @Is_PublicD()
+  @ApiOperation({
+    summary: 'Get product by productCode',
+  })
+  @HttpCode(HttpStatus.OK)
+  async getProductByCode(@Res() res: Response, @Param('productCode') productCode: string) {
+    return res.json({
+      product: await this.productsService.findOnebyCode(productCode),
+    });
+  }
+
   @Post()
   @HttpCode(HttpStatus.OK)
   @RoleD(Role.ADMIN)

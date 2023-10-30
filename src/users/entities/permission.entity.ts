@@ -14,7 +14,7 @@ export class Permission extends BasicEntity {
   @Column({ type: 'varchar', length: 255 })
   description: string;
 
-  @ManyToMany(() => Role, role => role.permissions)
+  @ManyToMany(() => Role, role => role.permissions, { nullable: true })
   @JoinTable({
     name: 'permission_role',
     joinColumn: {

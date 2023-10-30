@@ -7,10 +7,11 @@ import { Repository } from 'typeorm';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { UserDto } from '../dtos/user.dto';
 import { User } from '../entities/user.entity';
+import { RolesService } from './roles.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+  constructor(@InjectRepository(User) public userRepo: Repository<User>, private rolesService: RolesService) {}
 
   findAll(params: FilterDto) {
     const { limit, offset } = params;
@@ -26,10 +27,12 @@ export class UsersService {
     });
   }
 
-  async findByEmail(email: string): Promise<User> {
-    return this.userRepo.findOneBy({
-      email,
-    });
+  async findByEmail(email: string, loadRole = false): Promise<User> {
+    // loadRelationIds: { relations: ['categories', 'brand'] },
+
+    return !loadRole
+      ? this.userRepo.findOneBy({ email })
+      : this.userRepo.findOne({ where: { email }, relations: { role: { permissions: true } } });
   }
 
   async create(entity: UserDto) {
@@ -43,6 +46,10 @@ export class UsersService {
     };
 
     const user = this.userRepo.create(userTemp);
+    if (entity.role) {
+      const role = await this.rolesService.findOne(entity.role);
+      user.role = role;
+    }
 
     if (!user) {
       throw new InternalServerErrorException('User cannot be crated');
@@ -54,12 +61,18 @@ export class UsersService {
     return user;
   }
 
-  async update(id: number, payload: any) {
+  async update(id: number, payload: User | UserDto) {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User Not found');
     }
-    this.userRepo.merge(user, payload);
+
+    if (payload instanceof UserDto) {
+      const role = await this.rolesService.findOne(payload?.role);
+      user.role = role;
+    } else if (payload instanceof User) {
+      this.userRepo.merge(user, payload);
+    }
     return this.userRepo.save(user);
   }
 
@@ -71,15 +84,14 @@ export class UsersService {
     return this.userRepo.softDelete({ id });
   }
 
-  async defaultValuesUser() {
-    const HASHED_PASS = await bcrypt.hash('1234567890', 10);
+  defaultValuesUser() {
+    const HASHED_PASS = '1234567890';
     const admin: UserDto = {
       name: 'admin',
       lastName: 'admin',
       phone: '1234567890',
       email: 'admin@admin.com',
       password: HASHED_PASS,
-      role: 1,
     };
 
     const cashier: UserDto = {
@@ -88,7 +100,6 @@ export class UsersService {
       phone: '1234567890',
       email: 'cashier@cashier.com',
       password: HASHED_PASS,
-      role: 2,
     };
 
     const client: UserDto = {
@@ -97,7 +108,6 @@ export class UsersService {
       phone: '1234567890',
       email: 'client@client.com',
       password: HASHED_PASS,
-      role: 3,
     };
 
     return {

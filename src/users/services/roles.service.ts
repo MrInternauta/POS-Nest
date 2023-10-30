@@ -11,7 +11,7 @@ import { Role } from '../entities/role.entity';
 @Injectable()
 export class RolesService {
   constructor(
-    @InjectRepository(Role) private roleRepo: Repository<Role>,
+    @InjectRepository(Role) public roleRepo: Repository<Role>,
     @InjectRepository(Permission) private permissionRepo: Repository<Permission>
   ) {}
 
@@ -44,8 +44,9 @@ export class RolesService {
 
       await this.validatePermissions(permissions);
       const newPermission = await this.createPermissions(permissions);
-      role.permissions = newPermission;
-      this.roleRepo.save(role);
+      const allResult = await Promise.all(newPermission);
+      role.permissions = allResult;
+      return this.roleRepo.save(role);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Error creating role');
@@ -81,18 +82,16 @@ export class RolesService {
     });
   }
 
-  createPermissions(permissions: PermissionDto[]): Promise<Array<Permission>> {
-    return new Promise(async res => {
-      const newPermissions: Permission[] = [];
-      for (let index = 0; index < permissions.length; index++) {
-        const newPermission = await this.createPermission({
-          name: permissions[index]?.name,
-          description: permissions[index]?.description || null,
-        });
-        newPermissions.push(newPermission);
-      }
-      res(newPermissions);
-    });
+  createPermissions(permissions: PermissionDto[]): Array<Promise<Permission>> {
+    const newPermissions: Promise<Permission>[] = [];
+    for (let index = 0; index < permissions.length; index++) {
+      const newPermission = this.createPermission({
+        name: permissions[index]?.name,
+        description: permissions[index]?.description || null,
+      });
+      newPermissions.push(newPermission);
+    }
+    return newPermissions;
   }
 
   updatePermissions(permissions: PermissionDto[]): Promise<Array<Permission>> {
@@ -120,7 +119,7 @@ export class RolesService {
 
   async createPermission(permission: PermissionDto) {
     const currentPermission = await this.permissionRepo.findOneBy({ name: permission.name });
-    if (currentPermission) {
+    if (currentPermission?.id) {
       return currentPermission;
     }
     return this.permissionRepo.create(permission);
