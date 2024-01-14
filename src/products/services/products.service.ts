@@ -352,9 +352,9 @@ export class ProductsService {
         name: product[1].toString(),
         stock: Number(product[2]),
         image: '',
-        price: 0,
-        priceSell: 0,
-        description: '',
+        price: Math.floor(Math.random() * 100) + 1,
+        priceSell: Math.floor(Math.random() * 100) + 1,
+        description: ' Lorem ipsum description',
         categoryId: null,
       });
     });
