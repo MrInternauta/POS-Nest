@@ -1,7 +1,6 @@
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
-- new change from web
 
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
 [circleci-url]: https://circleci.com/gh/nestjs/nest
@@ -25,7 +24,7 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Nest store - point of sales
 
 ## Installation
 
@@ -58,16 +57,12 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+## Run migrations
+```bash
+npx gulp --command="migrations:show"
+npx gulp --command="migrations:run"
+```
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
 
 ## License
 Nest is [MIT licensed](LICENSE).
@@ -75,7 +70,7 @@ Nest is [MIT licensed](LICENSE).
 
 # NestJS Notes
 
-## One to One relations
+### One to One relations
 Para crear relaciones uno a uno debemos hacer:
 User to Customer
 - User entity
@@ -93,30 +88,4 @@ User to Customer
 - En la relación oneToOne solo una entidad puede tener el decorador @JoinColumn.
 - En el caso particular de esta relación también puede ser opcional
 - TypeORM permite tener una relacion bidireccional en las relaciones 1 a 1 sin necesidad de hacer queryes extras.
-# RUN THE PROJECT
-## Build the image
-```bash
-docker build -t mrinternauta/neststore_test:001 .
-```
 
-## Run container with .env
-```bash
-docker run -p 3000:3000 --env-file=.env mrinternauta/neststore_test:001
-```
-
-
-docker build -t mrinternauta/node_app:prod  -f dockerfile.prod .
-docker build -t mrinternauta/node_app:dev  -f dockerfile.dev .
-
-docker run -d -p 3000:3000  mrinternauta/node_app:dev  
-
-
-## Run migrations
-```bash
-docker-compose up postgres_service -d
-npm i
-docker-compose up app  -d  
-gulp --command="migrations:show"
-gulp --command="migrations:run"
-
-```
