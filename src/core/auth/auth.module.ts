@@ -20,7 +20,7 @@ import { LocalStrategy } from './strategies/local.strategy';
       useFactory: (configService: ConfigType<typeof config>) => ({
         secret: configService.jwt_secret,
         signOptions: {
-          expiresIn: '24h',
+          expiresIn: configService.jwt_expires_in,
         },
       }),
     }),

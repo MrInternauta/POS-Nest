@@ -22,6 +22,9 @@ import { config } from '../../config';
           database: configService.postgres.database,
           synchronize: true,
           autoLoadEntities: true,
+          extra: {
+            ssl: true,
+          },
         };
       },
     }),

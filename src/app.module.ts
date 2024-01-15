@@ -17,9 +17,10 @@ import { UsersModule } from './users/users.module';
 @Module({
   controllers: [AppController],
   imports: [
-    AuthModule,
     ConfigModule.forRoot({
-      envFilePath: process?.env?.NODE_ENV ? enviroments[process?.env?.NODE_ENV] : enviroments.dev,
+      envFilePath: (() => {
+        return process?.env?.NODE_ENV ? enviroments[process?.env?.NODE_ENV] : enviroments.dev;
+      })(),
       load: [config],
       isGlobal: true,
       validationSchema: Joi.object({
@@ -38,6 +39,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     HttpModule,
     OrdersModule,
+    AuthModule,
   ],
   providers: [AppService],
 })
