@@ -23,10 +23,11 @@ import { config } from '../../config';
           synchronize: true,
           autoLoadEntities: true,
           extra: {
-            ssl: true,
+            ssl: false,
           },
         };
       },
+      imports: undefined,
     }),
   ],
   providers: [

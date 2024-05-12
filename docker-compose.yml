@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: dockerfile
+    depends_on:
+      - postgres_service
+    volumes:
+      - .:/usr/src
+      - /usr/src/node_modules
+      - /usr/src/postgres_data
+  postgres_service:
+    image: postgres:14
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/mydata

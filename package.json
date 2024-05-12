@@ -31,7 +31,7 @@
     "migrations:revert": "npm run typeorm2 -- migration:revert -d src/core/database/data-source.ts",
     "migrations:log": "npm run typeorm2 -- migration:log -d src/core/database/data-source.ts",
     "migrations:clear": "npm run typeorm2 -- migration:clear -d src/core/database/data-source.ts",
-    "prepare": "husky install"
+    "prepare": "npx husky install"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

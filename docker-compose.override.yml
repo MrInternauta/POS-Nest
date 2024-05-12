@@ -1,0 +1,23 @@
+services:
+  app:
+    env_file:
+      - .env
+    container_name: node_app_dev
+    command: npm run start:debug
+    networks:   # Use a custom network
+      - devred
+    ports:
+      - 3000:3000
+  postgres_service:
+    container_name: postgres_dev
+    env_file:
+      - .env
+    networks:   # Use a custom network
+      - devred
+    ports:
+      - '5430:5432'
+networks:
+  # Use a custom network
+  devred:
+    name: 'devred'
+    driver: bridge
