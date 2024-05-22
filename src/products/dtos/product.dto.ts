@@ -35,6 +35,7 @@ export class CreateProductDto {
   @IsPositive()
   @ApiProperty()
   readonly stock: number;
+
   @IsNotEmpty()
   @IsUrl()
   @ApiProperty()

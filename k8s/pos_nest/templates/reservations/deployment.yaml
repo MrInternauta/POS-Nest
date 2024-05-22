@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: posnest
+  name: posnest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: posnest
+  template:
+    metadata:
+      labels:
+        app: posnest
+    spec:
+      containers:
+      - image: 725667370394.dkr.ecr.us-east-1.amazonaws.com/pos_nest:latest
+        name: posnest
+        env:
+          - name: API_KEY
+            value: '12345a'
+          - name: POSTGRES_DB
+            value: 'mydb'
+          - name: POSTGRES_USER
+            value: 'postgres'
+          - name: POSTGRES_PASSWORD
+            value: 'postgres'
+          - name: POSTGRES_PORT
+            value: '5432'
+          - name: POSTGRES_HOST
+            value: 'postgres_service'
+          - name: JWT_SECRET
+            value: 'abcde123'
+          - name: JWT_EXPIRES_IN
+            value: 24h
+        ports:
+          - containerPort: 3000

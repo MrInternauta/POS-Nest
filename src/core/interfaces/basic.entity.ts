@@ -6,7 +6,7 @@ export class BasicEntity {
   @CreateDateColumn({
     type: 'timestamptz',
     name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
+    default: () => 'now()',
   })
   createAt: Date;
 

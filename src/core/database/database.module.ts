@@ -20,11 +20,10 @@ import { config } from '../../config';
           username: configService.postgres.user,
           password: configService.postgres.password,
           database: configService.postgres.database,
-          synchronize: true,
           autoLoadEntities: true,
-          extra: {
-            ssl: false,
-          },
+          synchronize: false,
+          logging: false,
+          ssl: true,
         };
       },
       imports: undefined,

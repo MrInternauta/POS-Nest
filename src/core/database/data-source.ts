@@ -11,11 +11,9 @@ export const AppDataSource = new DataSource({
   username: configObj[type].user,
   password: configObj[type].password,
   database: configObj[type].database,
-  synchronize: true,
-  extra: {
-    ssl: false,
-  },
-  logging: true,
+  synchronize: false,
+  logging: false,
+  ssl: true,
   entities: ['src/*/entities/*.entity.ts'],
   migrations: ['src/core/database/migrations/*-migration.ts'],
 });
