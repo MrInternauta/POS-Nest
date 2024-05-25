@@ -147,14 +147,6 @@ export class RolesService {
       name: 'ADMIN',
       permissions: [
         {
-          name: 'Orders',
-          description: '',
-        },
-        {
-          name: 'Products',
-          description: '',
-        },
-        {
           name: 'Users',
           description: '',
         },
@@ -168,10 +160,6 @@ export class RolesService {
           name: 'Orders',
           description: '',
         },
-        {
-          name: 'Products',
-          description: '',
-        },
       ],
     };
 
@@ -179,7 +167,7 @@ export class RolesService {
       name: 'CLIENT',
       permissions: [
         {
-          name: 'Orders',
+          name: 'Products',
           description: '',
         },
       ],

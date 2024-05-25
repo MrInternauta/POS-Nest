@@ -28,34 +28,34 @@ export class AppService {
 
   async setDefaultValues() {
     try {
-      // const roles = this.rolesService.defaultValuesRole();
-      // //create permissions
-      // const permission_admin = await Promise.all(this.rolesService.createPermissions(roles.role_admin.permissions));
+      const roles = this.rolesService.defaultValuesRole();
+      //create permissions
+      const permission_admin = await Promise.all(this.rolesService.createPermissions(roles.role_admin.permissions));
 
-      // const role_admin = await this.rolesService.create(roles.role_admin);
-      // const role_cashier = await this.rolesService.create(roles.role_cashier);
-      // const role_client = await this.rolesService.create(roles.role_client);
+      const role_admin = await this.rolesService.create(roles.role_admin);
+      const role_cashier = await this.rolesService.create(roles.role_cashier);
+      const role_client = await this.rolesService.create(roles.role_client);
 
-      // //asign role-permission
-      // role_admin.permissions = permission_admin;
-      // role_cashier.permissions = permission_admin.filter(item => item.name !== 'Users');
+      //asign role-permission
+      role_admin.permissions = permission_admin;
+      role_cashier.permissions = permission_admin.filter(item => item.name !== 'Users');
 
-      // await this.rolesService.roleRepo.save(role_admin);
-      // await this.rolesService.roleRepo.save(role_cashier);
+      await this.rolesService.roleRepo.save(role_admin);
+      await this.rolesService.roleRepo.save(role_cashier);
 
-      // const users = this.usersService.defaultValuesUser();
-      // const admin = await this.usersService.create(users.admin);
-      // const cashier = await this.usersService.create(users.cashier);
-      // const client = await this.usersService.create(users.client);
+      const users = this.usersService.defaultValuesUser();
+      const admin = await this.usersService.create(users.admin);
+      const cashier = await this.usersService.create(users.cashier);
+      const client = await this.usersService.create(users.client);
 
-      // admin.role = role_admin;
-      // await this.usersService.update(admin.id, admin);
+      admin.role = role_admin;
+      await this.usersService.update(admin.id, admin);
 
-      // cashier.role = role_cashier;
-      // await this.usersService.update(cashier.id, cashier);
+      cashier.role = role_cashier;
+      await this.usersService.update(cashier.id, cashier);
 
-      // client.role = role_client;
-      // await this.usersService.update(client.id, client);
+      client.role = role_client;
+      await this.usersService.update(client.id, client);
 
       const products = this.productsServices.defaultProducts();
       products.map(async item => {
