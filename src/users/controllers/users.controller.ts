@@ -26,6 +26,7 @@ import { Role } from '../../core/auth/models/roles.model';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { UserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
+import { UpdateUserDto } from '../dtos/update-user.dto';
 
 @Controller('users')
 @ApiTags('users')
@@ -87,8 +88,8 @@ export class UsersController {
   @ApiOperation({
     summary: 'Update an user',
   })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() payload: UserDto) {
-    const wasUpdated = await this.usersService.update(id, payload);
+  async update(@Param('id', ParseIntPipe) id: number, @Body() payload: UpdateUserDto) {
+    const wasUpdated = await this.usersService.update(id, payload as UserDto);
     if (!wasUpdated) {
       throw new BadRequestException('User not updated');
     }

@@ -13,7 +13,7 @@ export class UserDto {
   @ApiProperty()
   readonly lastName: string;
 
-  @IsPhoneNumber()
+  @IsPhoneNumber('MX')
   @IsNotEmpty()
   @ApiProperty()
   readonly phone: string;
