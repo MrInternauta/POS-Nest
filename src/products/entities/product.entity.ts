@@ -22,7 +22,7 @@ export class Product extends BasicEntity {
   @Column({
     type: 'text',
   })
-  description: string;
+  description = '';
 
   @Column({
     type: 'text',
@@ -31,7 +31,7 @@ export class Product extends BasicEntity {
 
   @Column({ type: 'int' })
   //@Index()
-  price: number;
+  price = 0;
 
   @Column({ type: 'int' })
   //@Index()
@@ -41,11 +41,11 @@ export class Product extends BasicEntity {
   stock: number;
 
   @Column({ type: 'varchar' })
-  image: string;
+  image = '';
 
   @ManyToOne(() => Category, category => category.products, { nullable: true })
   @JoinColumn({
     name: 'id_category',
   }) //naming  n to 1
-  category: Category;
+  category?: Category;
 }
