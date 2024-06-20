@@ -15,7 +15,7 @@ export class Product extends BasicEntity {
   @Column({
     type: 'varchar',
     length: 255,
-    unique: true,
+    unique: false,
   })
   name: string;
 
@@ -26,6 +26,7 @@ export class Product extends BasicEntity {
 
   @Column({
     type: 'text',
+    unique: true,
   })
   code: string;
 

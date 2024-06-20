@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Between, FindOptionsWhere, Repository } from 'typeorm';
@@ -18,7 +18,7 @@ export class ProductsService {
   public findAll(params?: ProductsFilterDto) {
     if (!params)
       return this.productRepo.find({
-        loadRelationIds: { relations: ['categories', 'brand'] },
+        loadRelationIds: { relations: [] },
       });
     const where: FindOptionsWhere<Product> = {};
     const { limit, offset } = params;
@@ -27,7 +27,7 @@ export class ProductsService {
       where.price = Between(minPrice, maxPrice);
     }
     return this.productRepo.find({
-      loadRelationIds: { relations: ['categories', 'brand'] },
+      loadRelationIds: { relations: [] },
       take: limit,
       skip: offset,
       where,
@@ -36,7 +36,7 @@ export class ProductsService {
 
   public async findOne(idProduct: number, whithRelations = true) {
     const product = await this.productRepo.findOne({
-      relations: whithRelations ? ['categories', 'brand'] : [],
+      relations: whithRelations ? [] : [],
       where: { id: idProduct },
     });
     if (!product) {
@@ -80,14 +80,21 @@ export class ProductsService {
   }
 
   public async update(id: number, payload: UpdateProductDto) {
-    await this.validateUniqueName(payload.name);
-    const product = await this.findOne(id);
-    if (payload.categoryId) {
-      const categories = await this.categoryService.findById(payload.categoryId);
-      product.category = categories;
+    try {
+      if (payload?.name) {
+        const items = await this.findOnebyName(payload?.name);
+        if (items && items.length > 0 && id.toString() !== items[0].id?.toString()) {
+          throw new BadRequestException(`Product with name '${name}' already exists`);
+        }
+      }
+      let product = await this.findOne(id);
+      product = this.productRepo.merge(product, payload);
+      return this.productRepo.save(product);
+    } catch (error) {
+      console.log(error);
+
+      throw new InternalServerErrorException();
     }
-    this.productRepo.merge(product, payload);
-    return this.productRepo.save(product);
   }
 
   async withStock(productId: number, quantity: number) {

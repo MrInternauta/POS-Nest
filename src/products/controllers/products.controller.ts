@@ -112,27 +112,23 @@ export class ProductsController {
     };
   }
 
-  @RoleD(Role.ADMIN)
   @Put(':productId')
   @HttpCode(HttpStatus.OK)
+  @RoleD(Role.ADMIN)
   @ApiOperation({
     summary: 'Update a product',
   })
-  async update(
-    @Res() res: Response,
-    @Param('productId', ParseIntPipe) productId: number,
-    @Body() product: UpdateProductDto
-  ) {
+  async update(@Param('productId', ParseIntPipe) productId: number, @Body() product: UpdateProductDto) {
     const wasUpdated = await this.productsService.update(productId, product);
     if (wasUpdated) {
-      return res.status(HttpStatus.OK).json({
+      return {
         message: `Product updated: ${productId}`,
         product: wasUpdated,
-      });
+      };
     } else {
-      return res.status(HttpStatus.BAD_REQUEST).json({
+      return {
         message: `Product ${productId} not updated`,
-      });
+      };
     }
   }
 

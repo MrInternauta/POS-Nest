@@ -3,6 +3,11 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUrl } from 'class-validator';
 
 export class CreateProductDto {
+  @IsOptional()
+  @IsNumber()
+  @ApiProperty()
+  readonly id?: number;
+
   @IsNotEmpty({ message: `The name field can't be empty` })
   @IsString()
   @ApiProperty({ description: 'A simple name for the product' })
