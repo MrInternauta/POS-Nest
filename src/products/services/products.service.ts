@@ -18,7 +18,7 @@ export class ProductsService {
   public findAll(params?: ProductsFilterDto) {
     if (!params)
       return this.productRepo.find({
-        loadRelationIds: { relations: [] },
+        relations: ['category'],
       });
     const where: FindOptionsWhere<Product> = {};
     const { limit, offset } = params;
@@ -27,7 +27,7 @@ export class ProductsService {
       where.price = Between(minPrice, maxPrice);
     }
     return this.productRepo.find({
-      loadRelationIds: { relations: [] },
+      relations: ['category'],
       take: limit,
       skip: offset,
       where,
@@ -36,7 +36,7 @@ export class ProductsService {
 
   public async findOne(idProduct: number, whithRelations = true) {
     const product = await this.productRepo.findOne({
-      relations: whithRelations ? [] : [],
+      relations: whithRelations ? ['category'] : [],
       where: { id: idProduct },
     });
     if (!product) {
@@ -82,17 +82,21 @@ export class ProductsService {
   public async update(id: number, payload: UpdateProductDto) {
     try {
       if (payload?.name) {
-        const items = await this.findOnebyName(payload?.name);
-        if (items && items.length > 0 && id.toString() !== items[0].id?.toString()) {
-          throw new BadRequestException(`Product with name '${name}' already exists`);
+        const productsItems = await this.findOnebyName(payload?.name);
+        if (productsItems && productsItems.length > 0 && id.toString() !== productsItems[0].id?.toString()) {
+          throw new BadRequestException(`Product with name '${payload?.name}' already exists`);
         }
       }
+
       let product = await this.findOne(id);
+      if (payload?.categoryId) {
+        const categories = await this.categoryService.findById(payload.categoryId);
+        product.category = categories;
+      }
       product = this.productRepo.merge(product, payload);
       return this.productRepo.save(product);
     } catch (error) {
       console.log(error);
-
       throw new InternalServerErrorException();
     }
   }

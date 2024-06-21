@@ -51,9 +51,9 @@ export class CategoriesController {
   })
   @HttpCode(HttpStatus.OK)
   async getCategory(@Res() res: Response, @Param('categoryId', ParseIntPipe) categoryId: number) {
-    return res.json({
+    return {
       category: await this.categoriesServices.findOne(categoryId),
-    });
+    };
   }
 
   @Post()
@@ -68,7 +68,6 @@ export class CategoriesController {
 
   @Put(':idCategory')
   @RoleD(Role.ADMIN)
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Update a category',
   })
@@ -79,35 +78,33 @@ export class CategoriesController {
   ) {
     const wasUpdated = await this.categoriesServices.update(idCategory, category);
     if (wasUpdated) {
-      return res.status(HttpStatus.OK).json({ message: 'Category updated', category: wasUpdated });
+      res.status(HttpStatus.OK).json({ message: 'Category updated', category: wasUpdated });
     } else {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not updated` });
+      res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not updated` });
     }
   }
 
   @RoleD(Role.ADMIN)
   @Put(':idCategory/restore')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'restore a category',
   })
   async restore(@Res() res: Response, @Param('idCategory', ParseIntPipe) idCategory: number) {
     const wasUpdated = await this.categoriesServices.restore(idCategory);
     if (wasUpdated?.affected > 0) {
-      return res.status(HttpStatus.OK).json({ message: 'Category restored', category: wasUpdated });
+      res.status(HttpStatus.OK).json({ message: 'Category restored', category: wasUpdated });
     } else {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not restored` });
+      res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not restored` });
     }
   }
 
   @RoleD(Role.ADMIN)
   @Delete(':idCategory')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete a category',
   })
   async delete(@Res() res: Response, @Param('idCategory', ParseIntPipe) idCategory: number) {
     await this.categoriesServices.remove(idCategory);
-    return res.status(HttpStatus.OK).json({ message: `Category ${idCategory} deleted` });
+    res.status(HttpStatus.OK).json({ message: `Category ${idCategory} deleted` });
   }
 }

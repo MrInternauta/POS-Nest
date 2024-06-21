@@ -70,8 +70,8 @@ export class ProductsController {
     description: 'First router with static path.\nEvite hit with parameter path :productId',
   })
   @HttpCode(HttpStatus.OK)
-  getProductFilter(@Res() res: Response) {
-    return res.json({ message: `I'm a filter` });
+  getProductFilter() {
+    return { message: `I'm a filter` };
   }
 
   //Getting obj params: Can use  Param() params: any and params.productId
@@ -82,7 +82,7 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   async getProduct(@Res() res: Response, @Param('productId', ParseIntPipe) productId: number) {
-    return res.json({
+    res.json({
       product: await this.productsService.findOne(productId),
     });
   }
@@ -93,10 +93,10 @@ export class ProductsController {
     summary: 'Get product by productCode',
   })
   @HttpCode(HttpStatus.OK)
-  async getProductByCode(@Res() res: Response, @Param('productCode') productCode: string) {
-    return res.json({
+  async getProductByCode(@Param('productCode') productCode: string) {
+    return {
       product: await this.productsService.findOnebyCode(productCode),
-    });
+    };
   }
 
   @Post()
@@ -134,16 +134,15 @@ export class ProductsController {
 
   @RoleD(Role.ADMIN)
   @Put(':idProduct/restore')
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'restore an product',
   })
   async restore(@Res() res: Response, @Param('idProduct', ParseIntPipe) idProduct: number) {
     const wasUpdated = await this.productsService.restore(idProduct);
     if (wasUpdated?.affected > 0) {
-      return res.status(HttpStatus.OK).json({ message: 'Product restored', product: wasUpdated });
+      res.status(HttpStatus.OK).json({ message: 'Product restored', product: wasUpdated });
     } else {
-      return res.status(HttpStatus.BAD_REQUEST).json({ message: `Product ${idProduct} not restored` });
+      res.status(HttpStatus.BAD_REQUEST).json({ message: `Product ${idProduct} not restored` });
     }
   }
 
@@ -154,10 +153,10 @@ export class ProductsController {
   @ApiOperation({
     summary: 'Delete a product',
   })
-  async delete(@Res() res: Response, @Param('productId', ParseIntPipe) productId: number) {
+  async delete(@Param('productId', ParseIntPipe) productId: number) {
     await this.productsService.remove(productId);
-    res.status(HttpStatus.OK).json({
+    return {
       message: `Product ${productId} deleted`,
-    });
+    };
   }
 }

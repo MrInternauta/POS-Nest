@@ -64,7 +64,7 @@ export class UsersController {
     summary: 'Get user by Id',
   })
   async get(@Res() res: Response, @Param('userId', ParseIntPipe) id: number) {
-    return res.status(HttpStatus.OK).json({
+    res.status(HttpStatus.OK).json({
       user: await this.usersService.findOne(id),
     });
   }
