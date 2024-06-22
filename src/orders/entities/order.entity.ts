@@ -18,19 +18,19 @@ export class Order extends BasicEntity {
   @OneToMany(() => OrderItem, item => item.order)
   items: OrderItem[];
 
-  @Expose()
-  get products() {
-    if (this.items) {
-      return this.items
-        .filter(item => !!item)
-        .map(item => ({
-          ...item.product,
-          itemId: item.id,
-          quantity: item.quantity,
-        }));
-    }
-    return [];
-  }
+  // @Expose()
+  // get products() {
+  //   if (this.items) {
+  //     return this.items
+  //       .filter(item => !!item)
+  //       .map(item => ({
+  //         ...item.product,
+  //         itemId: item?.id,
+  //         quantity: item?.quantity,
+  //       }));
+  //   }
+  //   return [];
+  // }
 
   @Expose()
   get total() {
@@ -38,7 +38,7 @@ export class Order extends BasicEntity {
       return this.items
         .filter(item => !!item)
         .reduce((total, item) => {
-          const totalItem = item.product.price * item.quantity;
+          const totalItem = item.product?.priceSell * item?.quantity;
           return total + totalItem;
         }, 0);
     }

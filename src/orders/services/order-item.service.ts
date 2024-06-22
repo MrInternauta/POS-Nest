@@ -20,7 +20,6 @@ export class OrderItemService {
   async findOne(orderItemId: number) {
     const order = await this.orderItemRepo.findOne({
       relations: ['product'],
-      loadRelationIds: { relations: ['order'] },
       where: { id: orderItemId },
     });
     if (!order) {
@@ -36,14 +35,16 @@ export class OrderItemService {
     const order = await this.orderService.findOne(orderId, false);
     //Quit customer
 
-    const newOrderItem = this.orderItemRepo.create({
+    let newOrderItem = this.orderItemRepo.create({
       product,
       quantity: createOrderItem.quantity,
       order,
     });
 
     this.productService.quitStock(createOrderItem.productId, createOrderItem.quantity);
-    return this.orderItemRepo.save(newOrderItem);
+    newOrderItem = await this.orderItemRepo.save(newOrderItem);
+    delete newOrderItem.order;
+    return newOrderItem;
   }
 
   public async update(id: number, updateOrderItemDto: UpdateOrderItemDto) {

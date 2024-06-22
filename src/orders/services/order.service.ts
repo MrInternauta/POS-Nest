@@ -1,4 +1,11 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -15,7 +22,6 @@ export class OrderService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
-
     @Inject(forwardRef(() => OrderItemService))
     private orderItemService: OrderItemService
   ) {}
@@ -43,7 +49,18 @@ export class OrderService {
 
   async create(createOrderDto: CreateOrderDto) {
     const user = await this.userRepo.findOneBy({ id: createOrderDto.userId });
+    if (!createOrderDto.items) {
+      throw new BadRequestException('Should be items inside the order');
+    }
     const newOrder = this.orderRepo.create({ user });
+
+    const itemsPromises = createOrderDto.items.map(item => {
+      return this.addItem(newOrder.id, item);
+    });
+
+    const result = await Promise.all(itemsPromises);
+    newOrder.items = result;
+
     return this.orderRepo.save(newOrder);
   }
 

@@ -102,18 +102,20 @@ export class ProductsService {
   }
 
   async withStock(productId: number, quantity: number) {
-    const product = await this.findOne(productId);
-    if (product.stock < quantity) throw new BadRequestException(`Product ${product.name} without stock`);
+    const product = await this.findOne(productId, false);
+    if (product.stock < quantity) {
+      throw new BadRequestException(`Product ${product.name} without ${quantity} of stock, just ${product.stock}`);
+    }
     return product;
   }
 
   async quitStock(productId: number, quantity: number) {
-    const product = await this.findOne(productId);
+    const product = await this.findOne(productId, false);
     product.stock = product.stock - quantity;
     return this.productRepo.save(product);
   }
   async addStock(productId: number, quantity: number) {
-    const product = await this.findOne(productId);
+    const product = await this.findOne(productId, false);
     product.stock = product.stock + quantity;
     return this.productRepo.save(product);
   }
