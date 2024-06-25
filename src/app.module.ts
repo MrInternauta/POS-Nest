@@ -30,8 +30,11 @@ import { UsersModule } from './users/users.module';
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_PORT: Joi.number().required(),
         POSTGRES_HOST: Joi.string().required(), //hostname()
+        POSTGRES_HOST_EXTERNAL: Joi.string().required(),
+        POSTGRES_PORT_EXTERNAL: Joi.number().required(),
         JWT_SECRET: Joi.string().required(),
         JWT_EXPIRES_IN: Joi.string().required(),
+        IMAGES_PATH: Joi.string().required(),
       }),
     }),
     DatabaseModule,

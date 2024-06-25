@@ -13,6 +13,11 @@ export class UserDto {
   @ApiProperty()
   readonly lastName: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  readonly image: string;
+
   @IsPhoneNumber('MX')
   @IsNotEmpty()
   @ApiProperty()

@@ -19,6 +19,9 @@ export class User extends BasicEntity {
   @Column({ type: 'varchar', length: 255 })
   phone: string;
 
+  @Column({ type: 'varchar' })
+  image;
+
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
 

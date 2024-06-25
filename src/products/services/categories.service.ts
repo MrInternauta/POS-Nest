@@ -52,7 +52,7 @@ export class CategoriesService {
   async create(category: CreateCategoryDto) {
     await this.validateUniqueName(category.name);
     const newCategory = this.categoryRepo.create(category);
-    return this.categoryRepo.save(newCategory);
+    return await this.categoryRepo.save(newCategory);
   }
 
   async update(id: number, changes: UpdateCategoryDto) {

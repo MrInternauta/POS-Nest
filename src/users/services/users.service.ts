@@ -75,6 +75,7 @@ export class UsersService {
       name: payload.name,
       lastName: payload.lastName,
       phone: payload.phone,
+      image: payload?.image,
     });
     console.log(user);
     return this.userRepo.save(user);
@@ -96,6 +97,7 @@ export class UsersService {
       phone: '1234567890',
       email: 'admin@admin.com',
       password: HASHED_PASS,
+      image: '',
     };
 
     const cashier: UserDto = {
@@ -104,6 +106,7 @@ export class UsersService {
       phone: '1234567890',
       email: 'cashier@cashier.com',
       password: HASHED_PASS,
+      image: '',
     };
 
     const client: UserDto = {
@@ -112,6 +115,7 @@ export class UsersService {
       phone: '1234567890',
       email: 'client@client.com',
       password: HASHED_PASS,
+      image: '',
     };
 
     return {
