@@ -96,7 +96,7 @@ export class AppService {
     }
   }
 
-  public async updateImgeUser(id: number, res: Response, type = 'user', file?: Express.Multer.File) {
+  public async updateImgeUser(id: number, res: Response, type: 'user' | 'product' = 'user', file) {
     try {
       console.log(file);
 
@@ -109,38 +109,36 @@ export class AppService {
       if (extensionesValidas.indexOf(extension) < 0) {
         throw new BadRequestException('Las extensiones permitidas son ' + extensionesValidas.join(', '));
       } else {
-        const user = await this.usersService.findOne(id);
-        if (!user) {
-          throw new BadRequestException('User was not found');
+        let user, product;
+
+        if (type == 'user') {
+          user = await this.usersService.findOne(id);
+          if (!user) {
+            throw new BadRequestException('User was not found');
+          }
+        } else {
+          product = await this.productsServices.findOne(id);
+          if (!product) {
+            throw new BadRequestException('Product was not found');
+          }
         }
         const nombreArchivo = `${id}.${extension}`;
         const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${type}/${nombreArchivo}`);
-        this.removeFile(pathImagen, 'user');
+        this.removeFile(pathImagen, type);
         fs.writeFile(pathImagen, file.buffer, async err => {
           if (err) {
             throw new BadRequestException('Error al actualizar');
           }
           console.log('The file was saved!', pathImagen);
-          const newUser = await this.usersService.update(Number(id), { ...user, image: nombreArchivo });
-          delete newUser.password;
-          res.json(newUser);
+          if (type == 'user') {
+            const newUser = await this.usersService.update(Number(id), { ...user, image: nombreArchivo });
+            delete newUser.password;
+            res.json(newUser);
+          } else {
+            const newProduct = await this.productsServices.update(Number(id), { ...product, image: nombreArchivo });
+            res.json(newProduct);
+          }
         });
-
-        // gm(file)
-        //   .resize(200, 200, '@')
-        //   .thumb(250, 250, pathImagen, 40, 'center', function (err) {
-        //     if (err) {
-        //       throw new BadRequestException('Error al actualizar');
-        //     }
-        //   })
-        //   .write(pathImagen, async err => {
-        //     if (err) {
-        //       throw new BadRequestException('Error al actualizar');
-        //     }
-        //     user.image = pathImagen;
-        //     const newUser = await this.usersService.update(Number(id), user);
-        //     res.json(newUser);
-        //   });
       }
     } catch (error) {
       console.log(error);

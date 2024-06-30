@@ -62,7 +62,7 @@ export class AppController {
   @Post('image/:type/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(
-    @Param('type') type: string,
+    @Param('type') type: 'user' | 'product',
     @Param('id', ParseIntPipe) id: number,
     @Res() res: Response,
     @UploadedFile(
