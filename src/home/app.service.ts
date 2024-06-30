@@ -1,17 +1,15 @@
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
+
+import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as gm from 'gm';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+
+import { config } from '../config';
 import { CategoriesService } from '../products/services/categories.service';
 import { ProductsService } from '../products/services/products.service';
-
 import { RolesService } from '../users/services/roles.service';
 import { UsersService } from '../users/services/users.service';
-
-import { Request, Response } from 'express';
-import { config } from '../config';
-import { ConfigType } from '@nestjs/config';
-import { Category } from '../products/entities/category.entity';
 
 @Injectable()
 export class AppService {
@@ -96,53 +94,74 @@ export class AppService {
     }
   }
 
-  public async updateImgeUser(id: number, res: Response, type: 'user' | 'product' = 'user', file) {
+  public async updateImgeUser(id: number, res: Response, file) {
     try {
-      console.log(file);
-
+      this.imageValidations(file);
       const nombreCortado = file?.originalname.split('.');
       const extension = nombreCortado[nombreCortado.length - 1];
-
-      // Extensiones permitidas
-      const extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
-
-      if (extensionesValidas.indexOf(extension) < 0) {
-        throw new BadRequestException('Las extensiones permitidas son ' + extensionesValidas.join(', '));
-      } else {
-        let user, product;
-
-        if (type == 'user') {
-          user = await this.usersService.findOne(id);
-          if (!user) {
-            throw new BadRequestException('User was not found');
-          }
-        } else {
-          product = await this.productsServices.findOne(id);
-          if (!product) {
-            throw new BadRequestException('Product was not found');
-          }
-        }
-        const nombreArchivo = `${id}.${extension}`;
-        const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${type}/${nombreArchivo}`);
-        this.removeFile(pathImagen, type);
-        fs.writeFile(pathImagen, file.buffer, async err => {
-          if (err) {
-            throw new BadRequestException('Error al actualizar');
-          }
-          console.log('The file was saved!', pathImagen);
-          if (type == 'user') {
-            const newUser = await this.usersService.update(Number(id), { ...user, image: nombreArchivo });
-            delete newUser.password;
-            res.json(newUser);
-          } else {
-            const newProduct = await this.productsServices.update(Number(id), { ...product, image: nombreArchivo });
-            res.json(newProduct);
-          }
-        });
+      const user = await this.usersService.findOne(id);
+      if (!user) {
+        throw new BadRequestException('User was not found');
       }
+      const nombreArchivo = `${id}.${extension}`;
+      this.removeFile(path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'user'}/${user?.image}`), 'user');
+
+      const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'user'}/${nombreArchivo}`);
+      fs.writeFile(pathImagen, file.buffer, async err => {
+        if (err) {
+          throw new BadRequestException('Error al actualizar');
+        }
+        console.log('The file was saved!', pathImagen);
+        const newUser = await this.usersService.update(Number(id), { ...user, image: nombreArchivo });
+        delete newUser.password;
+        res.json(newUser);
+      });
     } catch (error) {
       console.log(error);
       throw new BadRequestException();
+    }
+  }
+
+  public async updateImgeProduct(id: number, res: Response, file) {
+    try {
+      this.imageValidations(file);
+      const nombreCortado = file?.originalname.split('.');
+      const extension = nombreCortado[nombreCortado.length - 1];
+      const product = await this.productsServices.findOne(id);
+      if (!product) {
+        throw new BadRequestException('Product was not found');
+      }
+      const nombreArchivo = `${id}.${extension}`;
+      this.removeFile(
+        path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'product'}/${product?.image}`),
+        'product'
+      );
+
+      const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'product'}/${nombreArchivo}`);
+
+      fs.writeFile(pathImagen, file.buffer, async err => {
+        if (err) {
+          throw new BadRequestException('Error al actualizar');
+        }
+        console.log('The file was saved!', pathImagen);
+        const newProduct = await this.productsServices.update(Number(id), { ...product, image: nombreArchivo });
+        res.json(newProduct);
+      });
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException();
+    }
+  }
+
+  imageValidations(file) {
+    const nombreCortado = file?.originalname.split('.');
+    const extension = nombreCortado[nombreCortado.length - 1];
+
+    // Extensiones permitidas
+    const extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
+
+    if (extensionesValidas.indexOf(extension) < 0) {
+      throw new BadRequestException('Las extensiones permitidas son ' + extensionesValidas.join(', '));
     }
   }
 

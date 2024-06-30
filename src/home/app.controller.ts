@@ -1,12 +1,9 @@
 import {
   Controller,
-  FileTypeValidator,
   Get,
   HttpCode,
   HttpStatus,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
   ParseFilePipeBuilder,
   ParseIntPipe,
   Post,
@@ -16,16 +13,16 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { ApiKeyGuard } from '@project/auth';
+import { Request, Response } from 'express';
 
-import { AppService } from './app.service';
-import { FileInterceptor, NoFilesInterceptor } from '@nestjs/platform-express';
-import { Response, Request } from 'express';
 import { RoleD } from '../core/auth/decorators/roles.decorator';
 import { Role } from '../core/auth/models/roles.model';
 import { CustomUploadFileTypeValidator } from '../core/pipes/validator.pipe';
+import { AppService } from './app.service';
 
 const MAX_PROFILE_PICTURE_SIZE_IN_BYTES = 2 * 1024 * 1024;
 const VALID_UPLOADS_MIME_TYPES = ['image/jpeg', 'image/png'];
@@ -77,7 +74,11 @@ export class AppController {
     )
     file
   ) {
-    return this.appService.updateImgeUser(id, res, type, file);
+    if (type == 'product') {
+      return this.appService.updateImgeProduct(id, res, file);
+    } else {
+      return this.appService.updateImgeUser(id, res, file);
+    }
   }
 
   @Get('image/:type/:img')
