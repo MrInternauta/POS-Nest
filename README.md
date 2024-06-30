@@ -57,35 +57,45 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
+
 ## Run migrations
+
 ```bash
 npx gulp --command="migrations:show"
 npx gulp --command="migrations:run"
 ```
 
-
 ## License
-Nest is [MIT licensed](LICENSE).
 
+Nest is [MIT licensed](LICENSE).
 
 # NestJS Notes
 
 ### One to One relations
+
 Para crear relaciones uno a uno debemos hacer:
 User to Customer
+
 - User entity
+
 ```
   @OneToOne(() => Customer, (costumer) => costumer.user, { nullable: true }) //optional relation | Bidirectional relation (ref)
   @JoinColumn() //Join column (only one table, this table contains the foreign key)
   customer: Customer;
 ```
+
 - Customer entity
+
 ```
   @OneToOne(() => User, (user) => user.customer, { nullable: true }) //Bidirectional relation (ref)
   user: User;
 ```
-- La entidad que tenga el decorador @JoinColumn es el objeto que llevara la clave foranea. 
+
+- La entidad que tenga el decorador @JoinColumn es el objeto que llevara la clave foranea.
 - En la relación oneToOne solo una entidad puede tener el decorador @JoinColumn.
 - En el caso particular de esta relación también puede ser opcional
 - TypeORM permite tener una relacion bidireccional en las relaciones 1 a 1 sin necesidad de hacer queryes extras.
 
+sudo chown -R $(whoami) ~/.docker
+❯ npx gulp --command="migrations:generate"
+❯ npx gulp --command="migrations:run"

@@ -11,7 +11,7 @@ export class Category extends BasicEntity {
   @Column({ type: 'varchar', length: 255, unique: true })
   name: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   image: string;
 
   @OneToMany(() => Product, product => product.category)

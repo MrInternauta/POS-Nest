@@ -53,15 +53,19 @@ export class OrderService {
       throw new BadRequestException('Should be items inside the order');
     }
     const newOrder = this.orderRepo.create({ user });
+    const orderCreated = await this.orderRepo.save(newOrder);
 
+    if (!orderCreated) {
+      throw new BadRequestException(`Cannot create order`);
+    }
     const itemsPromises = createOrderDto.items.map(item => {
-      return this.addItem(newOrder.id, item);
+      return this.addItem(orderCreated.id, item);
     });
 
     const result = await Promise.all(itemsPromises);
     newOrder.items = result;
 
-    return this.orderRepo.save(newOrder);
+    return orderCreated;
   }
 
   async update(orderId: number, updateOrderDto: UpdateOrderDto) {
