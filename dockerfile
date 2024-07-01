@@ -12,9 +12,9 @@ RUN npm install
 COPY [".", "/usr/src/"]
 
 
-RUN npm run build
+  RUN npm run build
 
-EXPOSE 3000
+  EXPOSE 3000
 
 
 # Productive image
@@ -31,7 +31,7 @@ COPY ["package.json", ".env", "/usr/src/"]
 WORKDIR /usr/src
 
 
-RUN npm install 
+RUN npm install
 
 COPY --from=builder ["/usr/src/", "/usr/src/"]
 

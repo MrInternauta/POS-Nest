@@ -26,22 +26,17 @@ export class AppService {
       const roles = this.rolesService.defaultValuesRole();
       //create permissions
       const permission_admin = await Promise.all(this.rolesService.createPermissions(roles.role_admin.permissions));
+      const permission_vendor = await Promise.all(this.rolesService.createPermissions(roles.role_cashier.permissions));
 
-      const role_admin = await this.rolesService.create(roles.role_admin);
-      const role_cashier = await this.rolesService.create(roles.role_cashier);
+      const role_admin = await this.rolesService.create({ ...roles.role_admin, permissions: permission_admin });
+      const role_cashier = await this.rolesService.create({ ...roles.role_cashier, permissions: permission_vendor });
       const role_client = await this.rolesService.create(roles.role_client);
 
-      //asign role-permission
-      role_admin.permissions = permission_admin;
-      role_cashier.permissions = permission_admin.filter(item => item.name !== 'Users');
-
-      await this.rolesService.roleRepo.save(role_admin);
-      await this.rolesService.roleRepo.save(role_cashier);
-
       const users = this.usersService.defaultValuesUser();
+
       const admin = await this.usersService.create({ ...users.admin, role: role_admin.id });
       const cashier = await this.usersService.create({ ...users.cashier, role: role_cashier.id });
-      const client = await this.usersService.create({ ...users.client, role: role_client.id });
+      const client = await this.usersService.create({ ...users.client, role: role_client?.id });
 
       console.log(admin, cashier, client);
 

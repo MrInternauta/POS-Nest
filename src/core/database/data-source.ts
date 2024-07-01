@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
   database: configObj[type].database,
   synchronize: false,
   logging: false,
-  // ssl: true,
+  ssl: true,
   entities: ['src/*/entities/*.entity.ts'],
   migrations: ['src/core/database/migrations/*-migration.ts'],
 });
