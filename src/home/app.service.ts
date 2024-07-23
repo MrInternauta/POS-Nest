@@ -34,20 +34,20 @@ export class AppService {
 
       const users = this.usersService.defaultValuesUser();
 
-      const admin = await this.usersService.create({ ...users.admin, role: role_admin.id });
-      const cashier = await this.usersService.create({ ...users.cashier, role: role_cashier.id });
-      const client = await this.usersService.create({ ...users.client, role: role_client?.id });
+      const admin = await this.usersService.create({ ...users.admin });
+      const cashier = await this.usersService.create({ ...users.cashier });
+      const client = await this.usersService.create({ ...users.client });
 
       console.log(admin, cashier, client);
 
-      // admin.role = role_admin;
-      // await this.usersService.update(admin.id, admin);
+      admin.role = role_admin;
+      await this.usersService.update(admin.id, admin);
 
-      // cashier.role = role_cashier;
-      // await this.usersService.update(cashier.id, cashier);
+      cashier.role = role_cashier;
+      await this.usersService.update(cashier.id, cashier);
 
-      // client.role = role_client;
-      // await this.usersService.update(client.id, client);
+      client.role = role_client;
+      await this.usersService.update(client.id, client);
 
       const categories = this.categoriesServices.defaultValue();
       categories.map(async item => {
