@@ -26,17 +26,31 @@ export class AppService {
       const roles = this.rolesService.defaultValuesRole();
       //create permissions
       const permission_admin = await Promise.all(this.rolesService.createPermissions(roles.role_admin.permissions));
+
       const permission_vendor = await Promise.all(this.rolesService.createPermissions(roles.role_cashier.permissions));
 
-      const role_admin = await this.rolesService.create({ ...roles.role_admin, permissions: permission_admin });
-      const role_cashier = await this.rolesService.create({ ...roles.role_cashier, permissions: permission_vendor });
-      const role_client = await this.rolesService.create(roles.role_client);
+      const permission_client = await Promise.all(this.rolesService.createPermissions(roles.role_client.permissions));
+
+      const role_admin = await this.rolesService.create({
+        name: roles.role_admin.name,
+        permissions: permission_admin,
+      });
+
+      const role_cashier = await this.rolesService.create({
+        name: roles.role_cashier.name,
+        permissions: permission_vendor,
+      });
+
+      const role_client = await this.rolesService.create({
+        name: roles.role_client.name,
+        permissions: permission_client,
+      });
 
       const users = this.usersService.defaultValuesUser();
 
-      const admin = await this.usersService.create({ ...users.admin });
-      const cashier = await this.usersService.create({ ...users.cashier });
-      const client = await this.usersService.create({ ...users.client });
+      const admin = await this.usersService.create(users.admin);
+      const cashier = await this.usersService.create(users.cashier);
+      const client = await this.usersService.create(users.client);
 
       console.log(admin, cashier, client);
 

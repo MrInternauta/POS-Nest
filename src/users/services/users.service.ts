@@ -69,15 +69,24 @@ export class UsersService {
 
     if (payload instanceof UserDto) {
       const role = await this.rolesService.findOne(payload?.role);
-      user.role = role;
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+        role,
+      });
+      return this.userRepo.save(user);
     }
+
     this.userRepo.merge(user, {
       name: payload.name,
       lastName: payload.lastName,
       phone: payload.phone,
       image: payload?.image,
+      role: payload?.role,
     });
-    console.log(user);
+
     return this.userRepo.save(user);
   }
 
