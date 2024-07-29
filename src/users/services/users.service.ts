@@ -40,12 +40,11 @@ export class UsersService {
 
     if (userFound) throw new BadRequestException('Email in use');
 
-    const userTemp = {
+    const user = this.userRepo.create({
       ...entity,
       role: null,
-    };
+    });
 
-    const user = this.userRepo.create(userTemp);
     if (entity.role) {
       const role = await this.rolesService.findOne(entity.role);
       user.role = role;
@@ -57,14 +56,13 @@ export class UsersService {
 
     const HASHED_PASS = await bcrypt.hash(user.password, 10);
     user.password = HASHED_PASS;
-    this.userRepo.save(user);
-    return user;
+    return this.userRepo.save(user);
   }
 
   async update(id: number, payload: User | UserDto) {
     const user = await this.findOne(id);
     if (!user) {
-      throw new NotFoundException('User Not found');
+      throw new NotFoundException('User Not found ' + id);
     }
 
     if (payload instanceof UserDto) {

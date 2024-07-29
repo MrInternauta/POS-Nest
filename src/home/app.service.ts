@@ -63,6 +63,8 @@ export class AppService {
       client.role = role_client;
       await this.usersService.update(client.id, client);
 
+      console.log(admin, cashier, client);
+
       const categories = this.categoriesServices.defaultValue();
       categories.map(async item => {
         await this.categoriesServices.create(item);

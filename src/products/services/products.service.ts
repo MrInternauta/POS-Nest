@@ -69,14 +69,28 @@ export class ProductsService {
     }
   }
 
-  public async create(payload: CreateProductDto) {
-    await this.validateUniqueName(payload.name);
-    const product = this.productRepo.create(payload);
-    if (payload.categoryId) {
-      const categories = await this.categoryService.findById(payload.categoryId);
-      product.category = categories;
+  async validateUniqueCode(code: string) {
+    const items = await this.findOnebyCode(code);
+    if (items && items.length > 0) {
+      throw new BadRequestException(`Product with code '${code}' already exists`);
     }
-    return this.productRepo.save(product);
+  }
+
+  public async create(payload: CreateProductDto) {
+    try {
+      await this.validateUniqueName(payload.name);
+      await this.validateUniqueCode(payload?.code);
+
+      const product = this.productRepo.create(payload);
+      if (payload.categoryId) {
+        const categories = await this.categoryService.findById(payload.categoryId);
+        product.category = categories;
+      }
+      return this.productRepo.save(product);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
   }
 
   public async update(id: number, payload: UpdateProductDto) {
