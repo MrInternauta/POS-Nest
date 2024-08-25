@@ -23,3 +23,23 @@ export class BasicEntity {
   @DeleteDateColumn()
   deletedAt?: Date;
 }
+
+export class BasicWithDateEntity {
+  @CreateDateColumn({
+    type: 'timestamptz',
+    name: 'created_at',
+    default: () => 'now()',
+  })
+  createAt: Date;
+
+  @UpdateDateColumn({
+    type: 'timestamptz',
+    name: 'updated_at',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  @Column({ nullable: true })
+  updateAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
+}
