@@ -74,16 +74,37 @@ export class UsersService {
         image: payload?.image,
         role,
       });
+
       return this.userRepo.save(user);
     }
-
-    this.userRepo.merge(user, {
-      name: payload.name,
-      lastName: payload.lastName,
-      phone: payload.phone,
-      image: payload?.image,
-      role: payload?.role,
-    });
+    if (payload?.role?.id && !isNaN(payload?.role?.id)) {
+      const role = await this.rolesService.findOne(payload?.role?.id);
+      console.log('role', role);
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+        role,
+      });
+    } else if (payload?.role) {
+      console.log('payload', payload);
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+        role: payload?.role,
+      });
+    } else {
+      console.log('payload', payload);
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+      });
+    }
 
     return this.userRepo.save(user);
   }

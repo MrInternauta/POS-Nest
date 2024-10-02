@@ -18,7 +18,7 @@ export class UserDto {
   @ApiProperty()
   readonly image: string;
 
-  @IsPhoneNumber('MX')
+  @IsPhoneNumber('MX', { message: 'El numero de teléfono no es valido', always: false })
   @IsNotEmpty()
   @ApiProperty()
   readonly phone: string;
