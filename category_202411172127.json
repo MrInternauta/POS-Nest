@@ -1,0 +1,67 @@
+{
+"category": [
+	{
+		"created_at" : "2024-07-29T01:17:39.775Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 1,
+		"name" : "PAN",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.817Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 2,
+		"name" : "TORTILLA",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.822Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 3,
+		"name" : "COCA-COLA",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.824Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 4,
+		"name" : "MARINELA-BIMBO",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.828Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 5,
+		"name" : "ABAROTES",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.842Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 6,
+		"name" : "AGUA",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.843Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 7,
+		"name" : "DULCES",
+		"image" : null
+	},
+	{
+		"created_at" : "2024-07-29T01:17:39.917Z",
+		"updateAt" : null,
+		"deletedAt" : null,
+		"id" : 8,
+		"name" : "OTROS",
+		"image" : null
+	}
+]}
