@@ -23,7 +23,7 @@ import { config } from '../../config';
           autoLoadEntities: true,
           synchronize: false,
           logging: false,
-          ssl: true,
+          ssl: false,
         };
       },
       imports: undefined,

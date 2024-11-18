@@ -40,12 +40,11 @@ export class UsersService {
 
     if (userFound) throw new BadRequestException('Email in use');
 
-    const userTemp = {
+    const user = this.userRepo.create({
       ...entity,
       role: null,
-    };
+    });
 
-    const user = this.userRepo.create(userTemp);
     if (entity.role) {
       const role = await this.rolesService.findOne(entity.role);
       user.role = role;
@@ -57,27 +56,56 @@ export class UsersService {
 
     const HASHED_PASS = await bcrypt.hash(user.password, 10);
     user.password = HASHED_PASS;
-    this.userRepo.save(user);
-    return user;
+    return this.userRepo.save(user);
   }
 
   async update(id: number, payload: User | UserDto) {
     const user = await this.findOne(id);
     if (!user) {
-      throw new NotFoundException('User Not found');
+      throw new NotFoundException('User Not found ' + id);
     }
 
     if (payload instanceof UserDto) {
       const role = await this.rolesService.findOne(payload?.role);
-      user.role = role;
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+        role,
+      });
+
+      return this.userRepo.save(user);
     }
-    this.userRepo.merge(user, {
-      name: payload.name,
-      lastName: payload.lastName,
-      phone: payload.phone,
-      image: payload?.image,
-    });
-    console.log(user);
+    if (payload?.role?.id && !isNaN(payload?.role?.id)) {
+      const role = await this.rolesService.findOne(payload?.role?.id);
+      console.log('role', role);
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+        role,
+      });
+    } else if (payload?.role) {
+      console.log('payload', payload);
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+        role: payload?.role,
+      });
+    } else {
+      console.log('payload', payload);
+      this.userRepo.merge(user, {
+        name: payload.name,
+        lastName: payload.lastName,
+        phone: payload.phone,
+        image: payload?.image,
+      });
+    }
+
     return this.userRepo.save(user);
   }
 

@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsOptional, IsPositive, Min } from 'class-validator';
+import { IsOptional, IsPositive, Max, Min } from 'class-validator';
 
 export class FilterDto {
   @IsOptional()
   @IsPositive()
+  @Min(1)
+  @Max(50)
   @ApiProperty({ description: 'limit for paginations' })
   limit = 10;
 

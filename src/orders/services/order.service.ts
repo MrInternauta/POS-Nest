@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
@@ -31,8 +24,9 @@ export class OrderService {
     return this.orderRepo.find({
       take: limit,
       skip: offset,
+      relations: ['items', 'items.product'],
       where: { user: { id: userId } },
-      loadRelationIds: { relations: ['items'] },
+      // relations: ['items'],
     });
   }
 

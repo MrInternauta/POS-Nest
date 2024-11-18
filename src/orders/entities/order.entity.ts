@@ -1,12 +1,12 @@
 import { Expose } from 'class-transformer';
 import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { BasicEntity } from '../../core/interfaces/basic.entity';
+import { BasicWithDateEntity } from '../../core/interfaces/basic.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
 @Entity()
-export class Order extends BasicEntity {
+export class Order extends BasicWithDateEntity {
   @PrimaryGeneratedColumn()
   id: number;
 

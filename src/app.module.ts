@@ -25,7 +25,6 @@ import { UsersModule } from './users/users.module';
       isGlobal: true,
       validationSchema: Joi.object({
         API_KEY: Joi.string().required(),
-        POSTGRES_DB: Joi.string().required(),
         POSTGRES_USER: Joi.string().required(),
         POSTGRES_PASSWORD: Joi.string().required(),
         POSTGRES_PORT: Joi.number().required(),
