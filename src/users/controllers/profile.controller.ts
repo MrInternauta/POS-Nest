@@ -21,6 +21,6 @@ export class ProfileController {
   @Get('my-orders')
   getOrders(@Req() req: Request, @Query() params: FilterDto) {
     const user = req.user as PayloadToken;
-    return this.orderService.findAll(params, user.sub);
+    return this.orderService.findAll(user.sub, params);
   }
 }

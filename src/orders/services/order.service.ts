@@ -21,7 +21,12 @@ export class OrderService {
     private orderItemService: OrderItemService
   ) {}
 
-  findAll(params?: FilterDto, userId?: number) {
+  /**
+   * The owner is not optional: typeorm reads `{ user: { id: undefined } }` as no condition at all,
+   * so a caller that forgot to say whose orders these are used to get everyone's back without a
+   * word. Asking for the id up front is what keeps that from happening again.
+   */
+  findAll(userId: number, params?: FilterDto) {
     const { limit, offset } = params ?? {};
     return this.orderRepo.find({
       take: limit ?? DEFAULT_LIMIT,
