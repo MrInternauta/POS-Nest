@@ -95,6 +95,17 @@ function toNumber(value: string): number | null {
   return Number.isFinite(parsed) ? Math.round(parsed) : null;
 }
 
+/**
+ * The global ValidationPipe does not transform, so the DTO's own @Transform never runs and `codes`
+ * arrives exactly as express parsed it: a string for a single code, an array when the parameter is
+ * repeated. Both spellings, plus the comma joined one, have to mean the same set of codes.
+ */
+function toCodes(codes?: string[] | string): string[] {
+  return (Array.isArray(codes) ? codes : String(codes ?? '').split(','))
+    .map(code => String(code ?? '').trim())
+    .filter(Boolean);
+}
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -103,7 +114,8 @@ export class ProductsService {
   ) {}
 
   public async findAll(params?: ProductsFilterDto) {
-    const { limit, offset, minPrice, maxPrice, categoryId, codes, search, orderBy, order } = params ?? {};
+    const { limit, offset, minPrice, maxPrice, categoryId, search, orderBy, order } = params ?? {};
+    const codes = toCodes(params?.codes);
 
     const baseWhere: FindOptionsWhere<Product> = {};
 
@@ -115,13 +127,13 @@ export class ProductsService {
       baseWhere.category = { id: categoryId };
     }
 
-    if (codes?.length) {
+    if (codes.length) {
       baseWhere.code = In(codes);
     }
 
     //A term matches when it is contained in the name, the description or the code. Asking for
     //an exact set of codes is the stronger request, so it wins over a free text search.
-    const term = codes?.length ? undefined : search?.trim();
+    const term = codes.length ? undefined : search?.trim();
     const where: FindOptionsWhere<Product> | FindOptionsWhere<Product>[] = term
       ? [
           { ...baseWhere, name: ILike(`%${term}%`) },
