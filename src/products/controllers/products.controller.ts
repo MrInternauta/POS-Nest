@@ -41,14 +41,32 @@ export class ProductsController {
     description: 'Get all products',
     parameters: [
       {
-        name: 'page',
-        description: 'Page number',
+        name: 'offset',
+        description: 'Products to skip',
         in: 'query',
         required: false,
       },
       {
         name: 'limit',
         description: 'Limit of products per page',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'search',
+        description: 'Free text matched against name, description and code',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'orderBy',
+        description: 'Column to sort by, name by default',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'order',
+        description: 'ASC or DESC, ASC by default',
         in: 'query',
         required: false,
       },
@@ -59,7 +77,8 @@ export class ProductsController {
     @Query() params: ProductsFilterDto & FilterDto
     // @Query('offset') offset = 10,
   ) {
-    return { products: await this.productsService.findAll(params) };
+    const { products, total } = await this.productsService.findAll(params);
+    return { products, total, limit: params?.limit, offset: params?.offset };
   }
 
   //First router with static path

@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Between, FindOptionsWhere, Repository } from 'typeorm';
+import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
 
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
 import { Product } from '../entities/product.entity';
 import { CategoriesService } from './categories.service';
+
+const DEFAULT_LIMIT = 10;
 
 @Injectable()
 export class ProductsService {
@@ -16,31 +18,38 @@ export class ProductsService {
   ) {}
 
   public async findAll(params?: ProductsFilterDto) {
-    if (!params)
-      return this.productRepo.find({
-        relations: ['category'],
-      });
-    const where: FindOptionsWhere<Product> = {};
-    const { limit, offset } = params;
-    const { minPrice, maxPrice } = params;
+    const { limit, offset, minPrice, maxPrice, categoryId, search, orderBy, order } = params ?? {};
 
-    if (minPrice && maxPrice) {
-      where.price = Between(minPrice, maxPrice);
+    const baseWhere: FindOptionsWhere<Product> = {};
+
+    if (minPrice !== undefined && minPrice !== null && maxPrice) {
+      baseWhere.price = Between(minPrice, maxPrice);
     }
 
-    if (params?.categoryId) {
-      where.category = { id: params.categoryId };
+    if (categoryId) {
+      baseWhere.category = { id: categoryId };
     }
 
-    const res = await this.productRepo.find({
+    //A term matches when it is contained in the name, the description or the code
+    const term = search?.trim();
+    const where: FindOptionsWhere<Product> | FindOptionsWhere<Product>[] = term
+      ? [
+          { ...baseWhere, name: ILike(`%${term}%`) },
+          { ...baseWhere, description: ILike(`%${term}%`) },
+          { ...baseWhere, code: ILike(`%${term}%`) },
+        ]
+      : baseWhere;
+
+    const [products, total] = await this.productRepo.findAndCount({
       relations: ['category'],
-      take: limit,
-      skip: offset,
+      take: limit ?? DEFAULT_LIMIT,
+      skip: offset ?? 0,
       where,
+      //The id breaks ties so a product never shows up on two pages
+      order: { [orderBy ?? 'name']: order ?? 'ASC', id: 'ASC' },
     });
 
-    console.log(res);
-    return res;
+    return { products, total };
   }
 
   public async findOne(idProduct: number, whithRelations = true) {
