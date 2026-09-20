@@ -3,12 +3,97 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Between, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 
+import { parseCsv } from '../../core/util/csv.parser';
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
 import { Product } from '../entities/product.entity';
 import { CategoriesService } from './categories.service';
 
 const DEFAULT_LIMIT = 10;
+
+/**
+ * Header names accepted for each field, already normalized. A store exports its list with whatever
+ * the spreadsheet happened to be called, so both languages and the usual wordings are covered.
+ */
+const COLUMN_ALIASES = {
+  code: ['codigo', 'code', 'barcode', 'codigodebarras'],
+  name: ['producto', 'nombre', 'name', 'product'],
+  stock: ['stock', 'existencias', 'cantidad', 'inventario'],
+  priceSell: ['precio', 'precioventa', 'preciodeventa', 'pricesell', 'price'],
+  price: ['preciocompra', 'preciodecompra', 'costo', 'cost'],
+  description: ['descripcion', 'description'],
+};
+
+/** Past this many the answer says how many failed instead of listing every one */
+const MAX_REPORTED_ERRORS = 50;
+
+export interface ProductImportError {
+  row: number;
+  code?: string;
+  message: string;
+}
+
+export interface ProductImportSummary {
+  total: number;
+  created: number;
+  updated: number;
+  failed: number;
+  errors: ProductImportError[];
+}
+
+/** A nest exception keeps its text in response.message, anything else in message */
+function readErrorMessage(error: unknown): string {
+  const candidate = error as { response?: { message?: string }; message?: string };
+
+  return candidate?.response?.message || candidate?.message || 'The row could not be imported';
+}
+
+function pick(row: Record<string, string>, aliases: string[]): string {
+  for (const alias of aliases) {
+    const value = row[alias];
+    if (value) {
+      return value;
+    }
+  }
+
+  return '';
+}
+
+/** 1.234 and 1,234 written as groups of three: a thousands separator, not a decimal one */
+const THOUSANDS_GROUPS = /^-?\d{1,3}([.,]\d{3})+$/;
+
+/**
+ * Accepts 1.234,50 and 1,234.50 and $12 and 1,234, and answers null when there is nothing usable.
+ * Stock and both prices are integer columns, so the result is rounded here rather than left for
+ * the database to do quietly.
+ */
+function toNumber(value: string): number | null {
+  if (!value) {
+    return null;
+  }
+
+  let cleaned = value.replace(/[^0-9.,-]/g, '');
+
+  if (!cleaned) {
+    return null;
+  }
+
+  if (cleaned.includes(',') && cleaned.includes('.')) {
+    //Whichever comes last is the decimal separator
+    cleaned =
+      cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')
+        ? cleaned.replace(/\./g, '').replace(',', '.')
+        : cleaned.replace(/,/g, '');
+  } else if (THOUSANDS_GROUPS.test(cleaned)) {
+    cleaned = cleaned.replace(/[.,]/g, '');
+  } else if (cleaned.includes(',')) {
+    cleaned = cleaned.replace(',', '.');
+  }
+
+  const parsed = Number(cleaned);
+
+  return Number.isFinite(parsed) ? Math.round(parsed) : null;
+}
 
 @Injectable()
 export class ProductsService {
@@ -55,6 +140,87 @@ export class ProductsService {
     });
 
     return { products, total };
+  }
+
+  /**
+   * Reads a product list and leaves the table matching it: a code already in the table is updated,
+   * a code that is not there is created. A row that cannot be read is reported and the rest of the
+   * file still goes in.
+   */
+  public async importFromCsv(content: string): Promise<ProductImportSummary> {
+    const rows = parseCsv(content);
+    const summary: ProductImportSummary = {
+      total: rows.length,
+      created: 0,
+      updated: 0,
+      failed: 0,
+      errors: [],
+    };
+
+    for (let index = 0; index < rows.length; index++) {
+      const row = rows[index];
+      //The header is line 1 for whoever is looking at the file
+      const line = index + 2;
+      const code = pick(row, COLUMN_ALIASES.code);
+
+      try {
+        const name = pick(row, COLUMN_ALIASES.name);
+
+        if (!code) {
+          throw new BadRequestException('The row has no code');
+        }
+
+        if (!name) {
+          throw new BadRequestException('The row has no name');
+        }
+
+        const stock = toNumber(pick(row, COLUMN_ALIASES.stock));
+        const priceSell = toNumber(pick(row, COLUMN_ALIASES.priceSell));
+        const price = toNumber(pick(row, COLUMN_ALIASES.price));
+        const description = pick(row, COLUMN_ALIASES.description);
+
+        //A soft deleted product still holds the code, so it has to be found and brought back
+        const [existing] = await this.productRepo.find({ where: { code }, take: 1, withDeleted: true });
+
+        if (existing) {
+          existing.name = name;
+          existing.deletedAt = null;
+
+          if (stock !== null) existing.stock = stock;
+          if (priceSell !== null) existing.priceSell = priceSell;
+          if (price !== null) existing.price = price;
+          if (description) existing.description = description;
+
+          await this.productRepo.save(existing);
+          summary.updated++;
+        } else {
+          await this.productRepo.save(
+            this.productRepo.create({
+              code,
+              name,
+              description: description || '',
+              stock: stock ?? 0,
+              priceSell: priceSell ?? 0,
+              price: price ?? 0,
+              image: '',
+            })
+          );
+          summary.created++;
+        }
+      } catch (error) {
+        summary.failed++;
+
+        if (summary.errors.length < MAX_REPORTED_ERRORS) {
+          summary.errors.push({
+            row: line,
+            code: code || undefined,
+            message: readErrorMessage(error),
+          });
+        }
+      }
+    }
+
+    return summary;
   }
 
   public async findOne(idProduct: number, whithRelations = true) {
