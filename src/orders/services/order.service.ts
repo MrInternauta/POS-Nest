@@ -10,6 +10,8 @@ import { User } from '../../users/entities/user.entity';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderItemService } from './order-item.service';
 
+const DEFAULT_LIMIT = 10;
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -20,12 +22,14 @@ export class OrderService {
   ) {}
 
   findAll(params?: FilterDto, userId?: number) {
-    const { limit, offset } = params;
+    const { limit, offset } = params ?? {};
     return this.orderRepo.find({
-      take: limit,
-      skip: offset,
+      take: limit ?? DEFAULT_LIMIT,
+      skip: offset ?? 0,
       relations: ['items', 'items.product'],
       where: { user: { id: userId } },
+      //Newest first, so the history opens on the order that was just paid
+      order: { createAt: 'DESC', id: 'DESC' },
       // relations: ['items'],
     });
   }
