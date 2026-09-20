@@ -41,7 +41,9 @@ export class OrderItemService {
       order,
     });
 
-    this.productService.quitStock(createOrderItem.productId, createOrderItem.quantity);
+    //Awaited: the answer used to go out while this was still in flight, so a client that read the
+    //products again straight after a sale could still be served the stock from before it
+    await this.productService.quitStock(createOrderItem.productId, createOrderItem.quantity);
     newOrderItem = await this.orderItemRepo.save(newOrderItem);
     delete newOrderItem.order;
     return newOrderItem;
