@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Between, FindOptionsWhere, ILike, Repository } from 'typeorm';
+import { Between, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
 
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
@@ -18,7 +18,7 @@ export class ProductsService {
   ) {}
 
   public async findAll(params?: ProductsFilterDto) {
-    const { limit, offset, minPrice, maxPrice, categoryId, search, orderBy, order } = params ?? {};
+    const { limit, offset, minPrice, maxPrice, categoryId, codes, search, orderBy, order } = params ?? {};
 
     const baseWhere: FindOptionsWhere<Product> = {};
 
@@ -30,8 +30,13 @@ export class ProductsService {
       baseWhere.category = { id: categoryId };
     }
 
-    //A term matches when it is contained in the name, the description or the code
-    const term = search?.trim();
+    if (codes?.length) {
+      baseWhere.code = In(codes);
+    }
+
+    //A term matches when it is contained in the name, the description or the code. Asking for
+    //an exact set of codes is the stronger request, so it wins over a free text search.
+    const term = codes?.length ? undefined : search?.trim();
     const where: FindOptionsWhere<Product> | FindOptionsWhere<Product>[] = term
       ? [
           { ...baseWhere, name: ILike(`%${term}%`) },
