@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,8 +11,11 @@ import {
   Put,
   Query,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { Response } from 'express';
@@ -27,6 +31,9 @@ import { CreateProductDto, UpdateProductDto } from '../dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
 import { ProductsService } from '../services/products.service';
 
+/** A product list is text, a few thousand rows still fit well inside this */
+const MAX_IMPORT_SIZE_IN_BYTES = 5 * 1024 * 1024;
+
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('products')
 @Controller('products')
@@ -41,14 +48,32 @@ export class ProductsController {
     description: 'Get all products',
     parameters: [
       {
-        name: 'page',
-        description: 'Page number',
+        name: 'offset',
+        description: 'Products to skip',
         in: 'query',
         required: false,
       },
       {
         name: 'limit',
         description: 'Limit of products per page',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'search',
+        description: 'Free text matched against name, description and code',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'orderBy',
+        description: 'Column to sort by, name by default',
+        in: 'query',
+        required: false,
+      },
+      {
+        name: 'order',
+        description: 'ASC or DESC, ASC by default',
         in: 'query',
         required: false,
       },
@@ -59,7 +84,32 @@ export class ProductsController {
     @Query() params: ProductsFilterDto & FilterDto
     // @Query('offset') offset = 10,
   ) {
-    return { products: await this.productsService.findAll(params) };
+    const { products, total } = await this.productsService.findAll(params);
+    return { products, total, limit: params?.limit, offset: params?.offset };
+  }
+
+  @RoleD(Role.ADMIN)
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({
+    summary: 'Import a product list',
+    description:
+      'Takes a CSV and leaves the catalogue matching it: a code already in the table is updated, ' +
+      'a code that is not there is created. Columns are matched by name in spanish or english: ' +
+      'Codigo, Producto, Stock, Precio (the selling price), and optionally Precio de compra and ' +
+      'Descripcion. A row that cannot be read is reported and the rest of the file still goes in.',
+  })
+  @HttpCode(HttpStatus.OK)
+  async importProducts(@UploadedFile() file: { buffer?: Buffer; size?: number; originalname?: string }) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('No file was sent');
+    }
+
+    if (file.size > MAX_IMPORT_SIZE_IN_BYTES) {
+      throw new BadRequestException('The file is too big');
+    }
+
+    return this.productsService.importFromCsv(file.buffer.toString('utf8'));
   }
 
   //First router with static path

@@ -10,6 +10,8 @@ import { User } from '../../users/entities/user.entity';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderItemService } from './order-item.service';
 
+const DEFAULT_LIMIT = 10;
+
 @Injectable()
 export class OrderService {
   constructor(
@@ -19,13 +21,20 @@ export class OrderService {
     private orderItemService: OrderItemService
   ) {}
 
-  findAll(params?: FilterDto, userId?: number) {
-    const { limit, offset } = params;
+  /**
+   * The owner is not optional: typeorm reads `{ user: { id: undefined } }` as no condition at all,
+   * so a caller that forgot to say whose orders these are used to get everyone's back without a
+   * word. Asking for the id up front is what keeps that from happening again.
+   */
+  findAll(userId: number, params?: FilterDto) {
+    const { limit, offset } = params ?? {};
     return this.orderRepo.find({
-      take: limit,
-      skip: offset,
+      take: limit ?? DEFAULT_LIMIT,
+      skip: offset ?? 0,
       relations: ['items', 'items.product'],
       where: { user: { id: userId } },
+      //Newest first, so the history opens on the order that was just paid
+      order: { createAt: 'DESC', id: 'DESC' },
       // relations: ['items'],
     });
   }

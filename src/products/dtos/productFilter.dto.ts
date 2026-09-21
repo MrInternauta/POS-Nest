@@ -1,22 +1,63 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { IsOptional, IsPositive, IsString, ValidateIf } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { ArrayMaxSize, IsArray, IsIn, IsOptional, IsPositive, IsString, Min, ValidateIf } from 'class-validator';
 
 import { FilterDto } from '../../core/interfaces/filter.dto';
 
+export const PRODUCT_ORDER_BY = ['name', 'code', 'price', 'priceSell', 'stock'] as const;
+export type ProductOrderBy = (typeof PRODUCT_ORDER_BY)[number];
+
+export const ORDER_DIRECTION = ['ASC', 'DESC'] as const;
+
+/** A cart asking for its products cannot ask for more than a page of them */
+export const MAX_CODES = 50;
+export type OrderDirection = (typeof ORDER_DIRECTION)[number];
+
 export class ProductsFilterDto extends FilterDto {
   @IsOptional()
-  @IsPositive()
-  @ApiProperty({ description: 'minPrice' })
-  minPrice: number;
+  @Min(0)
+  @ApiProperty({ description: 'minPrice', required: false })
+  minPrice?: number;
 
   @ValidateIf(item => item.minPrice)
   @IsPositive()
-  @ApiProperty({ description: 'maxPrice' })
-  maxPrice: number;
+  @ApiProperty({ description: 'maxPrice', required: false })
+  maxPrice?: number;
 
   @IsOptional()
   @IsPositive()
-  @IsString()
+  @ApiProperty({ description: 'categoryId', required: false })
   categoryId?: number;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: 'Free text matched against name, description and code', required: false })
+  search?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(MAX_CODES)
+  @IsString({ each: true })
+  //A query carries the codes either repeated or joined by commas
+  @Transform(({ value }) =>
+    Array.isArray(value)
+      ? value
+      : String(value ?? '')
+          .split(',')
+          .map(code => code.trim())
+          .filter(Boolean)
+  )
+  @ApiProperty({ description: 'Return only the products with these codes', required: false })
+  codes?: string[];
+
+  @IsOptional()
+  @IsIn(PRODUCT_ORDER_BY)
+  @ApiProperty({ description: `Column to sort by: ${PRODUCT_ORDER_BY.join(', ')}`, required: false })
+  orderBy?: ProductOrderBy;
+
+  @IsOptional()
+  @IsIn(ORDER_DIRECTION)
+  @ApiProperty({ description: 'ASC or DESC', required: false })
+  order?: OrderDirection;
 }

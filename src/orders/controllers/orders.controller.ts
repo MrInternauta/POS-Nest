@@ -10,14 +10,18 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+
+import { Request } from 'express';
 
 import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
+import { PayloadToken } from '../../core/auth/models/token.model';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
@@ -32,9 +36,11 @@ export class OrdersController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Order List' })
-  async findAll(@Query() params: FilterDto) {
-    return { orders: await this.orderService.findAll(params) };
+  @ApiOperation({ summary: 'Order List', description: 'The orders of whoever is asking' })
+  async findAll(@Req() req: Request, @Query() params: FilterDto) {
+    const user = req.user as PayloadToken;
+
+    return { orders: await this.orderService.findAll(user.sub, params) };
   }
 
   @Get(':orderId')

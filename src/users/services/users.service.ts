@@ -9,6 +9,9 @@ import { UserDto } from '../dtos/user.dto';
 import { User } from '../entities/user.entity';
 import { RolesService } from './roles.service';
 
+/** Role given to a user that signs up without asking for one */
+const DEFAULT_ROLE_NAME = 'CLIENT';
+
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) public userRepo: Repository<User>, private rolesService: RolesService) {}
@@ -48,6 +51,9 @@ export class UsersService {
     if (entity.role) {
       const role = await this.rolesService.findOne(entity.role);
       user.role = role;
+    } else {
+      //Signing up sends no role, and a user without one is turned away by every guarded route
+      user.role = await this.rolesService.findOneByName(DEFAULT_ROLE_NAME);
     }
 
     if (!user) {
