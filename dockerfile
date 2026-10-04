@@ -1,4 +1,7 @@
-FROM node:18.6.0-alpine as builder
+# Legacy AWS deploy (ECR image built by buildspec.yaml, run on the k8s/ cluster).
+# Production moved to Vercel (vercel.json, .github/workflows/api.yml); this path is kept as a reference.
+# It still copies .env into the image, so the secrets travel inside it: build it only from a trusted machine.
+FROM node:22-alpine as builder
 
 
 
@@ -18,7 +21,7 @@ COPY [".", "/usr/src/"]
 
 
 # Productive image
-FROM node:18.6.0-alpine as prod
+FROM node:22-alpine as prod
 
 
 ARG NODE_ENV=production
