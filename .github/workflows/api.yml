@@ -1,0 +1,53 @@
+name: API
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# One production deploy at a time; a newer push to master waits for the one in flight
+concurrency:
+  group: api-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx eslint "{src,test}/**/*.ts"
+      - run: npm run build
+      # The specs under src/ are still the generated stubs and do not compile their modules,
+      # so `npm test` stays out of the gate until they are written
+
+  deploy:
+    needs: check
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # Schema first: the new code may read a column the migration adds
+      - name: Run migrations
+        run: npm run migrations:run
+        env:
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+          POSTGRES_SSL: 'true'
+
+      - run: npx vercel@latest pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - run: npx vercel@latest build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - run: npx vercel@latest deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

@@ -38,7 +38,7 @@ export class Order extends BasicWithDateEntity {
       return this.items
         .filter(item => !!item)
         .reduce((total, item) => {
-          const totalItem = item.product?.priceSell * item?.quantity;
+          const totalItem = (item.unitPrice ?? item.product?.priceSell) * item?.quantity;
           return total + totalItem;
         }, 0);
     }

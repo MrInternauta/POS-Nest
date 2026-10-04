@@ -1,3 +1,5 @@
+# Legacy AWS deploy: builds the dockerfile and pushes it to ECR for the k8s/ cluster.
+# Production moved to Vercel (vercel.json, .github/workflows/api.yml); kept as a reference.
 version: 0.2
 phases:
   pre_build:

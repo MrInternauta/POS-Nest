@@ -38,6 +38,8 @@ export class OrderItemService {
     let newOrderItem = this.orderItemRepo.create({
       product,
       quantity: createOrderItem.quantity,
+      unitPrice: product.priceSell,
+      unitCost: product.price,
       order,
     });
 

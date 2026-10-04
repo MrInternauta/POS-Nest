@@ -16,7 +16,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { ApiKeyGuard } from '@project/auth';
+import { ApiKeyGuard, Is_PublicD } from '@project/auth';
 import { Request, Response } from 'express';
 
 import { RoleD } from '../core/auth/decorators/roles.decorator';
@@ -31,7 +31,7 @@ const VALID_UPLOADS_MIME_TYPES = ['image/jpeg', 'image/png'];
 @ApiTags('app')
 export class AppController {
   constructor(private appService: AppService) {}
-  // @Is_PublicD()
+  @Is_PublicD()
   @UseGuards(ApiKeyGuard)
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
   @Get('setDefaultValues')
@@ -61,7 +61,6 @@ export class AppController {
   uploadFile(
     @Param('type') type: 'user' | 'product',
     @Param('id', ParseIntPipe) id: number,
-    @Res() res: Response,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addValidator(
@@ -72,12 +71,12 @@ export class AppController {
         .addMaxSizeValidator({ maxSize: MAX_PROFILE_PICTURE_SIZE_IN_BYTES })
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY })
     )
-    file
+    file: Express.Multer.File
   ) {
     if (type == 'product') {
-      return this.appService.updateImgeProduct(id, res, file);
+      return this.appService.updateImgeProduct(id, file);
     } else {
-      return this.appService.updateImgeUser(id, res, file);
+      return this.appService.updateImgeUser(id, file);
     }
   }
 
