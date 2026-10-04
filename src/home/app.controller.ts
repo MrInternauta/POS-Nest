@@ -16,7 +16,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { ApiKeyGuard } from '@project/auth';
+import { ApiKeyGuard, Is_PublicD } from '@project/auth';
 import { Request, Response } from 'express';
 
 import { RoleD } from '../core/auth/decorators/roles.decorator';
@@ -31,7 +31,7 @@ const VALID_UPLOADS_MIME_TYPES = ['image/jpeg', 'image/png'];
 @ApiTags('app')
 export class AppController {
   constructor(private appService: AppService) {}
-  // @Is_PublicD()
+  @Is_PublicD()
   @UseGuards(ApiKeyGuard)
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
   @Get('setDefaultValues')
