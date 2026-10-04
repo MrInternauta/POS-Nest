@@ -22,8 +22,9 @@ jobs:
       - run: npm ci
       - run: npx eslint "{src,test}/**/*.ts"
       - run: npm run build
-      # The specs under src/ are still the generated stubs and do not compile their modules,
-      # so `npm test` stays out of the gate until they are written
+      # Only the specs that are written run here; the rest under src/ are still the generated
+      # stubs and do not compile their modules, so plain `npm test` stays out of the gate
+      - run: npx jest src/core/auth/guards/api-key.guard.spec.ts
 
   deploy:
     needs: check
