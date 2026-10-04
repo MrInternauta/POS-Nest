@@ -1,0 +1,13 @@
+# Only what the build needs goes up to Vercel
+.env*
+postgres_data
+files
+k8s
+dist
+node_modules
+*_2024*.json
+my_db.png
+buildspec.yaml
+cluster.yaml
+crds.yaml
+iam-policy.json
