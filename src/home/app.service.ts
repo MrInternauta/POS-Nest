@@ -1,15 +1,14 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { ConfigType } from '@nestjs/config';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { Response } from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
 
-import { config } from '../config';
 import { CategoriesService } from '../products/services/categories.service';
 import { ProductsService } from '../products/services/products.service';
 import { RolesService } from '../users/services/roles.service';
 import { UsersService } from '../users/services/users.service';
+import { IMAGE_TYPES, ImageStorage, ImageType } from './image-storage';
+
+const VALID_IMAGE_NAME = /^[A-Za-z0-9_-]+\.(png|jpe?g|gif)$/i;
 
 @Injectable()
 export class AppService {
@@ -18,7 +17,7 @@ export class AppService {
     private usersService: UsersService,
     private categoriesServices: CategoriesService,
     private productsServices: ProductsService,
-    @Inject(config.KEY) private configService: ConfigType<typeof config>
+    private imageStorage: ImageStorage
   ) {}
 
   async setDefaultValues() {
@@ -65,15 +64,13 @@ export class AppService {
 
       console.log(admin, cashier, client);
 
+      //Settled, not fired and forgotten: the default list repeats a few codes, and an insert that
+      //failed with nobody waiting for it brought the whole process down
       const categories = this.categoriesServices.defaultValue();
-      categories.map(async item => {
-        await this.categoriesServices.create(item);
-      });
+      await Promise.allSettled(categories.map(item => this.categoriesServices.create(item)));
 
       const products = this.productsServices.defaultProducts();
-      products.map(async item => {
-        await this.productsServices.create(item);
-      });
+      await Promise.allSettled(products.map(item => this.productsServices.create(item)));
       return {
         message: 'Values set successfully!',
       };
@@ -86,87 +83,47 @@ export class AppService {
   /**
    * @version 0.0.1
    * @function existImage
-   * @description Verifica que la imagen exista o retorna una imagen por defecto
-   * @param {Request} [req] Request de la petición HTTP
+   * @description Envia la imagen guardada, o un 404 para que la app muestre su imagen por defecto
    * @param {Response} res Response de la petición HTTP
    * @returns {object} Retorna de respuesta al cliente en formato FILE
    */
-  public async getImage(type = 'user', img: string, res: Response) {
-    const pathImg = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${type}/${img}`);
-
-    if (fs.existsSync(pathImg)) {
-      res.sendFile(pathImg);
-    } else {
-      const noImagePath = path.join(
-        __dirname,
-        `../../${this.configService.IMAGES_PATH}` + `/${type}/` + 'no-image.jpg'
-      );
-      res.sendFile(noImagePath);
+  public async getImage(type: string, img: string, res: Response) {
+    //Both values come from the url, so neither may point outside the images store
+    if (!IMAGE_TYPES.includes(type as ImageType) || !VALID_IMAGE_NAME.test(img)) {
+      throw new NotFoundException();
     }
+    const image = await this.imageStorage.read(type as ImageType, img);
+    if (!image) {
+      throw new NotFoundException();
+    }
+    res.setHeader('Content-Type', image.contentType);
+    //Every upload gets a new name, so a name always points at the same picture
+    res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+    image.stream.on('error', () => res.destroy()).pipe(res);
   }
 
-  public async updateImgeUser(id: number, res: Response, file) {
-    try {
-      this.imageValidations(file);
-      const nombreCortado = file?.originalname.split('.');
-      const extension = nombreCortado[nombreCortado.length - 1];
-      const user = await this.usersService.findOne(id);
-      if (!user) {
-        throw new BadRequestException('User was not found');
-      }
-      const nombreArchivo = `${id}.${extension}`;
-      this.removeFile(path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'user'}/${user?.image}`), 'user');
-
-      const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'user'}/${nombreArchivo}`);
-      fs.writeFile(pathImagen, file.buffer, async err => {
-        if (err) {
-          throw new BadRequestException('Error al actualizar');
-        }
-        console.log('The file was saved!', pathImagen);
-        const newUser = await this.usersService.update(Number(id), { ...user, image: nombreArchivo });
-        delete newUser.password;
-        res.json(newUser);
-      });
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException();
+  public async updateImgeUser(id: number, file: Express.Multer.File) {
+    const user = await this.usersService.findOne(id);
+    if (!user) {
+      throw new BadRequestException('User was not found');
     }
+    const image = await this.replaceImage('user', id, user.image, file);
+    const newUser = await this.usersService.update(Number(id), { ...user, image });
+    delete newUser.password;
+    return newUser;
   }
 
-  public async updateImgeProduct(id: number, res: Response, file) {
-    try {
-      this.imageValidations(file);
-      const nombreCortado = file?.originalname.split('.');
-      const extension = nombreCortado[nombreCortado.length - 1];
-      const product = await this.productsServices.findOne(id);
-      if (!product) {
-        throw new BadRequestException('Product was not found');
-      }
-      const nombreArchivo = `${id}.${extension}`;
-      this.removeFile(
-        path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'product'}/${product?.image}`),
-        'product'
-      );
-
-      const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${'product'}/${nombreArchivo}`);
-
-      fs.writeFile(pathImagen, file.buffer, async err => {
-        if (err) {
-          throw new BadRequestException('Error al actualizar');
-        }
-        console.log('The file was saved!', pathImagen);
-        const newProduct = await this.productsServices.update(Number(id), { ...product, image: nombreArchivo });
-        res.json(newProduct);
-      });
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException();
+  public async updateImgeProduct(id: number, file: Express.Multer.File) {
+    const product = await this.productsServices.findOne(id);
+    if (!product) {
+      throw new BadRequestException('Product was not found');
     }
+    const image = await this.replaceImage('product', id, product.image, file);
+    return this.productsServices.update(Number(id), { ...product, image });
   }
 
-  imageValidations(file) {
-    const nombreCortado = file?.originalname.split('.');
-    const extension = nombreCortado[nombreCortado.length - 1];
+  imageValidations(file: Express.Multer.File) {
+    const extension = this.extensionOf(file);
 
     // Extensiones permitidas
     const extensionesValidas = ['png', 'jpg', 'gif', 'jpeg'];
@@ -176,10 +133,21 @@ export class AppService {
     }
   }
 
-  private removeFile(nameImage, type = 'user') {
-    const pathImagen = path.join(__dirname, `../../${this.configService.IMAGES_PATH}/${type}/${nameImage}`);
-    if (fs.existsSync(pathImagen)) {
-      fs.unlinkSync(pathImagen);
+  /** Saves the new picture under a name of its own and drops the one it replaces */
+  private async replaceImage(type: ImageType, id: number, previous: string, file: Express.Multer.File) {
+    this.imageValidations(file);
+    const name = `${id}-${Date.now()}.${this.extensionOf(file)}`;
+    await this.imageStorage.save(type, name, file.buffer, file.mimetype);
+
+    const oldName = previous?.split('?')[0];
+    if (oldName && VALID_IMAGE_NAME.test(oldName)) {
+      //A picture left behind costs storage, not correctness, so it never fails the upload
+      await this.imageStorage.remove(type, oldName).catch(error => console.log(error));
     }
+    return name;
+  }
+
+  private extensionOf(file: Express.Multer.File) {
+    return file?.originalname?.split('.').pop()?.toLowerCase();
   }
 }

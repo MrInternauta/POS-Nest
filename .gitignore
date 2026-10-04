@@ -47,3 +47,5 @@ node_modules/
 build/
 tmp/
 temp/
+.vercel
+.env*

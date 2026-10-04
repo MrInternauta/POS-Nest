@@ -12,6 +12,13 @@ export class OrderItem extends BasicEntity {
   @Column({ type: 'int' })
   quantity: number;
 
+  //What the product sold and cost at the moment of the sale, a later price change must not rewrite past sales
+  @Column({ type: 'int' })
+  unitPrice: number;
+
+  @Column({ type: 'int' })
+  unitCost: number;
+
   //NO es relevante la relacion bi-direccional (no necesito saber en cuales ordenes de compras esta relacionado un producto)
   @ManyToOne(() => Product)
   product: Product;
