@@ -41,6 +41,22 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # An empty secret does not fail on its own: the migrations fall back to the POSTGRES_* values
+      # and look for a database on localhost, which a runner does not have
+      - name: Check the deploy secrets
+        run: |
+          missing=0
+          for name in DATABASE_URL_UNPOOLED VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::The $name repository secret is missing or empty"
+              missing=1
+            fi
+          done
+          exit $missing
+        env:
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
       # Schema first: the new code may read a column the migration adds
       - name: Run migrations
         run: npm run migrations:run
