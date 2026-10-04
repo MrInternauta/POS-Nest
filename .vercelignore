@@ -1,10 +1,9 @@
-# Only what the build needs goes up to Vercel
+# Kept out of uploads. dist/ and node_modules/ must stay in: a --prebuilt deploy uploads the
+# function's files from those folders
 .env*
 postgres_data
 files
 k8s
-dist
-node_modules
 *_2024*.json
 my_db.png
 buildspec.yaml
