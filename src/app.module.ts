@@ -13,6 +13,7 @@ import { AppController } from './home/app.controller';
 import { AppService } from './home/app.service';
 import { BlobImageStorage, DiskImageStorage, ImageStorage } from './home/image-storage';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { ProductsModule } from './products/products.module';
 import { UsersModule } from './users/users.module';
 
@@ -46,6 +47,8 @@ const withoutDatabaseUrl = (schema: Joi.Schema) =>
         JWT_EXPIRES_IN: Joi.string().required(),
         IMAGES_PATH: Joi.string().default('files/images'),
         BLOB_READ_WRITE_TOKEN: Joi.string(),
+        MP_ACCESS_TOKEN: Joi.string(),
+        MP_WEBHOOK_SECRET: Joi.string(),
       }),
     }),
     DatabaseModule,
@@ -53,6 +56,7 @@ const withoutDatabaseUrl = (schema: Joi.Schema) =>
     UsersModule,
     HttpModule,
     OrdersModule,
+    PaymentsModule,
     AuthModule,
   ],
   providers: [

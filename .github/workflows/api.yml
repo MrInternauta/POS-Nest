@@ -24,7 +24,7 @@ jobs:
       - run: npm run build
       # Only the specs that are written run here; the rest under src/ are still the generated
       # stubs and do not compile their modules, so plain `npm test` stays out of the gate
-      - run: npx jest src/core/auth/guards/api-key.guard.spec.ts
+      - run: npx jest src/core/auth/guards/api-key.guard.spec.ts src/payments
 
   deploy:
     needs: check

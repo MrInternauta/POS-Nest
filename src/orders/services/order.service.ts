@@ -5,7 +5,8 @@ import { Repository } from 'typeorm';
 
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateOrderItemDto } from '../../orders/dtos/order-item.dto';
-import { Order } from '../../orders/entities/order.entity';
+import { Order, PaymentMethod, PaymentStatus } from '../../orders/entities/order.entity';
+import { ProductsService } from '../../products/services/products.service';
 import { User } from '../../users/entities/user.entity';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderItemService } from './order-item.service';
@@ -18,7 +19,8 @@ export class OrderService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
     @Inject(forwardRef(() => OrderItemService))
-    private orderItemService: OrderItemService
+    private orderItemService: OrderItemService,
+    private productsService: ProductsService
   ) {}
 
   /**
@@ -32,7 +34,8 @@ export class OrderService {
       take: limit ?? DEFAULT_LIMIT,
       skip: offset ?? 0,
       relations: ['items', 'items.product'],
-      where: { user: { id: userId } },
+      //A Mercado Pago sale that is still at the terminal, or never got paid, is not a purchase yet
+      where: { user: { id: userId }, paymentStatus: PaymentStatus.PAID },
       //Newest first, so the history opens on the order that was just paid
       order: { createAt: 'DESC', id: 'DESC' },
       // relations: ['items'],
@@ -50,12 +53,21 @@ export class OrderService {
     return order;
   }
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(
+    createOrderDto: CreateOrderDto,
+    payment: Pick<Order, 'paymentMethod' | 'paymentStatus'> = {
+      paymentMethod: PaymentMethod.CASH,
+      paymentStatus: PaymentStatus.PAID,
+    }
+  ) {
     const user = await this.userRepo.findOneBy({ id: createOrderDto.userId });
     if (!createOrderDto.items) {
       throw new BadRequestException('Should be items inside the order');
     }
-    const newOrder = this.orderRepo.create({ user });
+    //Checked before the order exists: one product short used to leave a sale with the other items saved
+    await Promise.all(createOrderDto.items.map(item => this.productsService.withStock(item.productId, item.quantity)));
+
+    const newOrder = this.orderRepo.create({ user, ...payment });
     const orderCreated = await this.orderRepo.save(newOrder);
 
     if (!orderCreated) {

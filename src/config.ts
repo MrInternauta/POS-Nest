@@ -25,5 +25,11 @@ export const configObj = {
   IMAGES_PATH: process.env.IMAGES_PATH || 'files/images',
   //When it is set the images go to Vercel Blob, the disk of a serverless function does not keep them
   blob_token: process.env.BLOB_READ_WRITE_TOKEN,
+  //Without the access token the store cannot turn Mercado Pago on, cash keeps working
+  mercado_pago: {
+    access_token: process.env.MP_ACCESS_TOKEN,
+    //The "secret signature" of the webhook, from the application's page in the Mercado Pago panel
+    webhook_secret: process.env.MP_WEBHOOK_SECRET,
+  },
 };
 export const config = registerAs('config', () => configObj);
