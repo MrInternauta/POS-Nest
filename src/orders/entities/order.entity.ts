@@ -1,9 +1,22 @@
 import { Expose } from 'class-transformer';
-import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicWithDateEntity } from '../../core/interfaces/basic.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
+
+export enum PaymentMethod {
+  CASH = 'cash',
+  MP_POINT = 'mp_point',
+}
+
+/** A cash sale is paid the moment it is saved; a Mercado Pago one waits for the terminal */
+export enum PaymentStatus {
+  PAID = 'paid',
+  PENDING = 'pending',
+  FAILED = 'failed',
+  CANCELED = 'canceled',
+}
 
 @Entity()
 export class Order extends BasicWithDateEntity {
@@ -17,6 +30,16 @@ export class Order extends BasicWithDateEntity {
   //Si es necesaria la relacion bi direccional
   @OneToMany(() => OrderItem, item => item.order)
   items: OrderItem[];
+
+  @Column({ type: 'varchar', length: 16, default: PaymentMethod.CASH })
+  paymentMethod: PaymentMethod;
+
+  @Column({ type: 'varchar', length: 16, default: PaymentStatus.PAID })
+  paymentStatus: PaymentStatus;
+
+  //The id Mercado Pago gives the charge; unique, so a webhook retried for it lands on the same sale
+  @Column({ type: 'varchar', length: 64, nullable: true, unique: true })
+  mpOrderId: string | null;
 
   // @Expose()
   // get products() {
