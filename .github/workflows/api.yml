@@ -22,7 +22,7 @@ jobs:
       - run: npm ci
       - run: npx eslint "{src,test}/**/*.ts"
       # Who may do what: roles, own profile, own orders
-      - run: npx jest src/core/auth/guards/roles.guard.spec.ts src/users/controllers/users.controller.spec.ts src/orders/controllers/orders.controller.spec.ts
+      - run: npx jest src/core/auth/guards/roles.guard.spec.ts src/users/controllers/users.controller.spec.ts src/orders/controllers/orders.controller.spec.ts src/home/app.controller.spec.ts
       - run: npm run build
       # Only the specs that are written run here; the rest under src/ are still the generated
       # stubs and do not compile their modules, so plain `npm test` stays out of the gate
