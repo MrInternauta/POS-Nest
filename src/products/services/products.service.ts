@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Between, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
+import { Between, FindOptionsWhere, ILike, In, LessThanOrEqual, Repository } from 'typeorm';
 
 import { parseCsv } from '../../core/util/csv.parser';
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
@@ -122,7 +122,8 @@ export class ProductsService {
   ) {}
 
   public async findAll(params?: ProductsFilterDto) {
-    const { limit, offset, minPrice, maxPrice, categoryId, providerId, search, orderBy, order } = params ?? {};
+    const { limit, offset, minPrice, maxPrice, maxStock, categoryId, providerId, search, orderBy, order } =
+      params ?? {};
     const codes = toCodes(params?.codes);
 
     const baseWhere: FindOptionsWhere<Product> = {};
@@ -137,6 +138,10 @@ export class ProductsService {
 
     if (providerId) {
       baseWhere.provider = { id: providerId };
+    }
+
+    if (maxStock !== undefined && maxStock !== null) {
+      baseWhere.stock = LessThanOrEqual(maxStock);
     }
 
     if (codes.length) {

@@ -35,6 +35,12 @@ export class ProductsFilterDto extends FilterDto {
   @ApiProperty({ description: 'providerId', required: false })
   providerId?: number;
 
+  //0 is a real answer here: the products that ran out
+  @IsOptional()
+  @Min(0)
+  @ApiProperty({ description: 'Only products with this many units or fewer', required: false })
+  maxStock?: number;
+
   @IsOptional()
   @IsString()
   @ApiProperty({ description: 'Free text matched against name, description and code', required: false })
