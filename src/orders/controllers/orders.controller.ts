@@ -21,14 +21,15 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
-import { PayloadToken } from '../../core/auth/models/token.model';
+import { isAdmin, PayloadToken } from '../../core/auth/models/token.model';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateOrderItemDto } from '../dtos/order-item.dto';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
 import { OrderService } from '../services/order.service';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
-@RoleD(Role.ADMIN, Role.CUSTOMER)
+//Every route here: the guard now reads a controller's roles too, so cashiers are listed explicitly
+@RoleD(Role.ADMIN, Role.CASHIER, Role.CUSTOMER)
 @Controller('orders')
 @ApiTags('orders')
 export class OrdersController {
@@ -46,8 +47,8 @@ export class OrdersController {
   @Get(':orderId')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get One' })
-  async findOne(@Param('orderId', ParseIntPipe) orderId: number) {
-    return { order: await this.orderService.findOne(orderId, true) };
+  async findOne(@Req() req: Request, @Param('orderId', ParseIntPipe) orderId: number) {
+    return { order: await this.orderService.findOne(orderId, true, ownerOf(req)) };
   }
 
   @Post()
@@ -55,14 +56,18 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Create a order',
   })
-  async create(@Body() order: CreateOrderDto) {
+  async create(@Req() req: Request, @Body() order: CreateOrderDto) {
+    //A sale belongs to whoever makes it; only an admin may record one for someone else
+    const owner = ownerOf(req);
     return {
       message: 'Order created',
-      order: await this.orderService.create(order),
+      order: await this.orderService.create(owner === undefined ? order : { ...order, userId: owner }),
     };
   }
 
+  //It hands the order to another user, which only an admin may do
   @Put(':orderId')
+  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Update a order',
@@ -79,10 +84,14 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Add a item',
   })
-  async addItem(@Param('orderId', ParseIntPipe) orderId: number, @Body() order: CreateOrderItemDto) {
+  async addItem(
+    @Req() req: Request,
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Body() order: CreateOrderItemDto
+  ) {
     return {
       message: 'Item added',
-      item: await this.orderService.addItem(orderId, order),
+      item: await this.orderService.addItem(orderId, order, ownerOf(req)),
     };
   }
 
@@ -91,8 +100,12 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Delete item in order',
   })
-  async deleteItem(@Param('orderId', ParseIntPipe) orderId: number, @Param('itemId', ParseIntPipe) itemId: number) {
-    const order = await this.orderService.removeItem(orderId, itemId);
+  async deleteItem(
+    @Req() req: Request,
+    @Param('orderId', ParseIntPipe) orderId: number,
+    @Param('itemId', ParseIntPipe) itemId: number
+  ) {
+    const order = await this.orderService.removeItem(orderId, itemId, ownerOf(req));
     return {
       message: 'Item deleted',
       order,
@@ -104,11 +117,17 @@ export class OrdersController {
   @ApiOperation({
     summary: 'Delete a order',
   })
-  async delete(@Param('orderId', ParseIntPipe) orderId: number) {
-    const result = await this.orderService.remove(orderId);
+  async delete(@Req() req: Request, @Param('orderId', ParseIntPipe) orderId: number) {
+    const result = await this.orderService.remove(orderId, ownerOf(req));
     return {
       message: result.affected && result.affected > 0 ? 'Order deleted' : 'Order not deleted',
       order: result,
     };
   }
+}
+
+/** Whose orders the caller may touch: their own, or any of them for an admin (undefined) */
+function ownerOf(req: Request): number | undefined {
+  const user = req.user as PayloadToken;
+  return isAdmin(user) ? undefined : Number(user?.sub);
 }
