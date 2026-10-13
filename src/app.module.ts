@@ -15,6 +15,7 @@ import { BlobImageStorage, DiskImageStorage, ImageStorage } from './home/image-s
 import { OrdersModule } from './orders/orders.module';
 import { ProductsModule } from './products/products.module';
 import { ReportsModule } from './reports/reports.module';
+import { StoreAdminModule } from './stores/store-admin.module';
 import { StoresModule } from './stores/stores.module';
 import { UsersModule } from './users/users.module';
 
@@ -57,6 +58,7 @@ const withoutDatabaseUrl = (schema: Joi.Schema) =>
     OrdersModule,
     ReportsModule,
     StoresModule,
+    StoreAdminModule,
     AuthModule,
   ],
   providers: [

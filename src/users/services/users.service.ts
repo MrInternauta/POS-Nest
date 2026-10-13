@@ -65,6 +65,11 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
+  /** Stores `password` hashed, the only way a password is ever kept */
+  async setPassword(id: number, password: string) {
+    await this.userRepo.update({ id }, { password: await bcrypt.hash(password, 10) });
+  }
+
   /** Super admins see every store; only the seed and the migration make one */
   async setSuperAdmin(id: number, isSuperAdmin: boolean) {
     await this.userRepo.update({ id }, { isSuperAdmin });
