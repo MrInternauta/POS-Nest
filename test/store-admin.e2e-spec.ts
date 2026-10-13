@@ -18,7 +18,12 @@ describeWithDatabase('Running stores (e2e)', () => {
   let app: INestApplication;
   let db: DataSource;
   const run = Date.now().toString(36);
-  const password = 'secret-123';
+  //Made per run, like the users: nothing that reads as a password lives in the code
+  const secret = (label: string) => `${label}-${run}-${Math.random().toString(36).slice(2)}`;
+  const password = secret('own');
+  const temporary = secret('temp');
+  const changed = secret('changed');
+  const ownerPicked = secret('picked');
   const email = (who: string) => `${who}-${run}@example.com`;
 
   const api = () => request(app.getHttpServer());
@@ -96,33 +101,33 @@ describeWithDatabase('Running stores (e2e)', () => {
     const added = await api()
       .post('/api/stores/current/members')
       .set(bearer(owner.token))
-      .send({ email: email('cashier'), name: 'Caja', role: 'CASHIER', password: 'temporal-1' })
+      .send({ email: email('cashier'), name: 'Caja', role: 'CASHIER', password: temporary })
       .expect(200);
     expect(added.body.member).toMatchObject({ role: 'CASHIER', user: { email: email('cashier') } });
 
     const login = await api()
       .post('/api/auth')
-      .send({ email: email('cashier'), password: 'temporal-1' })
+      .send({ email: email('cashier'), password: temporary })
       .expect(201);
     expect(login.body.store).toMatchObject({ id: owner.storeId, role: 'CASHIER' });
 
     await api()
       .post('/api/auth/password')
       .set(bearer(login.body.access_token))
-      .send({ currentPassword: 'wrong-one', newPassword: 'mine-12345' })
+      .send({ currentPassword: secret('wrong'), newPassword: changed })
       .expect(403);
     await api()
       .post('/api/auth/password')
       .set(bearer(login.body.access_token))
-      .send({ currentPassword: 'temporal-1', newPassword: 'mine-12345' })
+      .send({ currentPassword: temporary, newPassword: changed })
       .expect(200);
     await api()
       .post('/api/auth')
-      .send({ email: email('cashier'), password: 'temporal-1' })
+      .send({ email: email('cashier'), password: temporary })
       .expect(401);
     await api()
       .post('/api/auth')
-      .send({ email: email('cashier'), password: 'mine-12345' })
+      .send({ email: email('cashier'), password: changed })
       .expect(201);
   });
 
@@ -131,12 +136,12 @@ describeWithDatabase('Running stores (e2e)', () => {
     await api()
       .post('/api/stores/current/members')
       .set(bearer(owner.token))
-      .send({ email: email('existing'), role: 'CASHIER', password: 'owner-picked' })
+      .send({ email: email('existing'), role: 'CASHIER', password: ownerPicked })
       .expect(200);
 
     await api()
       .post('/api/auth')
-      .send({ email: email('existing'), password: 'owner-picked' })
+      .send({ email: email('existing'), password: ownerPicked })
       .expect(401);
     const { body } = await api()
       .post('/api/auth')
@@ -177,7 +182,7 @@ describeWithDatabase('Running stores (e2e)', () => {
   it('keeps the team for the owner, and another store’s members out of reach', async () => {
     const cashier = await api()
       .post('/api/auth')
-      .send({ email: email('cashier'), password: 'mine-12345' })
+      .send({ email: email('cashier'), password: changed })
       .expect(201);
     await api().get('/api/stores/current/members').set(bearer(cashier.body.access_token)).expect(403);
     await api()
@@ -211,7 +216,7 @@ describeWithDatabase('Running stores (e2e)', () => {
   it('stops a removed cashier at once', async () => {
     const cashier = await api()
       .post('/api/auth')
-      .send({ email: email('cashier'), password: 'mine-12345' })
+      .send({ email: email('cashier'), password: changed })
       .expect(201);
     const team = await api().get('/api/stores/current/members').set(bearer(owner.token)).expect(200);
     const member = team.body.members.find(m => m.user.email === email('cashier'));
