@@ -13,7 +13,6 @@ import { parseCsv } from '../../core/util/csv.parser';
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
 import { Product } from '../entities/product.entity';
-import { StoresService } from '../../stores/services/stores.service';
 import { CategoriesService } from './categories.service';
 import { ProvidersService } from './providers.service';
 
@@ -119,16 +118,16 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
     private categoryService: CategoriesService,
-    private providersService: ProvidersService,
-    private storesService: StoresService
+    private providersService: ProvidersService
   ) {}
 
-  public async findAll(params?: ProductsFilterDto) {
+  /** Every method works within one store: a product of another store answers like a missing one */
+  public async findAll(storeId: number, params?: ProductsFilterDto) {
     const { limit, offset, minPrice, maxPrice, maxStock, categoryId, providerId, search, orderBy, order } =
       params ?? {};
     const codes = toCodes(params?.codes);
 
-    const baseWhere: FindOptionsWhere<Product> = {};
+    const baseWhere: FindOptionsWhere<Product> = { store: { id: storeId } };
 
     if (minPrice !== undefined && minPrice !== null && maxPrice) {
       baseWhere.price = Between(minPrice, maxPrice);
@@ -178,7 +177,44 @@ export class ProductsService {
    * a code that is not there is created. A row that cannot be read is reported and the rest of the
    * file still goes in.
    */
-  public async importFromCsv(content: string): Promise<ProductImportSummary> {
+  /**
+   * What the store's public catalogue shows: the products marked public, with what a buyer needs
+   * and nothing about costs or providers
+   */
+  public async findPublic(storeId: number, params?: Pick<ProductsFilterDto, 'limit' | 'offset' | 'search'>) {
+    const base: FindOptionsWhere<Product> = { store: { id: storeId }, isPublic: true };
+    const term = params?.search?.trim();
+    const where = term
+      ? [
+          { ...base, name: ILike(`%${term}%`) },
+          { ...base, code: ILike(`%${term}%`) },
+        ]
+      : base;
+
+    const [products, total] = await this.productRepo.findAndCount({
+      relations: ['category'],
+      where,
+      take: params?.limit ?? DEFAULT_LIMIT,
+      skip: params?.offset ?? 0,
+      order: { name: 'ASC', id: 'ASC' },
+    });
+
+    return {
+      total,
+      products: products.map(product => ({
+        id: product.id,
+        code: product.code,
+        name: product.name,
+        description: product.description,
+        priceSell: product.priceSell,
+        image: product.image,
+        inStock: product.stock > 0,
+        category: product.category?.name ?? null,
+      })),
+    };
+  }
+
+  public async importFromCsv(storeId: number, content: string): Promise<ProductImportSummary> {
     const rows = parseCsv(content);
     const summary: ProductImportSummary = {
       total: rows.length,
@@ -211,7 +247,11 @@ export class ProductsService {
         const description = pick(row, COLUMN_ALIASES.description);
 
         //A soft deleted product still holds the code, so it has to be found and brought back
-        const [existing] = await this.productRepo.find({ where: { code }, take: 1, withDeleted: true });
+        const [existing] = await this.productRepo.find({
+          where: { code, store: { id: storeId } },
+          take: 1,
+          withDeleted: true,
+        });
 
         if (existing) {
           existing.name = name;
@@ -227,8 +267,7 @@ export class ProductsService {
         } else {
           await this.productRepo.save(
             this.productRepo.create({
-              //Until requests carry their store everything goes to the main one
-              store: await this.storesService.mainStore(),
+              store: { id: storeId },
               code,
               name,
               description: description || '',
@@ -256,10 +295,10 @@ export class ProductsService {
     return summary;
   }
 
-  public async findOne(idProduct: number, whithRelations = true) {
+  public async findOne(storeId: number, idProduct: number, whithRelations = true) {
     const product = await this.productRepo.findOne({
       relations: whithRelations ? ['category'] : [],
-      where: { id: idProduct },
+      where: { id: idProduct, store: { id: storeId } },
     });
     if (!product) {
       throw new NotFoundException(`Product ${idProduct} not found`);
@@ -268,45 +307,43 @@ export class ProductsService {
     }
   }
 
-  findOnebyName(name: string) {
+  findOnebyName(storeId: number, name: string) {
     return this.productRepo.find({
-      where: { name },
+      where: { name, store: { id: storeId } },
       take: 1,
       withDeleted: true,
     });
   }
 
-  findOnebyCode(code: string) {
+  findOnebyCode(storeId: number, code: string) {
     return this.productRepo.find({
-      where: { code },
+      where: { code, store: { id: storeId } },
       take: 1,
       withDeleted: true,
     });
   }
 
-  async validateUniqueName(name: string) {
-    const items = await this.findOnebyName(name);
+  async validateUniqueName(storeId: number, name: string) {
+    const items = await this.findOnebyName(storeId, name);
     if (items && items.length > 0) {
       throw new BadRequestException(`Product with name '${name}' already exists`);
     }
   }
 
-  async validateUniqueCode(code: string) {
-    const items = await this.findOnebyCode(code);
+  async validateUniqueCode(storeId: number, code: string) {
+    const items = await this.findOnebyCode(storeId, code);
     if (items && items.length > 0) {
       throw new BadRequestException(`Product with code '${code}' already exists`);
     }
   }
 
-  public async create(payload: CreateProductDto) {
+  public async create(storeId: number, payload: CreateProductDto) {
     try {
-      await this.validateUniqueName(payload.name);
-      await this.validateUniqueCode(payload?.code);
+      await this.validateUniqueName(storeId, payload.name);
+      await this.validateUniqueCode(storeId, payload?.code);
 
-      const product = this.productRepo.create(payload);
-      //Until requests carry their store everything goes to the main one
-      product.store = await this.storesService.mainStore();
-      await this.applyRelations(product, payload);
+      const product = this.productRepo.create({ ...payload, store: { id: storeId } });
+      await this.applyRelations(storeId, product, payload);
       return this.productRepo.save(product);
     } catch (error) {
       //A wrong id or a repeated name already says what went wrong
@@ -318,17 +355,24 @@ export class ProductsService {
     }
   }
 
-  public async update(id: number, payload: UpdateProductDto) {
+  public async update(storeId: number, id: number, payload: UpdateProductDto) {
     try {
       if (payload?.name) {
-        const productsItems = await this.findOnebyName(payload?.name);
+        const productsItems = await this.findOnebyName(storeId, payload?.name);
         if (productsItems && productsItems.length > 0 && id.toString() !== productsItems[0].id?.toString()) {
           throw new BadRequestException(`Product with name '${payload?.name}' already exists`);
         }
       }
 
-      let product = await this.findOne(id);
-      await this.applyRelations(product, payload);
+      if (payload?.code) {
+        const [sameCode] = await this.findOnebyCode(storeId, payload.code);
+        if (sameCode && sameCode.id !== id) {
+          throw new BadRequestException(`Product with code '${payload.code}' already exists`);
+        }
+      }
+
+      let product = await this.findOne(storeId, id);
+      await this.applyRelations(storeId, product, payload);
       product = this.productRepo.merge(product, payload);
       return this.productRepo.save(product);
     } catch (error) {
@@ -341,43 +385,48 @@ export class ProductsService {
     }
   }
 
-  /** Leaving an id out keeps what the product has, null takes it off */
-  private async applyRelations(product: Product, payload: UpdateProductDto) {
+  /** Leaving an id out keeps what the product has, null takes it off. Both must be the store's own */
+  private async applyRelations(storeId: number, product: Product, payload: UpdateProductDto) {
     if (payload.categoryId !== undefined) {
       product.category =
-        payload.categoryId === null ? null : await this.categoryService.findOne(payload.categoryId, false);
+        payload.categoryId === null ? null : await this.categoryService.findOne(storeId, payload.categoryId, false);
     }
 
     if (payload.providerId !== undefined) {
-      product.provider = payload.providerId === null ? null : await this.providersService.findOne(payload.providerId);
+      product.provider =
+        payload.providerId === null ? null : await this.providersService.findOne(storeId, payload.providerId);
     }
   }
 
-  async withStock(productId: number, quantity: number) {
-    const product = await this.findOne(productId, false);
+  async withStock(storeId: number, productId: number, quantity: number) {
+    const product = await this.findOne(storeId, productId, false);
     if (product.stock < quantity) {
       throw new BadRequestException(`Product ${product.name} without ${quantity} of stock, just ${product.stock}`);
     }
     return product;
   }
 
-  async quitStock(productId: number, quantity: number) {
-    const product = await this.findOne(productId, false);
+  async quitStock(storeId: number, productId: number, quantity: number) {
+    const product = await this.findOne(storeId, productId, false);
     product.stock = product.stock - quantity;
     return this.productRepo.save(product);
   }
-  async addStock(productId: number, quantity: number) {
-    const product = await this.findOne(productId, false);
+  async addStock(storeId: number, productId: number, quantity: number) {
+    const product = await this.findOne(storeId, productId, false);
     product.stock = product.stock + quantity;
     return this.productRepo.save(product);
   }
 
-  public async remove(id: number) {
-    await this.findOne(id);
+  public async remove(storeId: number, id: number) {
+    await this.findOne(storeId, id);
     return this.productRepo.softDelete({ id });
   }
 
-  public async restore(id: number) {
+  public async restore(storeId: number, id: number) {
+    const deleted = await this.productRepo.findOne({ where: { id, store: { id: storeId } }, withDeleted: true });
+    if (!deleted) {
+      throw new NotFoundException(`Product ${id} not found`);
+    }
     return this.productRepo.restore({ id });
   }
 

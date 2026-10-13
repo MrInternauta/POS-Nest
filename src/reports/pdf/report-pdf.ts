@@ -24,12 +24,9 @@ const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
 
 const money = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
 const count = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 0 });
-const inStore = (options: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat('es-MX', { timeZone: STORE_TIMEZONE, ...options });
-const longDate = inStore({ day: 'numeric', month: 'long', year: 'numeric' });
-const dayAndMonth = inStore({ day: 'numeric', month: 'long' });
-const monthAndYear = inStore({ month: 'long', year: 'numeric' });
-const stamp = inStore({ day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+//Dates are written in the store's own zone, each store may be in a different one
+const inZone = (timeZone: string, options: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat('es-MX', { timeZone, ...options });
 
 const PERIOD_TITLE: Record<Period, string> = {
   day: 'Reporte del día',
@@ -50,12 +47,20 @@ const shortMoney = (value: number) =>
   value >= 1000 ? `$${(value / 1000).toFixed(value >= 100_000 ? 0 : 1)}k` : money.format(value);
 
 /** What the period covers, in the words someone would say it */
-export function periodLabel(period: Period, current: Pick<PeriodTotals, 'from' | 'to'>): string {
+export function periodLabel(
+  period: Period,
+  current: Pick<PeriodTotals, 'from' | 'to'>,
+  timeZone = STORE_TIMEZONE
+): string {
   const from = new Date(current.from);
   const to = new Date(current.to);
+  const longDate = inZone(timeZone, { day: 'numeric', month: 'long', year: 'numeric' });
   if (period === 'day') return capitalize(longDate.format(to));
-  if (period === 'week') return `Del ${dayAndMonth.format(from)} al ${longDate.format(to)}`;
-  return `${capitalize(monthAndYear.format(to))}, al día ${inStore({ day: 'numeric' }).format(to)}`;
+  if (period === 'week') {
+    return `Del ${inZone(timeZone, { day: 'numeric', month: 'long' }).format(from)} al ${longDate.format(to)}`;
+  }
+  const month = inZone(timeZone, { month: 'long', year: 'numeric' }).format(to);
+  return `${capitalize(month)}, al día ${inZone(timeZone, { day: 'numeric' }).format(to)}`;
 }
 
 /** Percent change, null when there is nothing to compare with */
@@ -145,7 +150,7 @@ export function monthlyChart(months: MonthTotals[]): Content {
   const slot = CONTENT_WIDTH / Math.max(months.length, 1);
   const barWidth = Math.min(28, slot * 0.62);
   const max = Math.max(...months.map(month => month.revenue), 0);
-  const label = inStore({ month: 'short', timeZone: 'UTC' });
+  const label = inZone('UTC', { month: 'short' });
 
   const bars = months.map((month, index) => {
     const barHeight = max ? Math.max((month.revenue / max) * height, month.revenue ? 2 : 0) : 0;
@@ -322,6 +327,13 @@ export function stockTable(stock: ReportData['stock']): Content {
 /** The whole report: header, figures, monthly sales, best sellers and stock to reorder */
 export function buildReportDocument(data: ReportData): TDocumentDefinitions {
   const { period, current } = data.summary;
+  const stamp = inZone(data.timezone, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   const generated = `Generado el ${stamp.format(data.generatedAt)}`;
 
   return {
@@ -345,7 +357,13 @@ export function buildReportDocument(data: ReportData): TDocumentDefinitions {
             alignment: 'right',
             stack: [
               { text: PERIOD_TITLE[period], fontSize: 18, bold: true, color: COLOR.text },
-              { text: periodLabel(period, current), fontSize: 10, color: COLOR.brand, margin: [0, 2, 0, 0] },
+              { text: data.storeName, fontSize: 11, bold: true, color: COLOR.muted, margin: [0, 2, 0, 0] },
+              {
+                text: periodLabel(period, current, data.timezone),
+                fontSize: 10,
+                color: COLOR.brand,
+                margin: [0, 2, 0, 0],
+              },
               { text: generated, fontSize: 7.5, color: COLOR.muted, margin: [0, 3, 0, 0] },
             ],
           },

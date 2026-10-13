@@ -1,8 +1,16 @@
+import { StoreRole } from '../../../stores/entities/store-member.entity';
+
 export interface PayloadToken {
-  role: string;
   sub: number;
+  /** The store being worked in; null until the user creates or joins one */
+  storeId: number | null;
+  /** The user's role in that store. The store guard reads it again from the database */
+  storeRole: StoreRole | null;
+  superAdmin: boolean;
 }
 
-/** The role names in the database are upper case (ADMIN), the Role enum is lower case */
-export const isAdmin = (user?: Pick<PayloadToken, 'role'> | null): boolean =>
-  String(user?.role ?? '').toLowerCase() === 'admin';
+export const isSuperAdmin = (user?: Pick<PayloadToken, 'superAdmin'> | null): boolean => !!user?.superAdmin;
+
+/** Owners run their store; a super admin may run any */
+export const canManageStore = (user?: Pick<PayloadToken, 'superAdmin' | 'storeRole'> | null): boolean =>
+  isSuperAdmin(user) || user?.storeRole === 'OWNER';

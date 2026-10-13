@@ -24,7 +24,7 @@ import { RolesService } from '../services/roles.service';
 export class RolesController {
   constructor(private rolesService: RolesService) {}
 
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.SUPER_ADMIN)
   @Get()
   @ApiOperation({
     summary: 'roles list',
@@ -48,7 +48,7 @@ export class RolesController {
     return { roles: await this.rolesService.findAllRoles(params) };
   }
 
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.SUPER_ADMIN)
   @Post('')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -63,7 +63,7 @@ export class RolesController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.SUPER_ADMIN)
   @ApiOperation({
     summary: 'Update an role',
   })
@@ -76,7 +76,7 @@ export class RolesController {
   }
 
   @Delete(':id')
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete an Role',

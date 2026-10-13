@@ -6,6 +6,8 @@ const noon = (date: string) => new Date(`${date}T18:00:00Z`);
 
 const data = (changes: Partial<ReportData> = {}): ReportData => ({
   generatedAt: noon('2026-10-13'),
+  storeName: 'Abarrotes Lupita',
+  timezone: 'America/Mexico_City',
   summary: {
     period: 'month',
     current: {
@@ -65,6 +67,7 @@ describe('report pdf', () => {
     expect(printed).toContain('Sin datos para comparar');
     expect(printed).toContain('Gansito');
     expect(printed).toContain('Agotado');
+    expect(printed).toContain('Abarrotes Lupita');
   });
 
   it('says so when there were no sales or nothing is running low', () => {

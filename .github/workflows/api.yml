@@ -28,8 +28,41 @@ jobs:
       # stubs and do not compile their modules, so plain `npm test` stays out of the gate
       - run: npx jest src/core/auth/guards/api-key.guard.spec.ts src/products/services/providers.service.spec.ts src/products/services/products.service.spec.ts src/products/dtos/product.dto.spec.ts src/reports/product-insights.spec.ts src/reports/pdf/report-pdf.spec.ts
 
+  # Stores kept apart, against a real Postgres: every route a user of one store could use to reach
+  # another store's data, after running the migrations the deploy runs
+  isolation:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          #A container that lives for this job only and listens on the runner alone: no password
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres@localhost:5432/postgres
+      DATABASE_URL_UNPOOLED: postgres://postgres@localhost:5432/postgres
+      API_KEY: ci-only
+      JWT_SECRET: ci-only
+      JWT_EXPIRES_IN: 1h
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run migrations:run
+      - run: npx jest --config test/jest-e2e.json test/stores.e2e-spec.ts
+
   deploy:
-    needs: check
+    needs: [check, isolation]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: production

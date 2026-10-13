@@ -21,60 +21,61 @@ import { Role } from '../../core/auth/models/roles.model';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { ParseIntPipe } from '../../core/pipes/parse-int.pipe';
 import { CreateProviderDto, UpdateProviderDto } from '../dtos/provider.dto';
+import { Store } from '../../stores/entities/store.entity';
+import { CurrentStore, StoreGuard } from '../../stores/guards/store.guard';
 import { ProvidersService } from '../services/providers.service';
 
-//Unlike categories nothing here is public: a provider carries contact details. RolesGuard only reads
-//the role from the handler, so every route carries its own @RoleD
+//Only the store's owner: a provider carries contact details
 @Controller('providers')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, StoreGuard, RolesGuard)
+@RoleD(Role.OWNER)
 @ApiTags('providers')
 export class ProvidersController {
   constructor(private providersService: ProvidersService) {}
 
   @Get()
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Providers list' })
-  async getProviders(@Query() params: FilterDto) {
-    return { providers: await this.providersService.findAll(params) };
+  async getProviders(@CurrentStore() store: Store, @Query() params: FilterDto) {
+    return { providers: await this.providersService.findAll(store.id, params) };
   }
 
   @Get(':providerId')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get provider by Id' })
-  async getProvider(@Param('providerId', ParseIntPipe) providerId: number) {
-    return { provider: await this.providersService.findOne(providerId) };
+  async getProvider(@CurrentStore() store: Store, @Param('providerId', ParseIntPipe) providerId: number) {
+    return { provider: await this.providersService.findOne(store.id, providerId) };
   }
 
   @Post()
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Create a provider' })
-  async create(@Body() provider: CreateProviderDto) {
+  async create(@CurrentStore() store: Store, @Body() provider: CreateProviderDto) {
     return {
       message: 'Provider created',
-      provider: await this.providersService.create(provider),
+      provider: await this.providersService.create(store.id, provider),
     };
   }
 
   @Put(':providerId')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update a provider' })
-  async update(@Param('providerId', ParseIntPipe) providerId: number, @Body() provider: UpdateProviderDto) {
+  async update(
+    @CurrentStore() store: Store,
+    @Param('providerId', ParseIntPipe) providerId: number,
+    @Body() provider: UpdateProviderDto
+  ) {
     return {
       message: 'Provider updated',
-      provider: await this.providersService.update(providerId, provider),
+      provider: await this.providersService.update(store.id, providerId, provider),
     };
   }
 
   @Put(':providerId/restore')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Restore a provider' })
-  async restore(@Param('providerId', ParseIntPipe) providerId: number) {
-    const restored = await this.providersService.restore(providerId);
+  async restore(@CurrentStore() store: Store, @Param('providerId', ParseIntPipe) providerId: number) {
+    const restored = await this.providersService.restore(store.id, providerId);
     if (!restored?.affected) {
       throw new BadRequestException(`Provider ${providerId} not restored`);
     }
@@ -82,11 +83,10 @@ export class ProvidersController {
   }
 
   @Delete(':providerId')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a provider' })
-  async delete(@Param('providerId', ParseIntPipe) providerId: number) {
-    await this.providersService.remove(providerId);
+  async delete(@CurrentStore() store: Store, @Param('providerId', ParseIntPipe) providerId: number) {
+    await this.providersService.remove(store.id, providerId);
     return { message: `Provider ${providerId} deleted` };
   }
 }

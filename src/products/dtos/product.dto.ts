@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUrl, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUrl, Min } from 'class-validator';
 
 export class CreateProductDto {
   @IsOptional()
@@ -46,6 +46,12 @@ export class CreateProductDto {
   @IsUrl()
   @ApiProperty()
   readonly image?: string;
+
+  /** Shown in the store's public catalogue, outside the login */
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({ required: false, default: false })
+  readonly isPublic?: boolean;
 
   //null takes the category off the product, leaving it out keeps the one it has
   @IsOptional()
