@@ -23,7 +23,8 @@ describeWithDatabase('Stores are kept apart (e2e)', () => {
   let db: DataSource;
   //Every run makes its own users and stores, so it can run again on the same database
   const run = Date.now().toString(36);
-  const password = 'secret-123';
+  //Made per run, like the users: nothing that reads as a password lives in the code
+  const password = `pw-${run}-${Math.random().toString(36).slice(2)}`;
 
   const ids = {} as Record<string, number>;
   const tokens = {} as Record<string, string>;
