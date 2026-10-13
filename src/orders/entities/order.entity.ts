@@ -1,10 +1,12 @@
 import { Expose } from 'class-transformer';
-import { Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicWithDateEntity } from '../../core/interfaces/basic.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
+//Reports filter every sale by date
+@Index('IDX_order_created_at', ['createAt'])
 @Entity()
 export class Order extends BasicWithDateEntity {
   @PrimaryGeneratedColumn()
