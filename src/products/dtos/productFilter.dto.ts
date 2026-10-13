@@ -31,6 +31,11 @@ export class ProductsFilterDto extends FilterDto {
   categoryId?: number;
 
   @IsOptional()
+  @IsPositive()
+  @ApiProperty({ description: 'providerId', required: false })
+  providerId?: number;
+
+  @IsOptional()
   @IsString()
   @ApiProperty({ description: 'Free text matched against name, description and code', required: false })
   search?: string;

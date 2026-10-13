@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Between, FindOptionsWhere, ILike, In, Repository } from 'typeorm';
@@ -8,6 +14,7 @@ import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
 import { Product } from '../entities/product.entity';
 import { CategoriesService } from './categories.service';
+import { ProvidersService } from './providers.service';
 
 const DEFAULT_LIMIT = 10;
 
@@ -110,11 +117,12 @@ function toCodes(codes?: string[] | string): string[] {
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
-    private categoryService: CategoriesService
+    private categoryService: CategoriesService,
+    private providersService: ProvidersService
   ) {}
 
   public async findAll(params?: ProductsFilterDto) {
-    const { limit, offset, minPrice, maxPrice, categoryId, search, orderBy, order } = params ?? {};
+    const { limit, offset, minPrice, maxPrice, categoryId, providerId, search, orderBy, order } = params ?? {};
     const codes = toCodes(params?.codes);
 
     const baseWhere: FindOptionsWhere<Product> = {};
@@ -125,6 +133,10 @@ export class ProductsService {
 
     if (categoryId) {
       baseWhere.category = { id: categoryId };
+    }
+
+    if (providerId) {
+      baseWhere.provider = { id: providerId };
     }
 
     if (codes.length) {
@@ -283,12 +295,13 @@ export class ProductsService {
       await this.validateUniqueCode(payload?.code);
 
       const product = this.productRepo.create(payload);
-      if (payload.categoryId) {
-        const categories = await this.categoryService.findById(payload.categoryId);
-        product.category = categories;
-      }
+      await this.applyRelations(product, payload);
       return this.productRepo.save(product);
     } catch (error) {
+      //A wrong id or a repeated name already says what went wrong
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.log(error);
       throw new InternalServerErrorException();
     }
@@ -304,15 +317,28 @@ export class ProductsService {
       }
 
       let product = await this.findOne(id);
-      if (payload?.categoryId) {
-        const categories = await this.categoryService.findById(payload.categoryId);
-        product.category = categories;
-      }
+      await this.applyRelations(product, payload);
       product = this.productRepo.merge(product, payload);
       return this.productRepo.save(product);
     } catch (error) {
+      //A wrong id or a repeated name already says what went wrong
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.log(error);
       throw new InternalServerErrorException();
+    }
+  }
+
+  /** Leaving an id out keeps what the product has, null takes it off */
+  private async applyRelations(product: Product, payload: UpdateProductDto) {
+    if (payload.categoryId !== undefined) {
+      product.category =
+        payload.categoryId === null ? null : await this.categoryService.findOne(payload.categoryId, false);
+    }
+
+    if (payload.providerId !== undefined) {
+      product.provider = payload.providerId === null ? null : await this.providersService.findOne(payload.providerId);
     }
   }
 

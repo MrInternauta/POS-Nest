@@ -46,10 +46,17 @@ export class CreateProductDto {
   @ApiProperty()
   readonly image?: string;
 
+  //null takes the category off the product, leaving it out keeps the one it has
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ required: false, nullable: true })
   @IsNumber()
-  readonly categoryId?: number;
+  readonly categoryId?: number | null;
+
+  //null takes the provider off the product, leaving it out keeps the one it has
+  @IsOptional()
+  @ApiProperty({ required: false, nullable: true })
+  @IsNumber()
+  readonly providerId?: number | null;
 }
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {}
