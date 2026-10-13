@@ -59,7 +59,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run migrations:run
-      - run: npx jest --config test/jest-e2e.json test/stores.e2e-spec.ts
+      - run: npx jest --config test/jest-e2e.json test/stores.e2e-spec.ts test/store-admin.e2e-spec.ts
 
   deploy:
     needs: [check, isolation]
