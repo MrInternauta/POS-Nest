@@ -36,7 +36,8 @@ jobs:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_PASSWORD: postgres
+          #A container that lives for this job only and listens on the runner alone: no password
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -45,8 +46,8 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-      DATABASE_URL_UNPOOLED: postgres://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL: postgres://postgres@localhost:5432/postgres
+      DATABASE_URL_UNPOOLED: postgres://postgres@localhost:5432/postgres
       API_KEY: ci-only
       JWT_SECRET: ci-only
       JWT_EXPIRES_IN: 1h
