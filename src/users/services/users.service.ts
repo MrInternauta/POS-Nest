@@ -12,6 +12,10 @@ import { RolesService } from './roles.service';
 /** Role given to a user that signs up without asking for one */
 const DEFAULT_ROLE_NAME = 'CLIENT';
 
+/** What a profile update may change */
+const USER_FIELDS = ['name', 'lastName', 'phone', 'image'] as const;
+export type UserChanges = Partial<Pick<UserDto, (typeof USER_FIELDS)[number]>>;
+
 @Injectable()
 export class UsersService {
   constructor(@InjectRepository(User) public userRepo: Repository<User>, private rolesService: RolesService) {}
@@ -65,51 +69,29 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
-  async update(id: number, payload: User | UserDto) {
+  /**
+   * Changes what a profile shows. The role changes only when `roleId` is given, and deciding who
+   * may ask for that is the caller's job: the controller only passes it on for an admin.
+   */
+  async update(id: number, changes: UserChanges, roleId?: number) {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User Not found ' + id);
     }
 
-    if (payload instanceof UserDto) {
-      const role = await this.rolesService.findOne(payload?.role);
-      this.userRepo.merge(user, {
-        name: payload.name,
-        lastName: payload.lastName,
-        phone: payload.phone,
-        image: payload?.image,
-        role,
-      });
-
-      return this.userRepo.save(user);
+    //Only these fields, and only the ones sent: an email, a password or a role in the body is ignored
+    for (const field of USER_FIELDS) {
+      if (changes?.[field] !== undefined) {
+        user[field] = changes[field];
+      }
     }
-    if (payload?.role?.id && !isNaN(payload?.role?.id)) {
-      const role = await this.rolesService.findOne(payload?.role?.id);
-      console.log('role', role);
-      this.userRepo.merge(user, {
-        name: payload.name,
-        lastName: payload.lastName,
-        phone: payload.phone,
-        image: payload?.image,
-        role,
-      });
-    } else if (payload?.role) {
-      console.log('payload', payload);
-      this.userRepo.merge(user, {
-        name: payload.name,
-        lastName: payload.lastName,
-        phone: payload.phone,
-        image: payload?.image,
-        role: payload?.role,
-      });
-    } else {
-      console.log('payload', payload);
-      this.userRepo.merge(user, {
-        name: payload.name,
-        lastName: payload.lastName,
-        phone: payload.phone,
-        image: payload?.image,
-      });
+
+    if (roleId !== undefined && roleId !== null) {
+      const role = await this.rolesService.findOne(roleId);
+      if (!role) {
+        throw new BadRequestException(`Role ${roleId} not found`);
+      }
+      user.role = role;
     }
 
     return this.userRepo.save(user);
