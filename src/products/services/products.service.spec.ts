@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
 
 import { Category } from '../entities/category.entity';
 import { Product } from '../entities/product.entity';
@@ -18,6 +18,7 @@ const serviceWith = () => {
 
   const productRepo = {
     find: jest.fn(async () => []),
+    findAndCount: jest.fn(async () => [[], 0]),
     findOne: jest.fn(async () => product),
     create: jest.fn(payload => ({ ...payload })),
     merge: jest.fn((target, changes) => Object.assign(target, changes)),
@@ -71,5 +72,17 @@ describe('ProductsService relations', () => {
 
   it('answers not found for a provider that is not there instead of a server error', async () => {
     await expect(serviceWith().update(1, { providerId: 99 })).rejects.toThrow(NotFoundException);
+  });
+});
+
+describe('ProductsService stock filter', () => {
+  it('asks for the products with this many units or fewer, the ones that ran out included', async () => {
+    const service = serviceWith();
+
+    await service.findAll({ maxStock: 0, limit: 10, offset: 0 });
+
+    const { productRepo } = service as unknown as { productRepo: { findAndCount: jest.Mock } };
+    const [{ where }] = productRepo.findAndCount.mock.calls[0];
+    expect(where.stock).toEqual(LessThanOrEqual(0));
   });
 });

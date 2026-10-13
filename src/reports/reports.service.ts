@@ -4,6 +4,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 import { Period, TopProductsDto } from './dtos/reports.dto';
+import { groupInsights, LOW_STOCK, ProductInsights, ProductSalesRow, SALES_WINDOW_DAYS } from './product-insights';
 
 /**
  * Days, weeks and months are the store's, not UTC's: in UTC a sale after 6 pm in Mexico City
@@ -53,6 +54,37 @@ export interface TopProduct {
 export interface MonthTotals extends SalesTotals {
   month: string;
 }
+
+export interface StockAlert {
+  id: number;
+  name: string;
+  code: string;
+  stock: number;
+}
+
+export interface StockAlerts {
+  threshold: number;
+  total: number;
+  products: StockAlert[];
+}
+
+/** Everything the PDF report shows */
+export interface ReportData {
+  generatedAt: Date;
+  summary: Summary;
+  topProducts: TopProduct[];
+  monthly: MonthTotals[];
+  stock: StockAlerts;
+}
+
+/** A store date as YYYY-MM-DD, what the date filters take */
+export const storeDate = (instant: Date) =>
+  new Intl.DateTimeFormat('en-CA', {
+    timeZone: STORE_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(instant);
 
 //Postgres sends SUM and COUNT back as bigint, which the driver hands over as strings
 const totals = (row: { revenue: string; profit: string; orders: string }): SalesTotals => {
@@ -171,5 +203,68 @@ export class ReportsService {
     );
 
     return rows.map(row => ({ month: row.month, ...totals(row) }));
+  }
+
+  /** Products at or below `threshold` units, the emptiest first */
+  async stockAlerts(threshold = LOW_STOCK, limit = 15): Promise<StockAlerts> {
+    const rows: (StockAlert & { total: string })[] = await this.dataSource.query(
+      `SELECT p."id", p."name", p."code", p."stock", COUNT(*) OVER () AS "total"
+      FROM "products" p
+      WHERE p."deletedAt" IS NULL AND p."stock" <= $1
+      ORDER BY p."stock", p."name"
+      LIMIT $2`,
+      [threshold, limit]
+    );
+
+    return {
+      threshold,
+      total: rows.length ? Number(rows[0].total) : 0,
+      products: rows.map(row => ({ id: row.id, name: row.name, code: row.code, stock: row.stock })),
+    };
+  }
+
+  /** What is worth looking at in the catalogue: losing money, not moving, running out, incomplete */
+  async productInsights(): Promise<ProductInsights> {
+    const rows: (Omit<ProductSalesRow, 'sold'> & { sold: string })[] = await this.dataSource.query(
+      `WITH "sales" AS (
+        SELECT
+          oi."productId" AS "id",
+          COALESCE(SUM(oi."quantity") FILTER (WHERE o."created_at" >= now() - $1::int * interval '1 day'), 0) AS "sold",
+          MAX(o."created_at") AS "lastSale"
+        FROM "order_item" oi
+        JOIN "order" o ON o."id" = oi."orderId" AND o."deletedAt" IS NULL
+        WHERE oi."deletedAt" IS NULL
+        GROUP BY oi."productId"
+      )
+      SELECT
+        p."id", p."name", p."code", p."stock", p."price", p."priceSell", p."image", p."description",
+        p."id_category" AS "categoryId",
+        p."id_provider" AS "providerId",
+        COALESCE(s."sold", 0) AS "sold",
+        s."lastSale"
+      FROM "products" p
+      LEFT JOIN "sales" s ON s."id" = p."id"
+      WHERE p."deletedAt" IS NULL`,
+      [SALES_WINDOW_DAYS]
+    );
+
+    return groupInsights(rows.map(row => ({ ...row, sold: Number(row.sold) })));
+  }
+
+  /** The summary of `period`, its best sellers by revenue, the last twelve months and the stock alerts */
+  async reportData(period: Period): Promise<ReportData> {
+    const summary = await this.summary(period);
+    const [topProducts, monthly, stock] = await Promise.all([
+      this.topProducts({
+        from: storeDate(new Date(summary.current.from)),
+        to: storeDate(new Date(summary.current.to)),
+        limit: 10,
+        by: 'revenue',
+      }),
+      this.monthly(12),
+      this.stockAlerts(),
+    ]);
+
+    return { generatedAt: new Date(), summary, topProducts, monthly, stock };
   }
 }
