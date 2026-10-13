@@ -1,6 +1,6 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
-import { IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUrl } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, IsUrl, Min } from 'class-validator';
 
 export class CreateProductDto {
   @IsOptional()
@@ -35,10 +35,11 @@ export class CreateProductDto {
   @ApiProperty()
   readonly priceSell: number;
 
+  //0 is a real stock: the product ran out. The column holds whole units
   @IsNotEmpty()
-  @IsNumber()
-  @IsPositive()
-  @ApiProperty()
+  @IsInt()
+  @Min(0)
+  @ApiProperty({ minimum: 0 })
   readonly stock: number;
 
   @IsOptional()
