@@ -12,7 +12,12 @@ import { PayloadToken } from '../models/token.model';
 export class RolesGuard implements CanActivate {
   constructor(private reflectorService: Reflector) {}
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    const roles_allowed: Role[] = this.reflectorService.get<Role[]>(ROLES_KEY, context.getHandler());
+    //A route's own roles win; without them the controller's apply. Reading only the route let a
+    //controller-wide @RoleD (orders) go unchecked
+    const roles_allowed: Role[] = this.reflectorService.getAllAndOverride<Role[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     //Allow because doesnt have a role config
     if (!roles_allowed) {
@@ -21,7 +26,6 @@ export class RolesGuard implements CanActivate {
     const req: Request = context.switchToHttp().getRequest();
     const user = req.user as PayloadToken;
     const haveRol = roles_allowed.some(rol => rol?.toLocaleLowerCase() === user.role?.toLowerCase());
-    console.log(user, roles_allowed);
 
     if (!haveRol) {
       throw new UnauthorizedException('The role doesnt have permission');

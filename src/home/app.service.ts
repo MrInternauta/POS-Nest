@@ -53,14 +53,9 @@ export class AppService {
 
       console.log(admin, cashier, client);
 
-      admin.role = role_admin;
-      await this.usersService.update(admin.id, admin);
-
-      cashier.role = role_cashier;
-      await this.usersService.update(cashier.id, cashier);
-
-      client.role = role_client;
-      await this.usersService.update(client.id, client);
+      await this.usersService.update(admin.id, {}, role_admin.id);
+      await this.usersService.update(cashier.id, {}, role_cashier.id);
+      await this.usersService.update(client.id, {}, role_client.id);
 
       console.log(admin, cashier, client);
 
@@ -108,7 +103,7 @@ export class AppService {
       throw new BadRequestException('User was not found');
     }
     const image = await this.replaceImage('user', id, user.image, file);
-    const newUser = await this.usersService.update(Number(id), { ...user, image });
+    const newUser = await this.usersService.update(Number(id), { image });
     delete newUser.password;
     return newUser;
   }

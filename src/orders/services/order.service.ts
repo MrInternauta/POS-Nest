@@ -39,10 +39,14 @@ export class OrderService {
     });
   }
 
-  async findOne(orderId: number, withRelations = true) {
+  /**
+   * With an `ownerId`, an order of someone else answers exactly like one that does not exist, so
+   * nobody learns which ids are taken. Without it (an admin), any order is found.
+   */
+  async findOne(orderId: number, withRelations = true, ownerId?: number) {
     const order = await this.orderRepo.findOne({
       relations: withRelations ? ['items', 'items.product'] : [],
-      where: { id: orderId },
+      where: ownerId === undefined ? { id: orderId } : { id: orderId, user: { id: ownerId } },
     });
     if (!order) {
       throw new NotFoundException(`Order ${orderId} not found`);
@@ -78,18 +82,21 @@ export class OrderService {
     return this.orderRepo.save(order);
   }
 
-  async removeItem(orderId, itemId) {
-    const order = await this.findOne(orderId);
+  async removeItem(orderId: number, itemId: number, ownerId?: number) {
+    const order = await this.findOne(orderId, true, ownerId);
     order.items = order.items.filter(item => item.id !== itemId);
     return this.orderRepo.save(order);
   }
 
-  async addItem(orderId: number, createOrderItem: CreateOrderItemDto) {
+  async addItem(orderId: number, createOrderItem: CreateOrderItemDto, ownerId?: number) {
+    if (ownerId !== undefined) {
+      await this.findOne(orderId, false, ownerId);
+    }
     return this.orderItemService.create(orderId, createOrderItem);
   }
 
-  public async remove(id: number) {
-    await this.findOne(id);
+  public async remove(id: number, ownerId?: number) {
+    await this.findOne(id, false, ownerId);
     return this.orderRepo.softDelete({ id });
   }
 
