@@ -24,7 +24,7 @@ import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
-import { isAdmin, PayloadToken } from '../../core/auth/models/token.model';
+import { isSuperAdmin, PayloadToken } from '../../core/auth/models/token.model';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { UserDto } from '../dtos/user.dto';
 import { UsersService } from '../services/users.service';
@@ -36,7 +36,7 @@ import { UpdateUserDto } from '../dtos/update-user.dto';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.SUPER_ADMIN)
   @Get()
   @ApiOperation({
     summary: 'User list',
@@ -60,7 +60,7 @@ export class UsersController {
     return { users: await this.usersService.findAll(params) };
   }
 
-  //Anyone signed in may read their own profile; only an admin may read someone else's
+  //Anyone signed in may read their own profile; only a super admin may read someone else's
   @Get(':userId')
   @ApiOperation({
     summary: 'Get user by Id',
@@ -70,8 +70,8 @@ export class UsersController {
     return { user: await this.usersService.findOne(id) };
   }
 
-  //Signing up is open, so whatever role the body names is dropped: every new account starts with
-  //the default one, and only an admin can change it afterwards with PUT
+  //Signing up is open, so whatever role the body names is dropped. A new account belongs to no
+  //store yet: the app offers to create one (POST /stores)
   @Is_PublicD()
   @Post('')
   @HttpCode(HttpStatus.OK)
@@ -87,10 +87,9 @@ export class UsersController {
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
-  @RoleD(Role.ADMIN, Role.CASHIER, Role.CUSTOMER)
   @ApiOperation({
     summary: 'Update an user',
-    description: 'Anyone may update their own profile; only an admin may update someone else or change a role',
+    description: 'Anyone may update their own profile; only a super admin may update someone else or change a role',
   })
   async update(@Req() req: Request, @Param('id', ParseIntPipe) id: number, @Body() payload: UpdateUserDto) {
     const caller = req.user as PayloadToken;
@@ -98,7 +97,7 @@ export class UsersController {
 
     //The profile screen sends the user's own role back on every save, so it is ignored, not refused
     const role = payload.role as number | { id?: number } | undefined;
-    const roleId = isAdmin(caller) ? (typeof role === 'object' ? role?.id : role) : undefined;
+    const roleId = isSuperAdmin(caller) ? (typeof role === 'object' ? role?.id : role) : undefined;
 
     const wasUpdated = await this.usersService.update(id, payload, roleId);
     if (!wasUpdated) {
@@ -111,7 +110,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.SUPER_ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Delete an user',
@@ -129,7 +128,7 @@ export class UsersController {
  * reason to lose the session
  */
 function assertSelfOrAdmin(caller: PayloadToken, id: number) {
-  if (!isAdmin(caller) && Number(caller?.sub) !== id) {
+  if (!isSuperAdmin(caller) && Number(caller?.sub) !== id) {
     throw new ForbiddenException('You can only see or change your own profile');
   }
 }

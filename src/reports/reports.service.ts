@@ -3,6 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 
 import { DataSource } from 'typeorm';
 
+import { Store } from '../stores/entities/store.entity';
 import { Period, TopProductsDto } from './dtos/reports.dto';
 import { groupInsights, LOW_STOCK, ProductInsights, ProductSalesRow, SALES_WINDOW_DAYS } from './product-insights';
 
@@ -14,8 +15,8 @@ import { groupInsights, LOW_STOCK, ProductInsights, ProductSalesRow, SALES_WINDO
 export const STORE_TIMEZONE = 'America/Mexico_City';
 
 //Orders in a range and their items. A deleted order or item is not a sale, whatever it once was
-const soldItems = (from: string, to: string) => `
-  "order" o ON o."deletedAt" IS NULL AND o."created_at" >= ${from} AND o."created_at" < ${to}
+const soldItems = (from: string, to: string, store: string) => `
+  "order" o ON o."deletedAt" IS NULL AND o."id_store" = ${store} AND o."created_at" >= ${from} AND o."created_at" < ${to}
   LEFT JOIN "order_item" oi ON oi."orderId" = o."id" AND oi."deletedAt" IS NULL`;
 
 //Totals come from the price and cost kept on each item, never from the product's current price
@@ -68,9 +69,14 @@ export interface StockAlerts {
   products: StockAlert[];
 }
 
+/** What a report needs to know about its store: whose sales, and in which zone days begin */
+export type ReportStore = Pick<Store, 'id' | 'timezone'>;
+
 /** Everything the PDF report shows */
 export interface ReportData {
   generatedAt: Date;
+  storeName: string;
+  timezone: string;
   summary: Summary;
   topProducts: TopProduct[];
   monthly: MonthTotals[];
@@ -78,9 +84,9 @@ export interface ReportData {
 }
 
 /** A store date as YYYY-MM-DD, what the date filters take */
-export const storeDate = (instant: Date) =>
+export const storeDate = (instant: Date, timeZone = STORE_TIMEZONE) =>
   new Intl.DateTimeFormat('en-CA', {
-    timeZone: STORE_TIMEZONE,
+    timeZone,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -106,7 +112,7 @@ export class ReportsService {
    * This day/week/month so far, next to the same stretch of the previous one: at 11 am the
    * comparison is with yesterday until 11 am, not with all of yesterday. Weeks start on Monday.
    */
-  async summary(period: Period): Promise<Summary> {
+  async summary(store: ReportStore, period: Period): Promise<Summary> {
     const rows: {
       label: 'current' | 'previous';
       from: Date;
@@ -133,9 +139,9 @@ export class ReportsService {
           r."to" AT TIME ZONE $2 AS "to",
           ${TOTALS}
         FROM "ranges" r
-        LEFT JOIN ${soldItems(`r."from" AT TIME ZONE $2`, `r."to" AT TIME ZONE $2`)}
+        LEFT JOIN ${soldItems(`r."from" AT TIME ZONE $2`, `r."to" AT TIME ZONE $2`, '$3')}
         GROUP BY r."label", r."from", r."to"`,
-      [period, STORE_TIMEZONE]
+      [period, store.timezone, store.id]
     );
 
     const byLabel = Object.fromEntries(rows.map(row => [row.label, { ...totals(row), from: row.from, to: row.to }]));
@@ -143,7 +149,7 @@ export class ReportsService {
   }
 
   /** `from` and `to` are store dates and both are included; by default, this month so far */
-  async topProducts({ from, to, limit, by }: TopProductsDto): Promise<TopProduct[]> {
+  async topProducts(store: ReportStore, { from, to, limit, by }: TopProductsDto): Promise<TopProduct[]> {
     if (from && to && from > to) {
       throw new BadRequestException('`from` must not be after `to`');
     }
@@ -160,7 +166,7 @@ export class ReportsService {
           SUM(oi."unitPrice" * oi."quantity") AS "revenue",
           SUM((oi."unitPrice" - oi."unitCost") * oi."quantity") AS "profit"
         FROM "order_item" oi
-        JOIN "order" o ON o."id" = oi."orderId" AND o."deletedAt" IS NULL
+        JOIN "order" o ON o."id" = oi."orderId" AND o."deletedAt" IS NULL AND o."id_store" = $5
         --A product deleted since still shows: it was sold
         JOIN "products" p ON p."id" = oi."productId"
         WHERE oi."deletedAt" IS NULL
@@ -169,7 +175,7 @@ export class ReportsService {
         GROUP BY p."id"
         ORDER BY ${orderBy}, p."name"
         LIMIT $4`,
-        [from ?? null, to ?? null, STORE_TIMEZONE, limit ?? 10]
+        [from ?? null, to ?? null, store.timezone, limit ?? 10, store.id]
       );
 
     return rows.map(row => ({
@@ -183,7 +189,7 @@ export class ReportsService {
   }
 
   /** The last `months` months, this one included, oldest first */
-  async monthly(months: number): Promise<MonthTotals[]> {
+  async monthly(store: ReportStore, months: number): Promise<MonthTotals[]> {
     const rows: { month: string; revenue: string; profit: string; orders: string }[] = await this.dataSource.query(
       `WITH "months" AS (
         SELECT generate_series(
@@ -196,24 +202,24 @@ export class ReportsService {
         to_char(m."start", 'YYYY-MM') AS "month",
         ${TOTALS}
       FROM "months" m
-      LEFT JOIN ${soldItems(`m."start" AT TIME ZONE $2`, `(m."start" + interval '1 month') AT TIME ZONE $2`)}
+      LEFT JOIN ${soldItems(`m."start" AT TIME ZONE $2`, `(m."start" + interval '1 month') AT TIME ZONE $2`, '$3')}
       GROUP BY m."start"
       ORDER BY m."start"`,
-      [months ?? 12, STORE_TIMEZONE]
+      [months ?? 12, store.timezone, store.id]
     );
 
     return rows.map(row => ({ month: row.month, ...totals(row) }));
   }
 
   /** Products at or below `threshold` units, the emptiest first */
-  async stockAlerts(threshold = LOW_STOCK, limit = 15): Promise<StockAlerts> {
+  async stockAlerts(storeId: number, threshold = LOW_STOCK, limit = 15): Promise<StockAlerts> {
     const rows: (StockAlert & { total: string })[] = await this.dataSource.query(
       `SELECT p."id", p."name", p."code", p."stock", COUNT(*) OVER () AS "total"
       FROM "products" p
-      WHERE p."deletedAt" IS NULL AND p."stock" <= $1
+      WHERE p."deletedAt" IS NULL AND p."stock" <= $1 AND p."id_store" = $3
       ORDER BY p."stock", p."name"
       LIMIT $2`,
-      [threshold, limit]
+      [threshold, limit, storeId]
     );
 
     return {
@@ -224,7 +230,7 @@ export class ReportsService {
   }
 
   /** What is worth looking at in the catalogue: losing money, not moving, running out, incomplete */
-  async productInsights(): Promise<ProductInsights> {
+  async productInsights(storeId: number): Promise<ProductInsights> {
     const rows: (Omit<ProductSalesRow, 'sold'> & { sold: string })[] = await this.dataSource.query(
       `WITH "sales" AS (
         SELECT
@@ -232,7 +238,7 @@ export class ReportsService {
           COALESCE(SUM(oi."quantity") FILTER (WHERE o."created_at" >= now() - $1::int * interval '1 day'), 0) AS "sold",
           MAX(o."created_at") AS "lastSale"
         FROM "order_item" oi
-        JOIN "order" o ON o."id" = oi."orderId" AND o."deletedAt" IS NULL
+        JOIN "order" o ON o."id" = oi."orderId" AND o."deletedAt" IS NULL AND o."id_store" = $2
         WHERE oi."deletedAt" IS NULL
         GROUP BY oi."productId"
       )
@@ -244,27 +250,35 @@ export class ReportsService {
         s."lastSale"
       FROM "products" p
       LEFT JOIN "sales" s ON s."id" = p."id"
-      WHERE p."deletedAt" IS NULL`,
-      [SALES_WINDOW_DAYS]
+      WHERE p."deletedAt" IS NULL AND p."id_store" = $2`,
+      [SALES_WINDOW_DAYS, storeId]
     );
 
     return groupInsights(rows.map(row => ({ ...row, sold: Number(row.sold) })));
   }
 
   /** The summary of `period`, its best sellers by revenue, the last twelve months and the stock alerts */
-  async reportData(period: Period): Promise<ReportData> {
-    const summary = await this.summary(period);
+  async reportData(store: Pick<Store, 'id' | 'name' | 'timezone'>, period: Period): Promise<ReportData> {
+    const summary = await this.summary(store, period);
     const [topProducts, monthly, stock] = await Promise.all([
-      this.topProducts({
-        from: storeDate(new Date(summary.current.from)),
-        to: storeDate(new Date(summary.current.to)),
+      this.topProducts(store, {
+        from: storeDate(new Date(summary.current.from), store.timezone),
+        to: storeDate(new Date(summary.current.to), store.timezone),
         limit: 10,
         by: 'revenue',
       }),
-      this.monthly(12),
-      this.stockAlerts(),
+      this.monthly(store, 12),
+      this.stockAlerts(store.id),
     ]);
 
-    return { generatedAt: new Date(), summary, topProducts, monthly, stock };
+    return {
+      generatedAt: new Date(),
+      storeName: store.name,
+      timezone: store.timezone,
+      summary,
+      topProducts,
+      monthly,
+      stock,
+    };
   }
 }

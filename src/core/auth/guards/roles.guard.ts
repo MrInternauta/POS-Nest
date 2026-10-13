@@ -1,8 +1,7 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 
 import { ROLES_KEY } from '../../../core/constants/constants';
 import { Role } from '../models/roles.model';
@@ -11,26 +10,31 @@ import { PayloadToken } from '../models/token.model';
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflectorService: Reflector) {}
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    //A route's own roles win; without them the controller's apply. Reading only the route let a
-    //controller-wide @RoleD (orders) go unchecked
-    const roles_allowed: Role[] = this.reflectorService.getAllAndOverride<Role[]>(ROLES_KEY, [
+
+  canActivate(context: ExecutionContext): boolean {
+    //A route's own roles win; without them the controller's apply
+    const allowed = this.reflectorService.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
 
-    //Allow because doesnt have a role config
-    if (!roles_allowed) {
+    if (!allowed) {
       return true;
     }
-    const req: Request = context.switchToHttp().getRequest();
-    const user = req.user as PayloadToken;
-    const haveRol = roles_allowed.some(rol => rol?.toLocaleLowerCase() === user.role?.toLowerCase());
 
-    if (!haveRol) {
-      throw new UnauthorizedException('The role doesnt have permission');
+    const user = context.switchToHttp().getRequest<Request>().user as PayloadToken;
+
+    //A super admin passes every check, in any store
+    if (user?.superAdmin) {
+      return true;
     }
 
-    return haveRol;
+    const role = String(user?.storeRole ?? '').toLowerCase();
+    if (role && allowed.includes(role as Role)) {
+      return true;
+    }
+
+    //A 403 and not a 401: the app signs out on a 401, and a missing permission is no reason to
+    throw new ForbiddenException('The role doesnt have permission');
   }
 }

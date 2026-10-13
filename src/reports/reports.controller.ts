@@ -7,45 +7,44 @@ import { RolesGuard } from '../core/auth/guards/roles.guard';
 import { Role } from '../core/auth/models/roles.model';
 import { MonthlyDto, SummaryDto, TopProductsDto } from './dtos/reports.dto';
 import { buildReportDocument, renderPdf } from './pdf/report-pdf';
+import { Store } from '../stores/entities/store.entity';
+import { CurrentStore, StoreGuard } from '../stores/guards/store.guard';
 import { ReportsService, storeDate } from './reports.service';
 
-//RolesGuard reads the roles from the handler only, so each route carries its own @RoleD
-@UseGuards(JwtAuthGuard, RolesGuard)
+//The reports of the store being worked in, for its owner
+@UseGuards(JwtAuthGuard, StoreGuard, RolesGuard)
+@RoleD(Role.OWNER)
 @Controller('reports')
 @ApiTags('reports')
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 
   @Get('summary')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Sales summary',
     description:
       'Revenue, profit, orders and average ticket so far this day/week/month, next to the same stretch of the previous one',
   })
-  async summary(@Query() params: SummaryDto) {
-    return { summary: await this.reportsService.summary(params.period) };
+  async summary(@CurrentStore() store: Store, @Query() params: SummaryDto) {
+    return { summary: await this.reportsService.summary(store, params.period) };
   }
 
   @Get('top-products')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Best-selling products for a date range' })
-  async topProducts(@Query() params: TopProductsDto) {
-    return { products: await this.reportsService.topProducts(params) };
+  async topProducts(@CurrentStore() store: Store, @Query() params: TopProductsDto) {
+    return { products: await this.reportsService.topProducts(store, params) };
   }
 
   @Get('monthly')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'One row per month, oldest first; months without sales come back as zero' })
-  async monthly(@Query() params: MonthlyDto) {
-    return { months: await this.reportsService.monthly(params.months) };
+  async monthly(@CurrentStore() store: Store, @Query() params: MonthlyDto) {
+    return { months: await this.reportsService.monthly(store, params.months) };
   }
 
   @Get('product-insights')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Products worth a look',
@@ -54,22 +53,21 @@ export class ReportsController {
       'current pace, and missing a category, provider, image or description. Each group lists the worst 10 and ' +
       'counts all of them',
   })
-  async productInsights() {
-    return { insights: await this.reportsService.productInsights() };
+  async productInsights(@CurrentStore() store: Store) {
+    return { insights: await this.reportsService.productInsights(store.id) };
   }
 
   @Get('pdf')
-  @RoleD(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiProduces('application/pdf')
   @ApiOperation({
     summary: 'Sales report as a PDF',
     description: 'The summary of the period, the last 12 months, the best sellers and the stock to reorder, in spanish',
   })
-  async pdf(@Query() params: SummaryDto) {
-    const data = await this.reportsService.reportData(params.period);
+  async pdf(@CurrentStore() store: Store, @Query() params: SummaryDto) {
+    const data = await this.reportsService.reportData(store, params.period);
     const file = await renderPdf(buildReportDocument(data));
-    const day = storeDate(new Date(data.summary.current.to));
+    const day = storeDate(new Date(data.summary.current.to), store.timezone);
 
     return new StreamableFile(file, {
       type: 'application/pdf',

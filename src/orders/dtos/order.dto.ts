@@ -1,17 +1,29 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsNotEmpty, IsPositive, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  ValidateNested,
+} from 'class-validator';
 import { CreateOrderItemDto } from './order-item.dto';
 import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
+  /** Who made the sale. The API always records whoever is logged in; the app still sends it */
+  @IsOptional()
   @IsPositive()
-  @IsNotEmpty()
-  @ApiProperty({ description: 'userId' })
-  readonly userId: number;
+  @ApiProperty({ description: 'Ignored: a sale is recorded under whoever makes it', required: false })
+  readonly userId?: number;
 
-  //TODO: Include client ID
-  //TODO: Include ammount paid
+  /** Who the sale was made to; the store's default customer when left out */
+  @IsOptional()
+  @IsPositive()
+  @ApiProperty({ required: false })
+  readonly customerId?: number;
 
   @IsArray()
   @ValidateNested({ each: true })

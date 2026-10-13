@@ -21,12 +21,11 @@ import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 import { Is_PublicD } from '../core/auth/decorators/public.decorator';
-import { RoleD } from '../core/auth/decorators/roles.decorator';
 import { ApiKeyGuard } from '../core/auth/guards/api-key.guard';
 import { JwtAuthGuard } from '../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../core/auth/guards/roles.guard';
-import { Role } from '../core/auth/models/roles.model';
-import { isAdmin, PayloadToken } from '../core/auth/models/token.model';
+import { canManageStore, isSuperAdmin, PayloadToken } from '../core/auth/models/token.model';
+import { StoresService } from '../stores/services/stores.service';
 import { CustomUploadFileTypeValidator } from '../core/pipes/validator.pipe';
 import { AppService } from './app.service';
 
@@ -36,7 +35,7 @@ const VALID_UPLOADS_MIME_TYPES = ['image/jpeg', 'image/png'];
 @Controller()
 @ApiTags('app')
 export class AppController {
-  constructor(private appService: AppService) {}
+  constructor(private appService: AppService, private storesService: StoresService) {}
   @Is_PublicD()
   @UseGuards(ApiKeyGuard)
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
@@ -59,15 +58,15 @@ export class AppController {
 
   //This controller has no guards of its own, so the upload used to take no login at all
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @RoleD(Role.ADMIN, Role.CASHIER, Role.CUSTOMER)
   @ApiOperation({
     summary: 'Upload image product or user',
-    description: 'A product picture takes an admin; a user picture, that user or an admin',
+    description:
+      'A product picture takes the owner of the store being worked in, and a product of that store; a user picture, that user or a super admin',
   })
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
   @Post('image/:type/:id')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(
+  async uploadFile(
     @Req() req: Request,
     @Param('type') type: 'user' | 'product',
     @Param('id', ParseIntPipe) id: number,
@@ -85,13 +84,15 @@ export class AppController {
   ) {
     const caller = req.user as PayloadToken;
     if (type === 'product') {
-      if (!isAdmin(caller)) {
-        throw new ForbiddenException('Only an admin can change a product picture');
+      //The membership is read again, like StoreGuard does: the token alone could be out of date
+      const { store, role } = await this.storesService.resolveAccess(caller);
+      if (!canManageStore({ ...caller, storeRole: role })) {
+        throw new ForbiddenException('Only the owner can change a product picture');
       }
-      return this.appService.updateImgeProduct(id, file);
+      return this.appService.updateImgeProduct(store.id, id, file);
     }
     if (type === 'user') {
-      if (!isAdmin(caller) && Number(caller?.sub) !== id) {
+      if (!isSuperAdmin(caller) && Number(caller?.sub) !== id) {
         throw new ForbiddenException('You can only change your own picture');
       }
       return this.appService.updateImgeUser(id, file);

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -9,102 +10,87 @@ import {
   Post,
   Put,
   Query,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { Response } from 'express';
-
-import { Is_PublicD } from '../../core/auth/decorators/public.decorator';
 import { RoleD } from '../../core/auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../core/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../core/auth/guards/roles.guard';
 import { Role } from '../../core/auth/models/roles.model';
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { ParseIntPipe } from '../../core/pipes/parse-int.pipe';
+import { Store } from '../../stores/entities/store.entity';
+import { CurrentStore, StoreGuard } from '../../stores/guards/store.guard';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
 import { CategoriesService } from '../services/categories.service';
-import { ProductsService } from '../services/products.service';
 
+//Everyone in the store reads them, only its owner changes them
 @Controller('categories')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, StoreGuard, RolesGuard)
+@RoleD(Role.OWNER, Role.CASHIER)
 @ApiTags('categories')
 export class CategoriesController {
-  constructor(private categoriesServices: CategoriesService, private productsServices: ProductsService) {}
+  constructor(private categoriesServices: CategoriesService) {}
 
-  @Is_PublicD()
   @Get()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Categories list',
-  })
-  async getCategories(@Query() params: FilterDto) {
-    return { categories: await this.categoriesServices.findAll(params) };
+  @ApiOperation({ summary: 'Categories list' })
+  async getCategories(@CurrentStore() store: Store, @Query() params: FilterDto) {
+    return { categories: await this.categoriesServices.findAll(store.id, params) };
   }
 
-  //Getting obj params: Can use  Param() params: any and params.productId
-  @Is_PublicD()
   @Get(':categoryId')
-  @ApiOperation({
-    summary: 'Get category by Id',
-  })
   @HttpCode(HttpStatus.OK)
-  async getCategory(@Param('categoryId', ParseIntPipe) categoryId: number) {
-    return {
-      category: await this.categoriesServices.findOne(categoryId),
-    };
+  @ApiOperation({ summary: 'Get category by Id' })
+  async getCategory(@CurrentStore() store: Store, @Param('categoryId', ParseIntPipe) categoryId: number) {
+    return { category: await this.categoriesServices.findOne(store.id, categoryId) };
   }
 
   @Post()
-  @RoleD(Role.ADMIN)
+  @RoleD(Role.OWNER)
   @HttpCode(HttpStatus.OK)
-  async create(@Body() category: CreateCategoryDto) {
+  async create(@CurrentStore() store: Store, @Body() category: CreateCategoryDto) {
     return {
       message: 'Category created',
-      product: await this.categoriesServices.create(category),
+      //The key the app has always read the new category from
+      product: await this.categoriesServices.create(store.id, category),
     };
   }
 
   @Put(':idCategory')
-  @RoleD(Role.ADMIN)
-  @ApiOperation({
-    summary: 'Update a category',
-  })
+  @RoleD(Role.OWNER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update a category' })
   async update(
-    @Res() res: Response,
+    @CurrentStore() store: Store,
     @Param('idCategory', ParseIntPipe) idCategory: number,
     @Body() category: UpdateCategoryDto
   ) {
-    const wasUpdated = await this.categoriesServices.update(idCategory, category);
-    if (wasUpdated) {
-      res.status(HttpStatus.OK).json({ message: 'Category updated', category: wasUpdated });
-    } else {
-      res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not updated` });
-    }
+    return {
+      message: 'Category updated',
+      category: await this.categoriesServices.update(store.id, idCategory, category),
+    };
   }
 
-  @RoleD(Role.ADMIN)
   @Put(':idCategory/restore')
-  @ApiOperation({
-    summary: 'restore a category',
-  })
-  async restore(@Res() res: Response, @Param('idCategory', ParseIntPipe) idCategory: number) {
-    const wasUpdated = await this.categoriesServices.restore(idCategory);
-    if (wasUpdated?.affected > 0) {
-      res.status(HttpStatus.OK).json({ message: 'Category restored', category: wasUpdated });
-    } else {
-      res.status(HttpStatus.BAD_REQUEST).json({ message: `Category ${idCategory} not restored` });
+  @RoleD(Role.OWNER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'restore a category' })
+  async restore(@CurrentStore() store: Store, @Param('idCategory', ParseIntPipe) idCategory: number) {
+    const restored = await this.categoriesServices.restore(store.id, idCategory);
+    if (!restored?.affected) {
+      throw new BadRequestException(`Category ${idCategory} not restored`);
     }
+    return { message: 'Category restored' };
   }
 
-  @RoleD(Role.ADMIN)
   @Delete(':idCategory')
-  @ApiOperation({
-    summary: 'Delete a category',
-  })
-  async delete(@Res() res: Response, @Param('idCategory', ParseIntPipe) idCategory: number) {
-    await this.categoriesServices.remove(idCategory);
-    res.status(HttpStatus.OK).json({ message: `Category ${idCategory} deleted` });
+  @RoleD(Role.OWNER)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete a category' })
+  async delete(@CurrentStore() store: Store, @Param('idCategory', ParseIntPipe) idCategory: number) {
+    await this.categoriesServices.remove(store.id, idCategory);
+    return { message: `Category ${idCategory} deleted` };
   }
 }

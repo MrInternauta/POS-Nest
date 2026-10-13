@@ -71,10 +71,10 @@ export class AppService {
       //Settled, not fired and forgotten: the default list repeats a few codes, and an insert that
       //failed with nobody waiting for it brought the whole process down
       const categories = this.categoriesServices.defaultValue();
-      await Promise.allSettled(categories.map(item => this.categoriesServices.create(item)));
+      await Promise.allSettled(categories.map(item => this.categoriesServices.create(store.id, item)));
 
       const products = this.productsServices.defaultProducts();
-      await Promise.allSettled(products.map(item => this.productsServices.create(item)));
+      await Promise.allSettled(products.map(item => this.productsServices.create(store.id, item)));
       return {
         message: 'Values set successfully!',
       };
@@ -117,13 +117,13 @@ export class AppService {
     return newUser;
   }
 
-  public async updateImgeProduct(id: number, file: Express.Multer.File) {
-    const product = await this.productsServices.findOne(id);
+  public async updateImgeProduct(storeId: number, id: number, file: Express.Multer.File) {
+    const product = await this.productsServices.findOne(storeId, id);
     if (!product) {
       throw new BadRequestException('Product was not found');
     }
     const image = await this.replaceImage('product', id, product.image, file);
-    return this.productsServices.update(Number(id), { ...product, image });
+    return this.productsServices.update(storeId, Number(id), { image });
   }
 
   imageValidations(file: Express.Multer.File) {

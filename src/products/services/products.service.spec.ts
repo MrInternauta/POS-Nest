@@ -7,7 +7,6 @@ import { Product } from '../entities/product.entity';
 import { Provider } from '../entities/provider.entity';
 import { CategoriesService } from './categories.service';
 import { ProductsService } from './products.service';
-import { StoresService } from '../../stores/services/stores.service';
 import { ProvidersService } from './providers.service';
 
 const bimbo = { id: 3, name: 'Bimbo' } as Provider;
@@ -27,41 +26,39 @@ const serviceWith = () => {
   } as unknown as Repository<Product>;
 
   const categories = {
-    findOne: jest.fn(async (id: number) => {
+    findOne: jest.fn(async (_store: number, id: number) => {
       if (id !== pan.id) throw new NotFoundException(`Category ${id} not found`);
       return pan;
     }),
   } as unknown as CategoriesService;
 
   const providers = {
-    findOne: jest.fn(async (id: number) => {
+    findOne: jest.fn(async (_store: number, id: number) => {
       if (id !== bimbo.id) throw new NotFoundException(`Provider ${id} not found`);
       return bimbo;
     }),
   } as unknown as ProvidersService;
 
-  const stores = { mainStore: async () => ({ id: 1 }) } as unknown as StoresService;
-
-  return new ProductsService(productRepo, categories, providers, stores);
+  return new ProductsService(productRepo, categories, providers);
 };
 
 describe('ProductsService relations', () => {
   it('keeps the category and provider when the changes leave them out', async () => {
-    const updated = await serviceWith().update(1, { stock: 4 });
+    const updated = await serviceWith().update(1, 1, { stock: 4 });
 
     expect(updated.category).toBe(pan);
     expect(updated.provider).toBe(bimbo);
   });
 
   it('takes the category and provider off with null', async () => {
-    const updated = await serviceWith().update(1, { categoryId: null, providerId: null });
+    const updated = await serviceWith().update(1, 1, { categoryId: null, providerId: null });
 
     expect(updated.category).toBeNull();
     expect(updated.provider).toBeNull();
   });
 
   it('sets the provider on a new product', async () => {
-    const created = await serviceWith().create({
+    const created = await serviceWith().create(1, {
       name: 'Nito',
       code: '750100',
       price: 10,
@@ -74,7 +71,7 @@ describe('ProductsService relations', () => {
   });
 
   it('answers not found for a provider that is not there instead of a server error', async () => {
-    await expect(serviceWith().update(1, { providerId: 99 })).rejects.toThrow(NotFoundException);
+    await expect(serviceWith().update(1, 1, { providerId: 99 })).rejects.toThrow(NotFoundException);
   });
 });
 
@@ -82,7 +79,7 @@ describe('ProductsService stock filter', () => {
   it('asks for the products with this many units or fewer, the ones that ran out included', async () => {
     const service = serviceWith();
 
-    await service.findAll({ maxStock: 0, limit: 10, offset: 0 });
+    await service.findAll(1, { maxStock: 0, limit: 10, offset: 0 });
 
     const { productRepo } = service as unknown as { productRepo: { findAndCount: jest.Mock } };
     const [{ where }] = productRepo.findAndCount.mock.calls[0];
