@@ -1,5 +1,7 @@
 import {
   Controller,
+  ForbiddenException,
+  NotFoundException,
   Get,
   HttpCode,
   HttpStatus,
@@ -16,11 +18,15 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { ApiKeyGuard, Is_PublicD } from '@project/auth';
 import { Request, Response } from 'express';
 
+import { Is_PublicD } from '../core/auth/decorators/public.decorator';
 import { RoleD } from '../core/auth/decorators/roles.decorator';
+import { ApiKeyGuard } from '../core/auth/guards/api-key.guard';
+import { JwtAuthGuard } from '../core/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../core/auth/guards/roles.guard';
 import { Role } from '../core/auth/models/roles.model';
+import { isAdmin, PayloadToken } from '../core/auth/models/token.model';
 import { CustomUploadFileTypeValidator } from '../core/pipes/validator.pipe';
 import { AppService } from './app.service';
 
@@ -51,14 +57,18 @@ export class AppController {
     return await this.appService.setDefaultValues();
   }
 
-  @RoleD(Role.ADMIN)
+  //This controller has no guards of its own, so the upload used to take no login at all
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @RoleD(Role.ADMIN, Role.CASHIER, Role.CUSTOMER)
   @ApiOperation({
     summary: 'Upload image product or user',
+    description: 'A product picture takes an admin; a user picture, that user or an admin',
   })
   @HttpCode(HttpStatus.OK) // 👈 Using decorator
   @Post('image/:type/:id')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(
+    @Req() req: Request,
     @Param('type') type: 'user' | 'product',
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile(
@@ -73,15 +83,24 @@ export class AppController {
     )
     file: Express.Multer.File
   ) {
-    if (type == 'product') {
+    const caller = req.user as PayloadToken;
+    if (type === 'product') {
+      if (!isAdmin(caller)) {
+        throw new ForbiddenException('Only an admin can change a product picture');
+      }
       return this.appService.updateImgeProduct(id, file);
-    } else {
+    }
+    if (type === 'user') {
+      if (!isAdmin(caller) && Number(caller?.sub) !== id) {
+        throw new ForbiddenException('You can only change your own picture');
+      }
       return this.appService.updateImgeUser(id, file);
     }
+    throw new NotFoundException();
   }
 
+  //Served to anyone who has the file name, like before: no guard ever ran here
   @Get('image/:type/:img')
-  @RoleD(Role.ADMIN, Role.CUSTOMER)
   @ApiOperation({
     summary: 'Get image product or user',
   })
