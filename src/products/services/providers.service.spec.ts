@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 import { Repository } from 'typeorm';
 
+import { StoresService } from '../../stores/services/stores.service';
 import { Provider } from '../entities/provider.entity';
 import { ProvidersService } from './providers.service';
 
@@ -19,9 +20,13 @@ const repoWith = (rows: Partial<Provider>[]) =>
     softDelete: jest.fn(async () => ({ affected: 1 })),
   } as unknown as Repository<Provider>);
 
+/** Everything lands in the main store until requests carry theirs */
+const mainStoreOnly = { mainStore: async () => ({ id: 1 }) } as unknown as StoresService;
+const providersWith = (repo: Repository<Provider>) => new ProvidersService(repo, mainStoreOnly);
+
 describe('ProvidersService', () => {
   it('creates a provider with a new name', async () => {
-    const service = new ProvidersService(repoWith([]));
+    const service = providersWith(repoWith([]));
 
     await expect(service.create({ name: 'Bimbo', phone: '555 123 4567' })).resolves.toMatchObject({
       name: 'Bimbo',
@@ -30,13 +35,13 @@ describe('ProvidersService', () => {
   });
 
   it('refuses a name another provider has, even a deleted one', async () => {
-    const service = new ProvidersService(repoWith([{ id: 1, name: 'Bimbo', deletedAt: new Date() }]));
+    const service = providersWith(repoWith([{ id: 1, name: 'Bimbo', deletedAt: new Date() }]));
 
     await expect(service.create({ name: 'Bimbo' })).rejects.toThrow(BadRequestException);
   });
 
   it('lets a provider keep its own name when other fields change', async () => {
-    const service = new ProvidersService(repoWith([{ id: 1, name: 'Bimbo' }]));
+    const service = providersWith(repoWith([{ id: 1, name: 'Bimbo' }]));
 
     await expect(service.update(1, { name: 'Bimbo', contactName: 'Ana' })).resolves.toMatchObject({
       name: 'Bimbo',
@@ -45,7 +50,7 @@ describe('ProvidersService', () => {
   });
 
   it('updates without a name in the changes', async () => {
-    const service = new ProvidersService(
+    const service = providersWith(
       repoWith([
         { id: 1, name: 'Bimbo' },
         { id: 2, name: 'Coca-Cola' },
@@ -56,7 +61,7 @@ describe('ProvidersService', () => {
   });
 
   it('refuses renaming a provider to the name of another', async () => {
-    const service = new ProvidersService(
+    const service = providersWith(
       repoWith([
         { id: 1, name: 'Bimbo' },
         { id: 2, name: 'Coca-Cola' },
@@ -67,7 +72,7 @@ describe('ProvidersService', () => {
   });
 
   it('answers not found for a provider that is not there', async () => {
-    const service = new ProvidersService(repoWith([]));
+    const service = providersWith(repoWith([]));
 
     await expect(service.findOne(9)).rejects.toThrow(NotFoundException);
     await expect(service.remove(9)).rejects.toThrow(NotFoundException);

@@ -5,11 +5,15 @@ import { Repository } from 'typeorm';
 
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateCategoryDto, UpdateCategoryDto } from '../dtos/category.dto';
+import { StoresService } from '../../stores/services/stores.service';
 import { Category } from '../entities/category.entity';
 
 @Injectable()
 export class CategoriesService {
-  constructor(@InjectRepository(Category) private categoryRepo: Repository<Category>) {}
+  constructor(
+    @InjectRepository(Category) private categoryRepo: Repository<Category>,
+    private storesService: StoresService
+  ) {}
 
   findAll(params?: FilterDto) {
     const { limit, offset } = params;
@@ -52,7 +56,8 @@ export class CategoriesService {
 
   async create(category: CreateCategoryDto) {
     await this.validateUniqueName(category.name);
-    const newCategory = this.categoryRepo.create(category);
+    //Until requests carry their store everything goes to the main one
+    const newCategory = this.categoryRepo.create({ ...category, store: await this.storesService.mainStore() });
     return await this.categoryRepo.save(newCategory);
   }
 

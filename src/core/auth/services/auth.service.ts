@@ -15,6 +15,10 @@ export class AuthService {
   async validateUser(userName: string, password: string) {
     const LOAD_ROLE = true;
     const user = await this.userService.findByEmail(userName, LOAD_ROLE);
+    //A switched off account (a customer that used to have one) answers like a wrong password
+    if (!user || !user.active) {
+      throw new ForbiddenException('User or password wrong!');
+    }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new ForbiddenException('User or password wrong!');

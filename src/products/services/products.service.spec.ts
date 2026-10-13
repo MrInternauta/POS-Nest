@@ -7,6 +7,7 @@ import { Product } from '../entities/product.entity';
 import { Provider } from '../entities/provider.entity';
 import { CategoriesService } from './categories.service';
 import { ProductsService } from './products.service';
+import { StoresService } from '../../stores/services/stores.service';
 import { ProvidersService } from './providers.service';
 
 const bimbo = { id: 3, name: 'Bimbo' } as Provider;
@@ -39,7 +40,9 @@ const serviceWith = () => {
     }),
   } as unknown as ProvidersService;
 
-  return new ProductsService(productRepo, categories, providers);
+  const stores = { mainStore: async () => ({ id: 1 }) } as unknown as StoresService;
+
+  return new ProductsService(productRepo, categories, providers, stores);
 };
 
 describe('ProductsService relations', () => {

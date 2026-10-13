@@ -69,6 +69,11 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
+  /** Super admins see every store; only the seed and the migration make one */
+  async setSuperAdmin(id: number, isSuperAdmin: boolean) {
+    await this.userRepo.update({ id }, { isSuperAdmin });
+  }
+
   /**
    * Changes what a profile shows. The role changes only when `roleId` is given, and deciding who
    * may ask for that is the caller's job: the controller only passes it on for an admin.
