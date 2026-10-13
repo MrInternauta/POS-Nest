@@ -1,7 +1,8 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
 
 import { BasicEntity } from '../../core/interfaces/basic.entity';
 import { Category } from './category.entity';
+import { Provider } from './provider.entity';
 
 /* eslint-disable prettier/prettier */
 @Entity({
@@ -49,4 +50,13 @@ export class Product extends BasicEntity {
     name: 'id_category',
   }) //naming  n to 1
   category?: Category;
+
+  //A provider that is removed leaves its products without one instead of blocking the delete
+  @ManyToOne(() => Provider, provider => provider.products, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'id_provider' })
+  provider?: Provider;
+
+  //The product list is public and a provider carries contact details, so lists only bring the id
+  @RelationId((product: Product) => product.provider)
+  providerId?: number;
 }

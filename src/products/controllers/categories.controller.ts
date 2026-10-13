@@ -50,7 +50,7 @@ export class CategoriesController {
     summary: 'Get category by Id',
   })
   @HttpCode(HttpStatus.OK)
-  async getCategory(@Res() res: Response, @Param('categoryId', ParseIntPipe) categoryId: number) {
+  async getCategory(@Param('categoryId', ParseIntPipe) categoryId: number) {
     return {
       category: await this.categoriesServices.findOne(categoryId),
     };

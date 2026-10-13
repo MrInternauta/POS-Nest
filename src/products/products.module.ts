@@ -3,15 +3,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CategoriesController } from './controllers/categories.controller';
 import { ProductsController } from './controllers/products.controller';
+import { ProvidersController } from './controllers/providers.controller';
 import { Category } from './entities/category.entity';
 import { Product } from './entities/product.entity';
+import { Provider } from './entities/provider.entity';
 import { CategoriesService } from './services/categories.service';
 import { ProductsService } from './services/products.service';
+import { ProvidersService } from './services/providers.service';
 
 @Module({
-  providers: [ProductsService, CategoriesService],
-  imports: [TypeOrmModule.forFeature([Product, Category])],
-  exports: [ProductsService, CategoriesService],
-  controllers: [ProductsController, CategoriesController],
+  providers: [ProductsService, CategoriesService, ProvidersService],
+  imports: [TypeOrmModule.forFeature([Product, Category, Provider])],
+  exports: [ProductsService, CategoriesService, ProvidersService],
+  controllers: [ProductsController, CategoriesController, ProvidersController],
 })
 export class ProductsModule {}

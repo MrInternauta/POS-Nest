@@ -42,9 +42,10 @@ export class CategoriesService {
     });
   }
 
-  async validateUniqueName(name: string) {
+  /** The category being edited may keep the name it already has */
+  async validateUniqueName(name: string, exceptId?: number) {
     const items = await this.findOnebyName(name);
-    if (items && items.length > 0) {
+    if (items && items.length > 0 && items[0].id !== exceptId) {
       throw new BadRequestException(`Category with name '${name}' already exists`);
     }
   }
@@ -56,8 +57,11 @@ export class CategoriesService {
   }
 
   async update(id: number, changes: UpdateCategoryDto) {
-    await this.validateUniqueName(changes.name);
-    const category = await this.findOne(id);
+    //Without a name in the changes the lookup would match any category
+    if (changes.name !== undefined) {
+      await this.validateUniqueName(changes.name, id);
+    }
+    const category = await this.findOne(id, false);
     this.categoryRepo.merge(category, changes);
     return this.categoryRepo.save(category);
   }
