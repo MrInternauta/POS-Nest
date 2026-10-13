@@ -29,6 +29,14 @@ export class User extends BasicEntity {
   @Exclude()
   password: string;
 
+  /** Sees and enters every store. Today's ADMIN users are the ones with this */
+  @Column({ type: 'boolean', default: false })
+  isSuperAdmin: boolean;
+
+  /** An account switched off cannot log in; customers who had an account are kept like this */
+  @Column({ type: 'boolean', default: true })
+  active: boolean;
+
   @ManyToOne(() => Role, role => role.users, { nullable: true })
   @JoinColumn({
     name: 'id_role',

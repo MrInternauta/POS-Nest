@@ -4,6 +4,7 @@ import { Response } from 'express';
 
 import { CategoriesService } from '../products/services/categories.service';
 import { ProductsService } from '../products/services/products.service';
+import { StoresService } from '../stores/services/stores.service';
 import { RolesService } from '../users/services/roles.service';
 import { UsersService } from '../users/services/users.service';
 import { IMAGE_TYPES, ImageStorage, ImageType } from './image-storage';
@@ -17,7 +18,8 @@ export class AppService {
     private usersService: UsersService,
     private categoriesServices: CategoriesService,
     private productsServices: ProductsService,
-    private imageStorage: ImageStorage
+    private imageStorage: ImageStorage,
+    private storesService: StoresService
   ) {}
 
   async setDefaultValues() {
@@ -40,7 +42,8 @@ export class AppService {
         permissions: permission_vendor,
       });
 
-      const role_client = await this.rolesService.create({
+      //Still created: a sign-up gets it until signing up starts a store instead
+      await this.rolesService.create({
         name: roles.role_client.name,
         permissions: permission_client,
       });
@@ -49,15 +52,21 @@ export class AppService {
 
       const admin = await this.usersService.create(users.admin);
       const cashier = await this.usersService.create(users.cashier);
-      const client = await this.usersService.create(users.client);
-
-      console.log(admin, cashier, client);
 
       await this.usersService.update(admin.id, {}, role_admin.id);
       await this.usersService.update(cashier.id, {}, role_cashier.id);
-      await this.usersService.update(client.id, {}, role_client.id);
 
-      console.log(admin, cashier, client);
+      //The admin runs the platform and owns the main store, the cashier works in it. A client
+      //does not log in any more: it is one of the store's customers
+      const store = await this.storesService.mainStore();
+      await this.usersService.setSuperAdmin(admin.id, true);
+      await this.storesService.addMember(store.id, admin.id, 'OWNER');
+      await this.storesService.addMember(store.id, cashier.id, 'CASHIER');
+      await this.storesService.createCustomer(store.id, {
+        name: `${users.client.name} ${users.client.lastName}`,
+        phone: users.client.phone,
+        email: users.client.email,
+      });
 
       //Settled, not fired and forgotten: the default list repeats a few codes, and an insert that
       //failed with nobody waiting for it brought the whole process down

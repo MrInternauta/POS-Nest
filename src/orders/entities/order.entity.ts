@@ -1,7 +1,9 @@
 import { Expose } from 'class-transformer';
-import { Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { BasicWithDateEntity } from '../../core/interfaces/basic.entity';
+import { Customer } from '../../stores/entities/customer.entity';
+import { Store } from '../../stores/entities/store.entity';
 import { User } from '../../users/entities/user.entity';
 import { OrderItem } from './order-item.entity';
 
@@ -12,6 +14,16 @@ export class Order extends BasicWithDateEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ManyToOne(() => Store, { nullable: false })
+  @JoinColumn({ name: 'id_store' })
+  store: Store;
+
+  /** Who the sale was made to; the store's default customer when nobody was picked */
+  @ManyToOne(() => Customer, { nullable: false })
+  @JoinColumn({ name: 'id_customer' })
+  customer: Customer;
+
+  /** Who made the sale */
   @ManyToOne(() => User, user => user.orders)
   // La que tiene relacion many to one, tiene la llave foranea @JoinColumn()
   user: User;

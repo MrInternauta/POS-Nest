@@ -8,6 +8,7 @@ import { CreateOrderItemDto } from '../../orders/dtos/order-item.dto';
 import { Order } from '../../orders/entities/order.entity';
 import { User } from '../../users/entities/user.entity';
 import { CreateOrderDto, UpdateOrderDto } from '../dtos/order.dto';
+import { StoresService } from '../../stores/services/stores.service';
 import { OrderItemService } from './order-item.service';
 
 const DEFAULT_LIMIT = 10;
@@ -18,7 +19,8 @@ export class OrderService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Order) private orderRepo: Repository<Order>,
     @Inject(forwardRef(() => OrderItemService))
-    private orderItemService: OrderItemService
+    private orderItemService: OrderItemService,
+    private storesService: StoresService
   ) {}
 
   /**
@@ -59,7 +61,10 @@ export class OrderService {
     if (!createOrderDto.items) {
       throw new BadRequestException('Should be items inside the order');
     }
-    const newOrder = this.orderRepo.create({ user });
+    //Until requests carry their store everything goes to the main one, sold to its default customer
+    const store = await this.storesService.mainStore();
+    const customer = await this.storesService.defaultCustomer(store.id);
+    const newOrder = this.orderRepo.create({ user, store, customer });
     const orderCreated = await this.orderRepo.save(newOrder);
 
     if (!orderCreated) {

@@ -13,6 +13,7 @@ import { parseCsv } from '../../core/util/csv.parser';
 import { CreateProductDto, UpdateProductDto } from '../../products/dtos/product.dto';
 import { ProductsFilterDto } from '../dtos/productFilter.dto';
 import { Product } from '../entities/product.entity';
+import { StoresService } from '../../stores/services/stores.service';
 import { CategoriesService } from './categories.service';
 import { ProvidersService } from './providers.service';
 
@@ -118,7 +119,8 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product) private productRepo: Repository<Product>,
     private categoryService: CategoriesService,
-    private providersService: ProvidersService
+    private providersService: ProvidersService,
+    private storesService: StoresService
   ) {}
 
   public async findAll(params?: ProductsFilterDto) {
@@ -225,6 +227,8 @@ export class ProductsService {
         } else {
           await this.productRepo.save(
             this.productRepo.create({
+              //Until requests carry their store everything goes to the main one
+              store: await this.storesService.mainStore(),
               code,
               name,
               description: description || '',
@@ -300,6 +304,8 @@ export class ProductsService {
       await this.validateUniqueCode(payload?.code);
 
       const product = this.productRepo.create(payload);
+      //Until requests carry their store everything goes to the main one
+      product.store = await this.storesService.mainStore();
       await this.applyRelations(product, payload);
       return this.productRepo.save(product);
     } catch (error) {

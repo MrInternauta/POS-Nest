@@ -1,6 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
 
 import { BasicEntity } from '../../core/interfaces/basic.entity';
+import { Store } from '../../stores/entities/store.entity';
 import { Category } from './category.entity';
 import { Provider } from './provider.entity';
 
@@ -9,6 +10,8 @@ import { Provider } from './provider.entity';
   name: 'products',
 }) //naming table
 @Index(['price', 'stock'])
+//A code is a store's own: two stores may sell the same barcode
+@Index(['store', 'code'], { unique: true })
 export class Product extends BasicEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -27,7 +30,6 @@ export class Product extends BasicEntity {
 
   @Column({
     type: 'text',
-    unique: true,
   })
   code: string;
 
@@ -44,6 +46,14 @@ export class Product extends BasicEntity {
 
   @Column({ type: 'varchar' })
   image = '';
+
+  @ManyToOne(() => Store, { nullable: false })
+  @JoinColumn({ name: 'id_store' })
+  store: Store;
+
+  /** Shown in the store's public catalogue, outside the login */
+  @Column({ type: 'boolean', default: false })
+  isPublic: boolean;
 
   @ManyToOne(() => Category, category => category.products, { nullable: true })
   @JoinColumn({

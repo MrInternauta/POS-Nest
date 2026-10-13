@@ -5,11 +5,15 @@ import { Repository } from 'typeorm';
 
 import { FilterDto } from '../../core/interfaces/filter.dto';
 import { CreateProviderDto, UpdateProviderDto } from '../dtos/provider.dto';
+import { StoresService } from '../../stores/services/stores.service';
 import { Provider } from '../entities/provider.entity';
 
 @Injectable()
 export class ProvidersService {
-  constructor(@InjectRepository(Provider) private providerRepo: Repository<Provider>) {}
+  constructor(
+    @InjectRepository(Provider) private providerRepo: Repository<Provider>,
+    private storesService: StoresService
+  ) {}
 
   findAll(params?: FilterDto) {
     const { limit, offset } = params ?? {};
@@ -41,7 +45,9 @@ export class ProvidersService {
 
   async create(payload: CreateProviderDto) {
     await this.validateUniqueName(payload.name);
-    return this.providerRepo.save(this.providerRepo.create(payload));
+    //Until requests carry their store everything goes to the main one
+    const store = await this.storesService.mainStore();
+    return this.providerRepo.save(this.providerRepo.create({ ...payload, store }));
   }
 
   async update(id: number, changes: UpdateProviderDto) {
